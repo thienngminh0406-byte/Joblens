@@ -205,12 +205,12 @@ def get_df(period: str = "all") -> pd.DataFrame:
         tomorrow = today + pd.Timedelta(days=1)
 
         df = df[
-        df["JO_REG_DT"].isna() |
-        (
-            (df["JO_REG_DT"] >= today) &
-            (df["JO_REG_DT"] < tomorrow)
-        )
-    ]
+            df["JO_REG_DT"].isna() |
+            (
+                (df["JO_REG_DT"] >= today) &
+                (df["JO_REG_DT"] < tomorrow)
+            )
+        ]
 
     elif period != "all" and "JO_REG_DT" in df.columns:
         days = int(period)
