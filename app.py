@@ -217,10 +217,10 @@ def get_df(period: str = "all") -> pd.DataFrame:
         cutoff = pd.Timestamp.today() - pd.Timedelta(days=days)
 
         df = df[
-        df["JO_REG_DT"].isna() |
-        (df["JO_REG_DT"] >= cutoff)
+            df["JO_REG_DT"].isna() |
+            (df["JO_REG_DT"] >= cutoff)
     ]
-
+     return df
 
 # ──────────────────────────────────────
 # 유틸
