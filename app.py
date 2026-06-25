@@ -211,7 +211,8 @@ def get_df(period: str = "all") -> pd.DataFrame:
                 (df["JO_REG_DT"] < tomorrow)
             )
         ]
-
+    logger.info(f"TODAY FILTER RESULT: {len(df)} rows")
+    
     elif period != "all" and "JO_REG_DT" in df.columns:
         days = int(period)
         cutoff = pd.Timestamp.today() - pd.Timedelta(days=days)
