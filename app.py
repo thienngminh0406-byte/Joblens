@@ -211,7 +211,8 @@ def get_df(period: str = "all") -> pd.DataFrame:
                 (df["JO_REG_DT"] < tomorrow)
             )
         ]
-    logger.info(f"TODAY FILTER RESULT: {len(df)} rows")
+        
+        logger.info(f"TODAY FILTER RESULT: {len(df)} rows")
     
     elif period != "all" and "JO_REG_DT" in df.columns:
         days = int(period)
@@ -220,7 +221,8 @@ def get_df(period: str = "all") -> pd.DataFrame:
         df = df[
             df["JO_REG_DT"].isna() |
             (df["JO_REG_DT"] >= cutoff)
-    ]
+        ]
+        
     return df
 
 # ──────────────────────────────────────
