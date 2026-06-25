@@ -201,8 +201,8 @@ def get_df(period: str = "all") -> pd.DataFrame:
 
     # 기간 필터
     if period == "today" and "JO_REG_DT" in df.columns:
-    today = pd.Timestamp.today().normalize()
-    tomorrow = today + pd.Timedelta(days=1)
+        today = pd.Timestamp.today().normalize()
+        tomorrow = today + pd.Timedelta(days=1)
 
     df = df[
         df["JO_REG_DT"].isna() |
@@ -212,11 +212,11 @@ def get_df(period: str = "all") -> pd.DataFrame:
         )
     ]
 
-elif period != "all" and "JO_REG_DT" in df.columns:
-    days = int(period)
-    cutoff = pd.Timestamp.today() - pd.Timedelta(days=days)
+    elif period != "all" and "JO_REG_DT" in df.columns:
+        days = int(period)
+        cutoff = pd.Timestamp.today() - pd.Timedelta(days=days)
 
-    df = df[
+        df = df[
         df["JO_REG_DT"].isna() |
         (df["JO_REG_DT"] >= cutoff)
     ]
