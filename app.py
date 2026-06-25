@@ -204,7 +204,7 @@ def get_df(period: str = "all") -> pd.DataFrame:
         today = pd.Timestamp.today().normalize()
         tomorrow = today + pd.Timedelta(days=1)
 
-    df = df[
+        df = df[
         df["JO_REG_DT"].isna() |
         (
             (df["JO_REG_DT"] >= today) &
