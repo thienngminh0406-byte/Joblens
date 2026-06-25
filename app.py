@@ -220,7 +220,7 @@ def get_df(period: str = "all") -> pd.DataFrame:
             df["JO_REG_DT"].isna() |
             (df["JO_REG_DT"] >= cutoff)
     ]
-     return df
+    return df
 
 # ──────────────────────────────────────
 # 유틸
