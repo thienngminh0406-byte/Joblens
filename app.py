@@ -169,7 +169,7 @@ def refresh_cache():
         return
     _cache["is_loading"] = True
     try:
-        df = fetch_seoul_jobs()
+        df = load_from_csv()
         if not df.empty:
             _cache["df"] = df
             _cache["last_updated"] = datetime.now()
