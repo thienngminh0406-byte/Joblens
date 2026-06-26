@@ -29,12 +29,14 @@ STATIC_DIR = os.path.join(BASE_DIR, "static")
 
 app = Flask(__name__, static_folder=STATIC_DIR, static_url_path="")
 CORS(app)
+Compress(app)  # 모든 응답 gzip 압축 → 전송량 60~70% 감소
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-API_KEY = "514b4b685a6d696e39366469694276"  # 서울시 오픈API 인증키
-CACHE_TTL = 3600  # 1시간 캐시 (초)
-CSV_FALLBACK = os.path.join(BASE_DIR, "JobLens_Scores.csv")  # API 실패 시 폴백 CSV
+API_KEY = "514b4b685a6d696e39366469694276"
+CACHE_TTL = 3600
+CSV_FALLBACK = os.path.join(BASE_DIR, "JobLens_Scores.csv")
 
 # 재시도 세션 (타임아웃·연결 오류 자동 재시도)
 def make_session() -> requests.Session:
@@ -89,14 +91,23 @@ def fetch_seoul_jobs() -> pd.DataFrame:
     """서울시 오픈API에서 채용공고 전체 수집. 실패 시 CSV 폴백"""
     logger.info("서울 Open API 수집 시작")
 
-    # ── 포트 8088 사전 연결 테스트 (3초) ──
-    import socket
+    # ── 필요한 컬럼만 유지 (메모리 절약) ──
+    KEEP_COLS = [
+        "JO_REQST_NO","CMPNY_NM","JO_SJ","JOBCODE_NM","CAREER_CND_NM",
+        "ACDMCR_NM","EMPLYM_STLE_CMMN_MM","HOPE_WAGE",
+        "WORK_PARAR_BASS_ADRES_CN","SUBWAY_NM","WORK_TIME_NM",
+        "HOLIDAY_NM","WEEK_WORK_HR","RCEPT_CLOS_NM","RCEPT_MTH_NM",
+        "PRESENTN_PAPERS_NM","MNGR_PHON_NO","BSNS_SUMRY_CN","DTY_CN",
+        "RET_GRANTS_NM","JO_FEINSR_SBSCRB_NM","JO_REG_DT","WELFARE_CN",
+    ]
+
+    # ── 포트 8088 사전 연결 테스트 ──
+    import socket, gc
     try:
         s = socket.create_connection(("openapi.seoul.go.kr", 8088), timeout=5)
         s.close()
     except OSError:
         logger.warning("포트 8088 차단 감지 → CSV 폴백으로 전환합니다.")
-        logger.warning("해결: 모바일 핫스팟 사용 또는 공유기 포트 8088 허용")
         return load_from_csv()
 
     all_rows = []
@@ -111,12 +122,6 @@ def fetch_seoul_jobs() -> pd.DataFrame:
             res = session.get(url, timeout=30)
             res.raise_for_status()
             data = res.json()
-        except requests.exceptions.ConnectTimeout:
-            logger.error(f"연결 타임아웃 ({start}~{end})")
-            break
-        except requests.exceptions.ConnectionError as e:
-            logger.error(f"연결 오류 ({start}~{end}): {e}")
-            break
         except Exception as e:
             logger.error(f"API 요청 실패 ({start}~{end}): {e}")
             break
@@ -133,20 +138,27 @@ def fetch_seoul_jobs() -> pd.DataFrame:
         if not rows:
             break
 
-        all_rows.extend(rows)
+        # 필요한 컬럼만 추출해서 저장 (메모리 절약)
+        filtered = [{k: r.get(k,"") for k in KEEP_COLS} for r in rows]
+        all_rows.extend(filtered)
         logger.info(f"  수집 누적: {len(all_rows)}건")
         start += 1000
 
         if start > 100_000:
             break
 
-        time.sleep(0.3)
+        time.sleep(0.2)
+        gc.collect()  # 주기적 메모리 정리
 
     if not all_rows:
         logger.warning("API 수집 실패 → CSV 폴백으로 전환합니다.")
         return load_from_csv()
 
+    logger.info("DataFrame 변환 중...")
     df = pd.DataFrame(all_rows)
+    del all_rows
+    gc.collect()
+
     df["JO_REG_DT"] = pd.to_datetime(
         df.get("JO_REG_DT", pd.Series(dtype=str)), errors="coerce"
     )
@@ -155,7 +167,14 @@ def fetch_seoul_jobs() -> pd.DataFrame:
     )
     close_date = pd.to_datetime(close_date, errors="coerce")
     today = pd.Timestamp.today().normalize()
-    df = df[close_date.isna() | (close_date >= today)]
+    df = df[close_date.isna() | (close_date >= today)].copy()
+    gc.collect()
+
+    logger.info(f"스코어링 시작... ({len(df)}건)")
+    df = apply_joblens_scores(df)
+    gc.collect()
+    logger.info(f"스코어링 완료: {len(df)}건")
+    return df
 
     logger.info("스코어링 시작...")
     df = apply_joblens_scores(df)
@@ -200,30 +219,13 @@ def get_df(period: str = "all") -> pd.DataFrame:
         return pd.DataFrame()
 
     # 기간 필터
-    if period == "today" and "JO_REG_DT" in df.columns:
-        today = pd.Timestamp.today().normalize()
-        tomorrow = today + pd.Timedelta(days=1)
-
-        df = df[
-            df["JO_REG_DT"].isna() |
-            (
-                (df["JO_REG_DT"] >= today) &
-                (df["JO_REG_DT"] < tomorrow)
-            )
-        ]
-        
-        logger.info(f"TODAY FILTER RESULT: {len(df)} rows")
-    
-    elif period != "all" and "JO_REG_DT" in df.columns:
+    if period != "all" and "JO_REG_DT" in df.columns:
         days = int(period)
         cutoff = pd.Timestamp.today() - pd.Timedelta(days=days)
+        df = df[df["JO_REG_DT"].isna() | (df["JO_REG_DT"] >= cutoff)]
 
-        df = df[
-            df["JO_REG_DT"].isna() |
-            (df["JO_REG_DT"] >= cutoff)
-        ]
-        
     return df
+
 
 # ──────────────────────────────────────
 # 유틸
@@ -293,7 +295,7 @@ def api_refresh():
 
 @app.route("/api/stats")
 def api_stats():
-    """시장 통계 (Home 대시보드용)"""
+    """시장 통계 (Home 대시보드용) — 5분 브라우저 캐시"""
     period = request.args.get("period", "all")
     df = get_df(period)
     if df.empty:
@@ -311,20 +313,16 @@ def api_stats():
         "출퇴근편의": "출퇴근편의점수",
     }
     score_avgs = {k: round(float(df[v].mean()), 2) for k, v in score_cols.items() if v in df.columns}
-
     grade_dist = df["등급"].value_counts().to_dict() if "등급" in df.columns else {}
-    job_top10 = df["JOBCODE_NM"].value_counts().head(10).to_dict() if "JOBCODE_NM" in df.columns else {}
+    job_top10  = df["JOBCODE_NM"].value_counts().head(10).to_dict() if "JOBCODE_NM" in df.columns else {}
     career_dist = df["CAREER_CND_NM"].value_counts().to_dict() if "CAREER_CND_NM" in df.columns else {}
 
-    # 점수 히스토그램 (5점 단위)
     hist = {}
     if "종합점수" in df.columns:
         scores = df["종합점수"].dropna()
         for lo in range(30, 100, 5):
-            hi = lo + 5
-            hist[f"{lo}-{hi}"] = int(((scores >= lo) & (scores < hi)).sum())
+            hist[f"{lo}-{lo+5}"] = int(((scores >= lo) & (scores < lo+5)).sum())
 
-    # 일별 추이 (최근 90일)
     trend = []
     if "JO_REG_DT" in df.columns:
         cutoff = today - pd.Timedelta(days=90)
@@ -347,9 +345,11 @@ def api_stats():
         "hist": hist,
         "trend": trend,
         "last_updated": _cache["last_updated"].strftime("%Y-%m-%d %H:%M") if _cache["last_updated"] else "",
+        "data_source": _cache["data_source"],
     }))
-    resp.headers["Cache-Control"] = "public, max-age=300"
+    resp.headers["Cache-Control"] = "public, max-age=300"  # 5분 브라우저 캐시
     return resp
+
 
 @app.route("/api/jobs")
 def api_jobs():
