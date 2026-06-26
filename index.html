@@ -862,14 +862,20 @@ function runDiag(){
   setTimeout(async ()=>{
     ov.classList.remove('show');
     const sc=scorePost(d),tot=sc.종합점수;
-    // 서버의 실시간 데이터로 순위 계산
+    // 서버 stats의 hist로 전체 25,000건 기준 순위 계산
     let rank=0,totC=0,pct=0;
     try{
-      const all=await apiFetch('/api/jobs?per=9999&page=1');
-      const mSc=(all.jobs||[]).map(j=>parseFloat(j.종합점수)||0);
-      rank=mSc.filter(s=>s>tot).length+1;totC=mSc.length+1;
-      pct=((mSc.filter(s=>s<=tot).length/mSc.length)*100);
-    }catch(e){rank=1;totC=1;pct=50;}
+      const stats=statsCache||await apiFetch('/api/stats');
+      const hist=stats.hist||{};
+      totC=(stats.total||0);
+      // hist 분포에서 내 점수보다 높은 건수 합산
+      const aboveCount=Object.entries(hist).reduce((acc,[range,cnt])=>{
+        const lo=parseInt(range.split('-')[0]);
+        return lo>=Math.ceil(tot)?acc+cnt:acc;
+      },0);
+      rank=aboveCount+1;
+      pct=((totC-rank)/Math.max(totC,1))*100;
+    }catch(e){rank=1;totC=statsCache?.total||1;pct=50;}
     const topPct=(100-pct).toFixed(1);
     let grade;if(pct>=95)grade='S';else if(pct>=80)grade='A';else if(pct>=50)grade='B';else if(pct>=20)grade='C';else grade='D';
     let level;if(topPct<=10)level='상위권';else if(topPct<=30)level='평균 이상';else if(topPct<=60)level='평균 수준';else level='경쟁력 개선 필요';
@@ -1000,16 +1006,53 @@ function drawPie(sid,lid,data,colors){
 }
 
 function drawRadar(sid,myV,mkV,cx,cy){
-  const n=6,r=74,mx=[30,20,20,15,20,10];
+  const n=6,r=76,mx=[30,20,20,15,20,10];
+  const labelColors=['#4f7fff','#a78bfa','#00d68f','#ffcc00','#4f7fff','#ff4433'];
   function pt(i,v,m){const a=(i/n)*2*Math.PI-Math.PI/2,ratio=Math.min(1,v/m);return[cx+r*ratio*Math.cos(a),cy+r*ratio*Math.sin(a)];}
   function ptR(i,ratio){const a=(i/n)*2*Math.PI-Math.PI/2;return[cx+r*ratio*Math.cos(a),cy+r*ratio*Math.sin(a)];}
   let s='';
-  [.25,.5,.75,1].forEach(ratio=>{const ps=SLABELS.map((_,i)=>ptR(i,ratio));s+=`<polygon points="${ps.map(p=>p.join(',')).join(' ')}" fill="none" stroke="${ratio===1?'rgba(255,255,255,.1)':'rgba(255,255,255,.05)'}" stroke-width="1"/>"`;});
-  SLABELS.forEach((l,i)=>{const[x,y]=ptR(i,1),[lx,ly]=ptR(i,1.28);s+=`<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="rgba(255,255,255,.06)" stroke-width="1"/><text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle" font-size="9" fill="rgba(255,255,255,.38)" font-family="Pretendard,sans-serif">${l}</text>`;});
-  if(mkV&&mkV.length){const mP=mkV.map((v,i)=>pt(i,v,mx[i]));s+=`<polygon points="${mP.map(p=>p.join(',')).join(' ')}" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.22)" stroke-width="1.5" stroke-dasharray="4,3"/>`;}
+  // 그리드 원
+  [.25,.5,.75,1].forEach(ratio=>{
+    const ps=SLABELS.map((_,i)=>ptR(i,ratio));
+    s+=`<polygon points="${ps.map(p=>p.join(',')).join(' ')}" fill="none" stroke="${ratio===1?'rgba(255,255,255,.12)':'rgba(255,255,255,.05)'}" stroke-width="${ratio===1?1.5:1}"/>`;
+    // 그리드 수치 레이블 (맨 위 축 기준)
+    if(ratio<1){
+      const pct=Math.round(ratio*100);
+      const [gx,gy]=ptR(0,ratio);
+      s+=`<text x="${gx+4}" y="${gy}" font-size="7.5" fill="rgba(255,255,255,.2)" font-family="Pretendard,sans-serif">${pct}%</text>`;
+    }
+  });
+  // 축선 + 레이블
+  SLABELS.forEach((l,i)=>{
+    const[x,y]=ptR(i,1),[lx,ly]=ptR(i,1.32);
+    s+=`<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="rgba(255,255,255,.07)" stroke-width="1"/>`;
+    s+=`<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle" font-size="10" fill="${labelColors[i]}" font-family="Pretendard,sans-serif" font-weight="600">${l}</text>`;
+  });
+  // 시장 평균 (점선)
+  if(mkV&&mkV.length){
+    const mP=mkV.map((v,i)=>pt(i,v,mx[i]));
+    s+=`<polygon points="${mP.map(p=>p.join(',')).join(' ')}" fill="rgba(255,255,255,.05)" stroke="rgba(255,255,255,.3)" stroke-width="1.5" stroke-dasharray="5,3"/>`;
+    mP.forEach(([x,y],i)=>{s+=`<circle cx="${x}" cy="${y}" r="2.5" fill="rgba(255,255,255,.4)"/>`;});
+  }
+  // 내 공고
   const mP=myV.map((v,i)=>pt(i,v,mx[i]));
-  s+=`<polygon points="${mP.map(p=>p.join(',')).join(' ')}" fill="rgba(59,110,255,.15)" stroke="var(--accent)" stroke-width="2"/>`;
-  mP.forEach(([x,y])=>{s+=`<circle cx="${x}" cy="${y}" r="3" fill="var(--accent)"/>"`;});
+  s+=`<polygon points="${mP.map(p=>p.join(',')).join(' ')}" fill="rgba(59,110,255,.18)" stroke="var(--accent)" stroke-width="2.5"/>`;
+  // 꼭짓점 점 + 수치 레이블
+  mP.forEach(([x,y],i)=>{
+    s+=`<circle cx="${x}" cy="${y}" r="4.5" fill="var(--accent)" stroke="var(--bg2)" stroke-width="1.5"/>`;
+    // 수치 표시
+    const val=myV[i].toFixed(1);
+    const lx2=cx+(x-cx)*1.18, ly2=cy+(y-cy)*1.18;
+    s+=`<rect x="${lx2-11}" y="${ly2-7}" width="22" height="13" rx="4" fill="var(--accent)" opacity=".9"/>`;
+    s+=`<text x="${lx2}" y="${ly2+1}" text-anchor="middle" dominant-baseline="middle" font-size="8.5" fill="#fff" font-family="Pretendard,sans-serif" font-weight="700">${val}</text>`;
+  });
+  // 범례
+  s+=`<rect x="${cx-58}" y="${cy+r+18}" width="52" height="14" rx="4" fill="rgba(59,110,255,.2)" stroke="var(--accent)" stroke-width="1"/>`;
+  s+=`<text x="${cx-32}" y="${cy+r+26}" text-anchor="middle" dominant-baseline="middle" font-size="8" fill="var(--accent)" font-family="Pretendard,sans-serif">내 공고</text>`;
+  if(mkV&&mkV.length){
+    s+=`<rect x="${cx+6}" y="${cy+r+18}" width="52" height="14" rx="4" fill="rgba(255,255,255,.06)" stroke="rgba(255,255,255,.3)" stroke-width="1" stroke-dasharray="4,2"/>`;
+    s+=`<text x="${cx+32}" y="${cy+r+26}" text-anchor="middle" dominant-baseline="middle" font-size="8" fill="rgba(255,255,255,.5)" font-family="Pretendard,sans-serif">시장 평균</text>`;
+  }
   document.getElementById(sid).innerHTML=s;
 }
 
