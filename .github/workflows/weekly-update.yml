@@ -22,7 +22,7 @@ jobs:
         run: pip install requests pandas
 
       - name: 데이터 수집 및 스코어링
-        run: python scripts/collect_and_score.py
+        run: python collect_and_score.py
         env:
           SEOUL_API_KEY: ${{ secrets.SEOUL_API_KEY }}
 
