@@ -31,6 +31,9 @@ jobs:
       - name: Git 상태 확인
         run: |
           git status
+          ls -lh
+          md5sum JobLens_Scores.csv
+          git diff --stat
 
       - name: CSV 자동 커밋
         run: |
