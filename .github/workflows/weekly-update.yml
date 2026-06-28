@@ -2,8 +2,8 @@ name: Daily Data Update
 
 on:
   schedule:
-    - cron: '0 1 * * *'   # 매일 오전 10시 (KST = UTC+9, 01:00 UTC)
-  workflow_dispatch:        # 수동 실행 버튼도 활성화
+    - cron: '0 1 * * *'   # 매일 오전 10시(KST)
+  workflow_dispatch:
 
 jobs:
   update-data:
@@ -19,28 +19,30 @@ jobs:
           python-version: '3.11'
 
       - name: 패키지 설치
-        run: pip install requests pandas
+        run: |
+          pip install requests pandas
 
       - name: 데이터 수집 및 스코어링
-        run: python scripts/collect_and_score.py
         env:
           SEOUL_API_KEY: ${{ secrets.SEOUL_API_KEY }}
-
-      - name: CSV 변경 여부 확인
-        id: check
         run: |
-          git diff --quiet JobLens_Scores.csv && echo "changed=false" >> $GITHUB_OUTPUT || echo "changed=true" >> $GITHUB_OUTPUT
+          python scripts/collect_and_score.py
+
+      - name: Git 상태 확인
+        run: |
+          git status
 
       - name: CSV 자동 커밋
-        if: steps.check.outputs.changed == 'true'
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
           git add JobLens_Scores.csv
-          git commit -m "data: 주간 채용공고 데이터 자동 업데이트 $(date '+%Y-%m-%d')"
+
+          git commit -m "data: 채용공고 자동 업데이트 $(date '+%Y-%m-%d')" || echo "No changes to commit"
+
           git push
 
       - name: Render 재배포 트리거
-        if: steps.check.outputs.changed == 'true'
         run: |
           curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
