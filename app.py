@@ -302,13 +302,18 @@ def favicon():
 
 @app.route("/api/status")
 def api_status():
-    """서버 상태 및 캐시 정보"""
+    logger.info(
+        f"STATUS 호출: total={0 if _cache['df'] is None else len(_cache['df'])}, "
+        f"source={_cache['data_source']}, "
+        f"loading={_cache['is_loading']}"
+    )
+
     return jsonify({
         "status": "ok",
         "last_updated": _cache["last_updated"].strftime("%Y-%m-%d %H:%M:%S") if _cache["last_updated"] else None,
         "total": len(_cache["df"]) if _cache["df"] is not None else 0,
         "is_loading": _cache["is_loading"],
-        "data_source": _cache["data_source"],   # "api" | "csv" | "none"
+        "data_source": _cache["data_source"],
     })
 
 
