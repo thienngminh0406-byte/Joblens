@@ -181,6 +181,8 @@ def refresh_cache(csv_first: bool = False):
     """캐시 갱신 (백그라운드 실행)
     csv_first=True: CSV 즉시 로드 후 API 백그라운드 갱신
     """
+    logger.info(f"refresh_cache 시작: csv_first={csv_first}")
+    
     if _cache["is_loading"]:
         return
     _cache["is_loading"] = True
@@ -194,6 +196,9 @@ def refresh_cache(csv_first: bool = False):
                 _cache["last_updated"] = datetime.now()
                 _cache["data_source"] = "csv"
                 _cache["is_loading"] = False
+                logger.info(
+                    f"캐시 저장 완료: total={len(_cache['df'])}, source={_cache['data_source']}"
+                )
                 logger.info(f"CSV 로드 완료: {len(df_csv)}건 → 웹사이트 즉시 서비스 가능")
                 # API 갱신은 별도 백그라운드 스레드로
                 threading.Thread(target=_refresh_from_api, daemon=True).start()
