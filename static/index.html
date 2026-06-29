@@ -850,7 +850,8 @@ async function loadStats(retryCount=0){
   setStatus(true);
   try{
     const statusRes = await apiFetch('/api/status');
-
+    console.log("statusRes =", statusRes);
+    
     // ✅ 데이터가 있으면 (CSV든 API든) 바로 로드 — is_loading 무시
     if(statusRes.total > 0){
       document.getElementById('apiBanner').classList.add('hidden');
