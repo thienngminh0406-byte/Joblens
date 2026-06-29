@@ -20,9 +20,15 @@ errorlog  = "-"
 
 
 # ── 서버 시작 시 백그라운드 데이터 수집 ──
-def on_starting(server):
-    """gunicorn 마스터 프로세스 시작 시 호출"""
+def post_worker_init(worker):
+    """워커 시작 후 캐시 초기화"""
     from app import refresh_cache
+    import threading
     import logging
-    logging.getLogger("app").info("gunicorn 시작 — CSV 즉시 로드 후 API 백그라운드 갱신")
-    threading.Thread(target=lambda: refresh_cache(csv_first=True), daemon=True).start()
+
+    logging.getLogger("app").info("Worker 시작 → CSV 캐시 초기화")
+
+    threading.Thread(
+        target=lambda: refresh_cache(csv_first=True),
+        daemon=True
+    ).start()
