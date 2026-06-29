@@ -474,7 +474,6 @@ def api_top100_stats():
 # 서버 시작
 # ──────────────────────────────────────
 if __name__ == "__main__":
-    logger.info("JobLens 서버 시작 — 초기 데이터 수집 중...")
-    # 서버 시작 시 백그라운드에서 데이터 수집
-    threading.Thread(target=refresh_cache, daemon=True).start()
+    logger.info("JobLens 서버 시작 — CSV 즉시 로드 후 API 백그라운드 갱신")
+    threading.Thread(target=lambda: refresh_cache(csv_first=True), daemon=True).start()
     app.run(host="0.0.0.0", port=5000, debug=False)
