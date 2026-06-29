@@ -491,6 +491,12 @@ def api_top100_stats():
 # ──────────────────────────────────────
 # 서버 시작
 # ──────────────────────────────────────
+@app.before_request
+def init_cache_once():
+    if _cache["df"] is None and not _cache["is_loading"]:
+        logger.info("첫 요청 → CSV 캐시 초기화")
+        refresh_cache(csv_first=True)
+        
 if __name__ == "__main__":
     logger.info("JobLens 서버 시작 — CSV 즉시 로드 후 API 백그라운드 갱신")
     threading.Thread(target=lambda: refresh_cache(csv_first=True), daemon=True).start()
