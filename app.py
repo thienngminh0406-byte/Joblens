@@ -229,9 +229,13 @@ def get_df(period: str = "all") -> pd.DataFrame:
     # 캐시 없거나 TTL 만료 → 백그라운드 갱신
     if _cache["df"] is None:
         # 첫 요청은 동기로 대기
-        refresh_cache()
+        refresh_cache(csv_first=True)
     elif (now - _cache["last_updated"]).seconds > CACHE_TTL:
-        threading.Thread(target=refresh_cache, daemon=True).start()
+        threading.Thread(
+            target=refresh_cache,
+            kwargs={"csv_first": True},
+            daemon=True
+        ).start()
 
     df = _cache["df"]
     if df is None or df.empty:
@@ -308,7 +312,11 @@ def api_refresh():
     """수동 캐시 갱신 트리거"""
     if _cache["is_loading"]:
         return jsonify({"status": "already_loading"})
-    threading.Thread(target=refresh_cache, daemon=True).start()
+    threading.Thread(
+        target=refresh_cache,
+        kwargs={"csv_first": True},
+        daemon=True
+    ).start()
     return jsonify({"status": "refresh_started"})
 
 
