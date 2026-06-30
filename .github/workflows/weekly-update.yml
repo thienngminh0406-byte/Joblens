@@ -2,7 +2,8 @@ name: Daily Data Update
 
 on:
   schedule:
-    - cron: '0 1 * * *'   # 매일 오전 10시(KST)
+    - cron: '0 0 * * *'   # 오전 9시(KST)
+    - cron: '0 3 * * *'   # 오후 12시(KST)
   workflow_dispatch:
 
 jobs:
