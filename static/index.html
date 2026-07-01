@@ -563,7 +563,7 @@ input[type=range]{flex:1;accent-color:var(--accent)}
     <div id="diagResult" style="display:none;margin-top:26px">
       <div class="sec-tag">진단 결과</div>
       <div class="dm" id="dm"></div>
-      <div class="dr"><div class="cb"><div class="ct">Market Benchmark</div><svg viewBox="0 0 260 240" width="100%" id="dRadar" viewBox="0 0 320 310" width="100%"></svg></div><div class="cb"><div class="ct">항목별 점수 비교</div><div id="dTable"></div></div></div>
+      <div class="dr"><div class="cb"><div class="ct">Market Benchmark</div><svg viewBox="-30 -30 420 410" width="100%" id="dRadar"></svg></div><div class="cb"><div class="ct">항목별 점수 비교</div><div id="dTable"></div></div></div>
       <div id="dAlerts"></div><div id="dSummary"></div>
     </div>
   </div>
@@ -577,7 +577,7 @@ input[type=range]{flex:1;accent-color:var(--accent)}
     <div id="aiResult" style="display:none;margin-top:20px">
       <div id="aiMetrics" style="margin-bottom:18px"></div>
       <div class="dr">
-        <div class="cb"><div class="ct">Benchmark Analysis</div><div class="cs">내 공고 vs 시장 평균</div><svg viewBox="0 0 300 290" width="100%" id="aiRadar"></svg></div>
+        <div class="cb"><div class="ct">Benchmark Analysis</div><div class="cs">내 공고 vs 시장 평균</div><svg viewBox="-30 -30 420 410" width="100%" id="aiRadar"></svg></div>
         <div class="cb" style="display:flex;flex-direction:column;gap:0">
           <div id="aiStrength"></div>
           <div id="aiWeak" style="margin-top:12px"></div>
@@ -1318,7 +1318,7 @@ function runDiag(){
       <div class="dmc"><div class="ml">시장 백분위</div><div class="mv">${pct.toFixed(1)}%</div></div>`;
     const myV=SCOLS.map(c=>sc[c]||0);
     const mkV=SLABELS.map(l=>mktAvgs[l]||0);
-    drawRadar('dRadar',myV,mkV,148,138);
+    drawRadar('dRadar',myV,mkV,180,165);
     document.getElementById('dTable').innerHTML=`<table class="sct"><thead><tr><th>항목</th><th>내 공고</th><th>시장평균</th><th>차이</th></tr></thead><tbody>${SLABELS.map((l,i)=>{const my=sc[SCOLS[i]].toFixed(1),mk=(mktAvgs[l]||0).toFixed(1),diff=(sc[SCOLS[i]]-(mktAvgs[l]||0)).toFixed(1),col=diff>=0?'var(--green)':'var(--red)';return`<tr><td>${l}</td><td style="color:var(--accent);font-weight:700">${my}</td><td>${mk}</td><td style="color:${col};font-weight:700">${diff>=0?'+':''}${diff}</td></tr>`;}).join('')}</tbody></table>`;
     const guide={직무상세성:'업무 범위, 필요 역량, 사용 도구, 협업 방식, 성과 기준을 더 구체적으로 작성하세요.',기업소개:'주요 사업, 조직 규모, 성장 단계, 팀 문화, 회사의 강점을 추가하세요.',급여품질:'시급/월급/연봉과 금액을 명확히 적고 기준 범위를 함께 제시하세요.',복지:'4대보험, 퇴직금, 식대, 교통비, 연차, 교육비, 상여금 등을 구체적으로 작성하세요.',근무조건:'근무지, 근무시간, 휴게시간, 주 근무일, 휴일 조건을 빠짐없이 적으세요.',출퇴근편의:'인근 지하철역명, 버스 정류장, 도보 거리, 통근버스/셔틀 여부를 공고에 작성하세요.'};
     const diffs=SLABELS.map((l,i)=>{return{label:l,diff:sc[SCOLS[i]]-(mktAvgs[l]||0)}});
@@ -1443,7 +1443,7 @@ function runAI(){
       <div class="dmc"><div class="ml">개선 필요</div><div class="mv" style="color:var(--red)">${wkItems.length}<span style="font-size:.9rem;color:var(--muted)">개</span></div></div>
     </div>`;
 
-  drawRadar('aiRadar',myV,mkV,148,138);
+  drawRadar('aiRadar',myV,mkV,180,165);
 
   // 강점 카드
   const strengthTips={
@@ -1643,7 +1643,7 @@ function drawPie(sid,lid,data,colors){
 }
 
 function drawRadar(sid,myV,mkV,cx,cy){
-  const n=6,r=74,mx=[30,20,20,15,20,10];
+  const n=6,r=100,mx=[30,20,20,15,20,10];
   const labelColors=['#4f7fff','#a78bfa','#00d68f','#ffcc00','#3b6eff','#ff4433'];
   function pt(i,v,m){const a=(i/n)*2*Math.PI-Math.PI/2,ratio=Math.min(1,v/m);return[cx+r*ratio*Math.cos(a),cy+r*ratio*Math.sin(a)];}
   function ptR(i,ratio){const a=(i/n)*2*Math.PI-Math.PI/2;return[cx+r*ratio*Math.cos(a),cy+r*ratio*Math.sin(a)];}
