@@ -1445,23 +1445,104 @@ function runAI(){
 
   drawRadar('aiRadar',myV,mkV,180,165);
 
-  // 강점 카드
-  const strengthTips={
-    직무상세성:'직무 설명이 구체적이어서 지원자가 업무를 명확히 이해할 수 있습니다.',
-    기업소개:'기업 정보가 충실하여 지원자의 신뢰도를 높이고 있습니다.',
-    급여품질:'급여 정보가 명확하게 제시되어 지원 결정에 긍정적으로 작용합니다.',
-    복지:'복지 혜택이 다양하게 명시되어 경쟁 공고 대비 매력도가 높습니다.',
-    근무조건:'근무 환경 정보가 상세하여 지원자의 불안감을 낮춥니다.',
-    출퇴근편의:'출퇴근 정보가 잘 명시되어 위치 관련 이탈을 줄입니다.',
-  };
-  const weakTips={
-    직무상세성:'담당 업무, 협업 방식, 사용 도구, 성과 기준을 단계별로 구체적으로 서술하세요.',
-    기업소개:'회사 설립연도, 주요 사업, 직원 수, 조직 문화, 성장 비전을 200자 이상 작성하세요.',
-    급여품질:'"연봉 3,500~4,500만원 (경력 차등)" 처럼 구체적 범위와 인센티브 구조를 명시하세요.',
-    복지:'식대 금액, 교통비, 연차 일수, 교육비 한도 등 실질 혜택을 항목별로 나열하세요.',
-    근무조건:'근무지 주소, 근무시간, 휴게시간, 주 근무일, 휴일 조건을 모두 기재하세요.',
-    출퇴근편의:'"2호선 강남역 3번 출구 도보 5분" 처럼 인근 지하철역과 도보 거리를 명시하세요.',
-  };
+  // ── 공고 텍스트 기반 개별 분석 ──
+  const dutyText = (j.DTY_CN||'').trim();
+  const bsnsText = (j.BSNS_SUMRY_CN||'').trim();
+  const welfText = (j.RET_GRANTS_NM||j.JO_FEINSR_SBSCRB_NM||'').trim();
+  const addrText = (j.WORK_PARAR_BASS_ADRES_CN||'').trim();
+  const wageText = (j.HOPE_WAGE||'').trim();
+  const subwayText = (j.SUBWAY_NM||'').trim();
+  const companyName = (j.CMPNY_NM||'이 기업').trim();
+  const jobTitle = (j.JO_SJ||'').trim();
+
+  // 직무 키워드 추출
+  const dutyKws=['업무','개발','분석','관리','기획','운영','협업','마케팅','영업','설계','제조','서비스','지원','처리','검토','구축','운영','유지'];
+  const foundDuty=dutyKws.filter(k=>dutyText.includes(k)).slice(0,4);
+
+  // 기업 유형 추출
+  const bsnsKws=['글로벌','스타트업','중견','대기업','코스피','코스닥','벤처','IT','제조','유통','금융','의료','건설','물류','교육'];
+  const foundBsns=bsnsKws.filter(k=>bsnsText.includes(k));
+  const companyChar=foundBsns.length?foundBsns.slice(0,2).join('·')+' 기업':'공공기관/기업';
+
+  // 복지 키워드
+  const welfKws=['식대','교통','연차','교육','건강검진','성과급','인센티브','재택','유연','상여','경조사','포인트'];
+  const foundWelf=welfKws.filter(k=>welfText.includes(k));
+
+  // 항목별 공고 맞춤 강점 설명 생성
+  function getStrengthDesc(label){
+    if(label==='직무상세성'){
+      return foundDuty.length
+        ? `${companyName}의 공고에는 <b>${foundDuty.join(', ')}</b> 등 구체적인 직무 키워드가 포함되어 지원자가 업무를 명확히 파악할 수 있습니다.`
+        : `직무 내용이 상세히 기재되어(${dutyText.length}자) 지원자가 담당 업무를 이해하기 용이합니다.`;
+    }
+    if(label==='기업소개'){
+      return foundBsns.length
+        ? `${companyChar}으로 소개된 ${companyName}의 기업 정보가 충실하여 지원 동기 형성에 유리합니다.`
+        : `기업 소개 정보가 ${bsnsText.length}자 이상 충실히 작성되어 지원자 신뢰도를 높입니다.`;
+    }
+    if(label==='급여품질'){
+      return wageText
+        ? `급여 정보(<b>${wageText}</b>)가 명확히 제시되어 지원 결정에 긍정적으로 작용합니다.`
+        : '급여 정보가 구체적으로 기재되어 지원자의 기대치 조율이 용이합니다.';
+    }
+    if(label==='복지'){
+      return foundWelf.length
+        ? `<b>${foundWelf.slice(0,3).join(', ')}</b> 등 ${foundWelf.length}가지 복지 혜택이 명시되어 경쟁 공고 대비 매력도가 높습니다.`
+        : '복지 혜택이 다양하게 명시되어 지원자 만족도를 높입니다.';
+    }
+    if(label==='근무조건'){
+      return addrText
+        ? `근무지(<b>${addrText.slice(0,20)}</b>) 및 근무 환경 정보가 상세하여 지원자의 불안감을 낮춥니다.`
+        : '근무시간, 휴일 등 근무 조건이 상세히 기재되어 있습니다.';
+    }
+    if(label==='출퇴근편의'){
+      return subwayText
+        ? `<b>${subwayText}</b> 인근에 위치하여 출퇴근 접근성이 우수합니다.`
+        : addrText
+          ? `근무지(${addrText.slice(0,15)}) 정보가 명시되어 지원자의 출퇴근 계획 수립에 도움이 됩니다.`
+          : '출퇴근 편의 정보가 잘 제공되어 위치 관련 이탈을 줄입니다.';
+    }
+    return '';
+  }
+
+  // 항목별 공고 맞춤 약점 설명 생성
+  function getWeakDesc(label){
+    if(label==='직무상세성'){
+      const len=dutyText.length;
+      return len<50
+        ? `현재 직무 내용이 ${len}자로 매우 간략합니다. 담당 업무, 협업 방식, 필요 역량, 성과 기준을 단계별로 구체적으로 서술하면 점수가 크게 올라갑니다.`
+        : `직무 키워드가 부족합니다. "${foundDuty.join(', ')||'협업, 성과'}" 외에 사용 도구, 협업 부서, 측정 지표 등을 추가하세요.`;
+    }
+    if(label==='기업소개'){
+      const len=bsnsText.length;
+      return len<30
+        ? `${companyName}의 기업 소개가 ${len}자로 너무 짧습니다. 사업 분야, 조직 규모, 문화, 성장 비전을 200자 이상 작성하세요.`
+        : '기업 특성 키워드(규모, 사업 분야, 문화)가 부족합니다. 구체적인 회사 정보를 추가하면 지원자 신뢰도가 높아집니다.';
+    }
+    if(label==='급여품질'){
+      return wageText
+        ? `현재 급여(<b>${wageText}</b>)가 협의/미명시 상태입니다. "연봉 3,500~4,500만원(경력 차등)" 처럼 구체적인 범위를 제시하면 만점에 가까워집니다.`
+        : '급여 정보가 없습니다. 시급/월급/연봉과 금액 범위를 명시하면 지원율이 크게 높아집니다.';
+    }
+    if(label==='복지'){
+      return foundWelf.length
+        ? `현재 ${foundWelf.join(', ')} 등 ${foundWelf.length}가지가 명시되어 있습니다. 교육비 지원, 건강검진, 경조사비 등을 추가하면 복지 점수가 올라갑니다.`
+        : '복지 혜택 정보가 없습니다. 식대, 교통비, 연차, 교육비, 상여금 등을 항목별로 작성하세요.';
+    }
+    if(label==='근무조건'){
+      return addrText
+        ? `근무지(${addrText.slice(0,15)})는 있지만 근무시간·휴일·주 근무일 정보가 부족합니다. 빠짐없이 기재하면 근무조건 점수가 올라갑니다.`
+        : '근무지, 근무시간, 휴일 조건이 모두 없습니다. 이 정보들을 추가하면 20점 만점에 가까워집니다.';
+    }
+    if(label==='출퇴근편의'){
+      return subwayText
+        ? `지하철역(${subwayText}) 정보가 있지만 지원 방법, 담당자 연락처가 부족합니다.`
+        : addrText
+          ? `근무지(${addrText.slice(0,15)})는 있으나 인근 지하철역명과 도보 거리를 추가하면 출퇴근편의 점수가 크게 상승합니다.`
+          : '지원 방법, 담당자 연락처, 인근 지하철역 정보가 없습니다. 이 3가지만 추가해도 점수가 크게 올라갑니다.';
+    }
+    return '';
+  }
 
   document.getElementById('aiStrength').innerHTML=`
     <div style="font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--green);margin-bottom:10px;display:flex;align-items:center;gap:6px"><span>✅</span> 주요 강점 (${strItems.length}개)</div>
@@ -1477,7 +1558,7 @@ function runAI(){
         <div style="height:3px;background:rgba(255,255,255,.06);border-radius:100px;overflow:hidden;margin-bottom:8px">
           <div style="height:100%;width:${Math.round((d.my/d.max)*100)}%;background:var(--green);border-radius:100px"></div>
         </div>
-        <p style="font-size:.76rem;color:rgba(255,255,255,.55);line-height:1.6">${strengthTips[d.label]||''}</p>
+        <p style="font-size:.76rem;color:rgba(255,255,255,.6);line-height:1.65">${getStrengthDesc(d.label)}</p>
       </div>`).join('')
     :`<div style="font-size:.78rem;color:var(--muted);padding:12px">시장 평균보다 높은 항목이 없습니다.</div>`}`;
 
@@ -1496,7 +1577,7 @@ function runAI(){
         <div style="height:3px;background:rgba(255,255,255,.06);border-radius:100px;overflow:hidden;margin-bottom:8px">
           <div style="height:100%;width:${Math.round((d.my/d.max)*100)}%;background:linear-gradient(90deg,var(--red),var(--yellow));border-radius:100px"></div>
         </div>
-        <p style="font-size:.76rem;color:rgba(255,255,255,.55);line-height:1.6">💡 ${weakTips[d.label]||''}</p>
+        <p style="font-size:.76rem;color:rgba(255,255,255,.6);line-height:1.65">💡 ${getWeakDesc(d.label)}</p>
       </div>`;
     }).join('')
     :`<div style="font-size:.78rem;color:var(--muted);padding:12px">모든 항목이 시장 평균 이상입니다!</div>`}`;
