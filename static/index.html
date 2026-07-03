@@ -482,15 +482,15 @@ input[type=range]{flex:1;accent-color:var(--accent)}
       </div>
     </div>
 
-    <!-- 연봉 vs 종합점수 산점도 -->
-    <div class="sec-tag">SCATTER ANALYSIS</div>
-    <div class="full-card">
-      <div class="ct">급여 vs 종합점수 산점도 분석</div>
-      <div class="cs">급여 수준과 공고 품질 점수 사이의 관계를 분석합니다</div>
-      <div style="display:grid;grid-template-columns:1fr 220px;gap:28px;align-items:start;margin-top:16px">
-        <svg viewBox="0 0 500 220" width="100%" id="scatterSvg" style="overflow:visible;display:block;max-width:640px"></svg>
-        <div style="display:flex;flex-direction:column;gap:8px">
-          <div style="font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:4px">분석 해석</div>
+    <!-- 연봉 vs 종합점수 산점도 / 항목 간 상관관계 -->
+    <div class="sec-tag">SCATTER & CORRELATION</div>
+    <div class="chart-row" style="grid-template-columns:1fr 1fr;align-items:stretch">
+      <div class="cb">
+        <div class="ct">급여 vs 종합점수 산점도 분석</div>
+        <div class="cs">급여 수준과 공고 품질 점수 사이의 관계를 분석합니다</div>
+        <svg viewBox="0 0 500 220" width="100%" id="scatterSvg" style="overflow:visible;display:block;max-width:100%;margin-top:16px"></svg>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:14px">
+          <div style="font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:2px">분석 해석</div>
           <div style="background:rgba(59,110,255,.08);border:1px solid rgba(59,110,255,.2);border-radius:10px;padding:12px">
             <div style="font-size:.7rem;font-weight:700;color:var(--accent);margin-bottom:4px">📈 상관관계</div>
             <div id="scatterCorr" style="font-size:.75rem;color:var(--muted2);line-height:1.6">분석 중...</div>
@@ -505,14 +505,11 @@ input[type=range]{flex:1;accent-color:var(--accent)}
           </div>
         </div>
       </div>
-    </div>
-
-    <!-- 항목 간 상관관계 -->
-    <div class="sec-tag">CORRELATION</div>
-    <div class="full-card">
-      <div class="ct">항목별 영향요인 상관관계 분석</div>
-      <div class="cs">각 항목이 종합점수에 미치는 영향도를 분석합니다</div>
-      <div style="margin-top:16px;overflow-x:auto;text-align:center" id="corrMatrix"></div>
+      <div class="cb">
+        <div class="ct">항목별 영향요인 상관관계 분석</div>
+        <div class="cs">각 항목이 종합점수에 미치는 영향도를 분석합니다</div>
+        <div style="margin-top:16px;overflow-x:auto;text-align:center" id="corrMatrix"></div>
+      </div>
     </div>
 
   </div>
