@@ -404,7 +404,7 @@ input[type=range]{flex:1;accent-color:var(--accent)}
   </div>
 </div>
 
-<div class="bq"><p class="bq-text">채용공고는 기업의 <em>첫 인상</em>입니다.<br>데이터는 말합니다 — 대부분이 <em>기회를 놓치고</em> 있다고.</p><p class="bq-sub">서울시 공공 채용공고 실시간 분석 · JobLens</p></div>
+<div class="bq"><p class="bq-text">채용공고는 기업의 <em>첫인상</em>입니다.<br>하지만 데이터를 보면, 대부분의 공고가 그 <em>기회를 놓치고</em> 있습니다.</p><p class="bq-sub">서울시 공공 채용공고 실시간 분석 · JobLens</p></div>
 
 <!-- APP -->
 <div class="app-section" id="appSection">
@@ -1115,8 +1115,8 @@ function renderScatter(){
     const emptyEl=document.getElementById('scatterEmptyState');
     emptyEl.style.display='block';
     document.getElementById('scatterEmptyDesc').innerHTML=wageTextJobs
-      ? `전체 ${totalJobs.toLocaleString()}건 중 급여 항목이 입력된 공고는 ${wageTextJobs.toLocaleString()}건(${pct}%)이지만, "협의" 등 구체적 금액이 없어 급여-점수 상관관계를 계산할 수 없습니다.`
-      : `수집된 ${totalJobs.toLocaleString()}건 중 급여 금액을 명시한 공고가 없어 급여-점수 상관관계를 계산할 수 없습니다.`;
+      ? `분석 샘플 ${totalJobs.toLocaleString()}건 중 급여 항목이 입력된 공고는 ${wageTextJobs.toLocaleString()}건(${pct}%)이지만, "협의" 등 구체적 금액이 없어 급여-점수 상관관계를 계산할 수 없습니다.`
+      : `분석 샘플 ${totalJobs.toLocaleString()}건 중 급여 금액을 명시한 공고가 없어 급여-점수 상관관계를 계산할 수 없습니다.`;
     document.getElementById('scatterCorr').innerHTML=`구체적인 급여 금액을 명시한 공고가 부족해 상관계수를 계산할 수 없습니다. 금액이 명시된 공고가 늘어나면 자동으로 분석이 표시됩니다.`;
     return;
   }
