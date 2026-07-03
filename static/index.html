@@ -489,6 +489,11 @@ input[type=range]{flex:1;accent-color:var(--accent)}
         <div class="ct">급여 vs 종합점수 산점도 분석</div>
         <div class="cs">급여 수준과 공고 품질 점수 사이의 관계를 분석합니다</div>
         <svg viewBox="0 0 500 220" width="100%" id="scatterSvg" style="overflow:visible;display:block;max-width:100%;margin-top:16px"></svg>
+        <div id="scatterEmptyState" style="display:none;margin-top:16px;padding:28px 20px;text-align:center;background:rgba(255,255,255,.02);border:1px dashed rgba(255,255,255,.12);border-radius:12px">
+          <div style="font-size:1.8rem;margin-bottom:10px;opacity:.55">💰</div>
+          <div style="font-size:.85rem;font-weight:700;color:rgba(255,255,255,.7);margin-bottom:6px">급여 정보가 포함된 공고가 부족합니다</div>
+          <div id="scatterEmptyDesc" style="font-size:.75rem;color:var(--muted);line-height:1.65;max-width:340px;margin:0 auto"></div>
+        </div>
         <div style="display:flex;flex-direction:column;gap:8px;margin-top:14px">
           <div style="font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:2px">분석 해석</div>
           <div style="background:rgba(59,110,255,.08);border:1px solid rgba(59,110,255,.2);border-radius:10px;padding:12px">
@@ -1102,7 +1107,21 @@ function renderScatter(){
     if(wage<1000||wage>20000||score<10)return null;
     return{x:Math.round(wage/100),y:score,grade:j.등급||'D'};
   }).filter(Boolean);
-  if(!pts.length){document.getElementById('scatterSvg').innerHTML='<text x="250" y="110" text-anchor="middle" fill="rgba(255,255,255,.3)" font-size="12" font-family="Pretendard,sans-serif">급여 데이터 부족</text>';return;}
+  if(!pts.length){
+    document.getElementById('scatterSvg').style.display='none';
+    const totalJobs=marketJobsCache.length;
+    const wageTextJobs=marketJobsCache.filter(j=>(j.HOPE_WAGE||'').trim()).length;
+    const pct=totalJobs?Math.round(wageTextJobs/totalJobs*100):0;
+    const emptyEl=document.getElementById('scatterEmptyState');
+    emptyEl.style.display='block';
+    document.getElementById('scatterEmptyDesc').innerHTML=wageTextJobs
+      ? `전체 ${totalJobs.toLocaleString()}건 중 급여 항목이 입력된 공고는 ${wageTextJobs.toLocaleString()}건(${pct}%)이지만, "협의" 등 구체적 금액이 없어 급여-점수 상관관계를 계산할 수 없습니다.`
+      : `수집된 ${totalJobs.toLocaleString()}건 중 급여 금액을 명시한 공고가 없어 급여-점수 상관관계를 계산할 수 없습니다.`;
+    document.getElementById('scatterCorr').innerHTML=`구체적인 급여 금액을 명시한 공고가 부족해 상관계수를 계산할 수 없습니다. 금액이 명시된 공고가 늘어나면 자동으로 분석이 표시됩니다.`;
+    return;
+  }
+  document.getElementById('scatterSvg').style.display='block';
+  document.getElementById('scatterEmptyState').style.display='none';
   const xs=pts.map(p=>p.x),ys=pts.map(p=>p.y);
   const minX=Math.min(...xs),maxX=Math.max(...xs);
   const minY=Math.min(...ys),maxY=Math.max(...ys);
