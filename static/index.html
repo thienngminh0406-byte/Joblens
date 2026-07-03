@@ -202,7 +202,9 @@ td.bold{color:#fff;font-weight:600}
 .btn-diag:hover{transform:translateY(-2px);box-shadow:0 0 36px rgba(59,110,255,.5)}
 .dm{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line2);border-radius:13px;overflow:hidden;margin-bottom:16px}
 .dmc{background:var(--bg2);padding:18px 16px}
-.dr{display:grid;grid-template-columns:340px 1fr;gap:1px;background:var(--line);border:1px solid var(--line2);border-radius:13px;overflow:hidden;margin-bottom:16px}
+.dr{display:grid;grid-template-columns:minmax(460px,560px) 1fr;gap:1px;background:var(--line);border:1px solid var(--line2);border-radius:13px;overflow:hidden;margin-bottom:16px}
+.dr .cb:first-child{display:flex;flex-direction:column}
+.dr .cb:first-child svg{flex:1;min-height:420px}
 .sct{width:100%;border-collapse:collapse;font-size:.76rem}
 .sct th{text-align:left;color:var(--muted);font-weight:700;font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;padding:6px 4px;border-bottom:1px solid var(--line)}
 .sct td{padding:7px 4px;border-bottom:1px solid rgba(255,255,255,.04);color:var(--muted2)}
@@ -563,7 +565,7 @@ input[type=range]{flex:1;accent-color:var(--accent)}
     <div id="diagResult" style="display:none;margin-top:26px">
       <div class="sec-tag">진단 결과</div>
       <div class="dm" id="dm"></div>
-      <div class="dr"><div class="cb"><div class="ct">Market Benchmark</div><svg viewBox="0 0 260 240" width="100%" id="dRadar" viewBox="0 0 320 310" width="100%"></svg></div><div class="cb"><div class="ct">항목별 점수 비교</div><div id="dTable"></div></div></div>
+      <div class="dr"><div class="cb"><div class="ct">Market Benchmark</div><svg viewBox="0 0 440 440" width="100%" id="dRadar"></svg></div><div class="cb"><div class="ct">항목별 점수 비교</div><div id="dTable"></div></div></div>
       <div id="dAlerts"></div><div id="dSummary"></div>
     </div>
   </div>
@@ -577,7 +579,7 @@ input[type=range]{flex:1;accent-color:var(--accent)}
     <div id="aiResult" style="display:none;margin-top:20px">
       <div id="aiMetrics" style="margin-bottom:18px"></div>
       <div class="dr">
-        <div class="cb"><div class="ct">Benchmark Analysis</div><div class="cs">내 공고 vs 시장 평균</div><svg viewBox="0 0 300 290" width="100%" id="aiRadar"></svg></div>
+        <div class="cb"><div class="ct">Benchmark Analysis</div><div class="cs">내 공고 vs 시장 평균</div><svg viewBox="0 0 440 440" width="100%" id="aiRadar"></svg></div>
         <div class="cb" style="display:flex;flex-direction:column;gap:0">
           <div id="aiStrength"></div>
           <div id="aiWeak" style="margin-top:12px"></div>
@@ -1318,7 +1320,7 @@ function runDiag(){
       <div class="dmc"><div class="ml">시장 백분위</div><div class="mv">${pct.toFixed(1)}%</div></div>`;
     const myV=SCOLS.map(c=>sc[c]||0);
     const mkV=SLABELS.map(l=>mktAvgs[l]||0);
-    drawRadar('dRadar',myV,mkV,148,138);
+    drawRadar('dRadar',myV,mkV,220,205);
     document.getElementById('dTable').innerHTML=`<table class="sct"><thead><tr><th>항목</th><th>내 공고</th><th>시장평균</th><th>차이</th></tr></thead><tbody>${SLABELS.map((l,i)=>{const my=sc[SCOLS[i]].toFixed(1),mk=(mktAvgs[l]||0).toFixed(1),diff=(sc[SCOLS[i]]-(mktAvgs[l]||0)).toFixed(1),col=diff>=0?'var(--green)':'var(--red)';return`<tr><td>${l}</td><td style="color:var(--accent);font-weight:700">${my}</td><td>${mk}</td><td style="color:${col};font-weight:700">${diff>=0?'+':''}${diff}</td></tr>`;}).join('')}</tbody></table>`;
     const guide={직무상세성:'업무 범위, 필요 역량, 사용 도구, 협업 방식, 성과 기준을 더 구체적으로 작성하세요.',기업소개:'주요 사업, 조직 규모, 성장 단계, 팀 문화, 회사의 강점을 추가하세요.',급여품질:'시급/월급/연봉과 금액을 명확히 적고 기준 범위를 함께 제시하세요.',복지:'4대보험, 퇴직금, 식대, 교통비, 연차, 교육비, 상여금 등을 구체적으로 작성하세요.',근무조건:'근무지, 근무시간, 휴게시간, 주 근무일, 휴일 조건을 빠짐없이 적으세요.',출퇴근편의:'인근 지하철역명, 버스 정류장, 도보 거리, 통근버스/셔틀 여부를 공고에 작성하세요.'};
     const diffs=SLABELS.map((l,i)=>{return{label:l,diff:sc[SCOLS[i]]-(mktAvgs[l]||0)}});
@@ -1430,6 +1432,51 @@ function runAI(){
   const strItems=sorted.filter(d=>d.diff>0);
   const wkItems=sorted.filter(d=>d.diff<0).reverse();
 
+  // ── 공고 실제 데이터 추출 (강점/개선 카드를 공고마다 다르게 만들기 위함) ──
+  const dutyText=(j.DTY_CN||'').trim();
+  const bsnsText=(j.BSNS_SUMRY_CN||'').trim();
+  const welfText=(j.RET_GRANTS_NM||j.JO_FEINSR_SBSCRB_NM||'').trim();
+  const addrText=(j.WORK_PARAR_BASS_ADRES_CN||'').trim();
+  const wageText=(j.HOPE_WAGE||'').trim();
+  const subwayText=(j.SUBWAY_NM||'').trim();
+  const workTimeText=(j.WORK_TIME_NM||'').trim();
+  const holidayText=(j.HOLIDAY_NM||'').trim();
+  const dutyKws=['업무','개발','분석','관리','기획','운영','협업','마케팅','영업','설계','제조','서비스','지원','처리','검토'];
+  const foundDuty=dutyKws.filter(k=>dutyText.includes(k));
+  const bsnsKws=['글로벌','스타트업','중견','대기업','코스피','코스닥','벤처','IT','제조','유통','금융','의료','건설'];
+  const foundBsns=bsnsKws.filter(k=>bsnsText.includes(k));
+  const companyChar=foundBsns.length?foundBsns.slice(0,2).join('·')+' 기업':'공공기관/기업';
+  const welfKws=['식대','교통','연차','교육','건강검진','성과급','인센티브','재택','유연','상여','포인트'];
+  const foundWelf=welfKws.filter(k=>welfText.includes(k));
+  const cName=j.CMPNY_NM||'이 공고';
+
+  // 항목별 코멘트를 공고의 실제 텍스트/수치로 생성 — 같은 등급이어도 회사마다 다른 문장이 나옵니다
+  function tipFor(label,item,isStrength){
+    const diffTxt=Math.abs(item.diff).toFixed(1);
+    switch(label){
+      case '직무상세성':
+        if(isStrength)return dutyText.length?`<b style="color:#fff">${cName}</b>의 직무 설명은 ${dutyText.length}자 분량${foundDuty.length?`이며 <b style="color:#fff">${foundDuty.slice(0,4).join(', ')}</b> 등 ${foundDuty.length}개 키워드를 포함해`:''} 시장 평균 대비 +${diffTxt}pt 높습니다.`:`직무 설명이 시장 평균보다 +${diffTxt}pt 높게 평가되었습니다.`;
+        return dutyText.length?`직무 설명이 ${dutyText.length}자로 짧고 핵심 키워드가 ${foundDuty.length}개뿐입니다. 담당 업무·협업 방식·사용 도구를 더 구체적으로 추가하세요.`:`직무 설명이 비어 있어 시장 평균보다 ${diffTxt}pt 낮습니다. 담당 업무를 최소 3문장 이상 작성하세요.`;
+      case '기업소개':
+        if(isStrength)return `<b style="color:#fff">${companyChar}</b>${foundBsns.length?` (${foundBsns.join(', ')})`:''} 특성이 잘 드러나 시장 평균 대비 +${diffTxt}pt 높습니다.`;
+        return bsnsText.length?`기업 소개가 ${bsnsText.length}자로 짧아 회사 규모·비전 정보가 부족합니다. 시장 평균보다 ${diffTxt}pt 낮습니다.`:`기업 소개가 비어 있어 지원자 신뢰도가 낮아집니다 (시장 평균보다 ${diffTxt}pt 낮음).`;
+      case '급여품질':
+        if(isStrength)return wageText?`급여 정보가 "<b style="color:#fff">${wageText}</b>"로 명확하게 제시되어 시장 평균 대비 +${diffTxt}pt 높습니다.`:`급여 정보가 시장 평균보다 +${diffTxt}pt 높게 평가되었습니다.`;
+        return wageText?`급여가 "${wageText}"로 표기되어 있으나 구체적 금액 범위가 없어 시장 평균보다 ${diffTxt}pt 낮습니다.`:`급여 정보가 없어 시장 평균보다 ${diffTxt}pt 낮습니다. 연봉 범위를 명시하세요.`;
+      case '복지':
+        if(isStrength)return foundWelf.length?`<b style="color:#fff">${foundWelf.slice(0,4).join(', ')}</b> 등 ${foundWelf.length}개 복지 항목이 명시되어 시장 평균 대비 +${diffTxt}pt 높습니다.`:`복지 정보가 시장 평균 대비 +${diffTxt}pt 높게 평가되었습니다.`;
+        return `복지 항목이 ${foundWelf.length}개로 시장 평균보다 ${diffTxt}pt 적습니다. 식대·교통비·연차 등을 구체적으로 추가하세요.`;
+      case '근무조건':
+        if(isStrength)return (workTimeText||holidayText)?`근무시간(${workTimeText||'-'}), 휴일(${holidayText||'-'}) 정보가 명확하여 시장 평균 대비 +${diffTxt}pt 높습니다.`:`근무 조건이 시장 평균 대비 +${diffTxt}pt 높게 평가되었습니다.`;
+        {const missing=[];if(!workTimeText)missing.push('근무시간');if(!holidayText)missing.push('휴일');if(!addrText)missing.push('근무지 주소');
+        return missing.length?`${missing.join('·')} 정보가 누락되어 시장 평균보다 ${diffTxt}pt 낮습니다.`:`근무 조건 정보를 더 구체적으로 보완하면 ${diffTxt}pt 상승 여지가 있습니다.`;}
+      case '출퇴근편의':
+        if(isStrength)return subwayText?`<b style="color:#fff">${subwayText}</b> 인근에 위치해 시장 평균 대비 +${diffTxt}pt 높습니다.`:`출퇴근 정보가 시장 평균 대비 +${diffTxt}pt 높게 평가되었습니다.`;
+        return subwayText?`지하철역 정보는 있으나 도보 거리 등 세부 정보가 부족해 시장 평균보다 ${diffTxt}pt 낮습니다.`:`지하철역·버스 정류장 정보가 없어 시장 평균보다 ${diffTxt}pt 낮습니다.`;
+      default:return '';
+    }
+  }
+
   // 메트릭 카드
   const total=parseFloat(j.종합점수)||0;
   const mktAvgTotal=statsCache?Object.values(statsCache.score_cols_avg).reduce((a,b)=>a+b,0):0;
@@ -1443,25 +1490,7 @@ function runAI(){
       <div class="dmc"><div class="ml">개선 필요</div><div class="mv" style="color:var(--red)">${wkItems.length}<span style="font-size:.9rem;color:var(--muted)">개</span></div></div>
     </div>`;
 
-  drawRadar('aiRadar',myV,mkV,148,138);
-
-  // 강점 카드
-  const strengthTips={
-    직무상세성:'직무 설명이 구체적이어서 지원자가 업무를 명확히 이해할 수 있습니다.',
-    기업소개:'기업 정보가 충실하여 지원자의 신뢰도를 높이고 있습니다.',
-    급여품질:'급여 정보가 명확하게 제시되어 지원 결정에 긍정적으로 작용합니다.',
-    복지:'복지 혜택이 다양하게 명시되어 경쟁 공고 대비 매력도가 높습니다.',
-    근무조건:'근무 환경 정보가 상세하여 지원자의 불안감을 낮춥니다.',
-    출퇴근편의:'출퇴근 정보가 잘 명시되어 위치 관련 이탈을 줄입니다.',
-  };
-  const weakTips={
-    직무상세성:'담당 업무, 협업 방식, 사용 도구, 성과 기준을 단계별로 구체적으로 서술하세요.',
-    기업소개:'회사 설립연도, 주요 사업, 직원 수, 조직 문화, 성장 비전을 200자 이상 작성하세요.',
-    급여품질:'"연봉 3,500~4,500만원 (경력 차등)" 처럼 구체적 범위와 인센티브 구조를 명시하세요.',
-    복지:'식대 금액, 교통비, 연차 일수, 교육비 한도 등 실질 혜택을 항목별로 나열하세요.',
-    근무조건:'근무지 주소, 근무시간, 휴게시간, 주 근무일, 휴일 조건을 모두 기재하세요.',
-    출퇴근편의:'"2호선 강남역 3번 출구 도보 5분" 처럼 인근 지하철역과 도보 거리를 명시하세요.',
-  };
+  drawRadar('aiRadar',myV,mkV,220,205);
 
   document.getElementById('aiStrength').innerHTML=`
     <div style="font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--green);margin-bottom:10px;display:flex;align-items:center;gap:6px"><span>✅</span> 주요 강점 (${strItems.length}개)</div>
@@ -1477,7 +1506,7 @@ function runAI(){
         <div style="height:3px;background:rgba(255,255,255,.06);border-radius:100px;overflow:hidden;margin-bottom:8px">
           <div style="height:100%;width:${Math.round((d.my/d.max)*100)}%;background:var(--green);border-radius:100px"></div>
         </div>
-        <p style="font-size:.76rem;color:rgba(255,255,255,.55);line-height:1.6">${strengthTips[d.label]||''}</p>
+        <p style="font-size:.76rem;color:rgba(255,255,255,.55);line-height:1.6">${tipFor(d.label,d,true)}</p>
       </div>`).join('')
     :`<div style="font-size:.78rem;color:var(--muted);padding:12px">시장 평균보다 높은 항목이 없습니다.</div>`}`;
 
@@ -1496,39 +1525,19 @@ function runAI(){
         <div style="height:3px;background:rgba(255,255,255,.06);border-radius:100px;overflow:hidden;margin-bottom:8px">
           <div style="height:100%;width:${Math.round((d.my/d.max)*100)}%;background:linear-gradient(90deg,var(--red),var(--yellow));border-radius:100px"></div>
         </div>
-        <p style="font-size:.76rem;color:rgba(255,255,255,.55);line-height:1.6">💡 ${weakTips[d.label]||''}</p>
+        <p style="font-size:.76rem;color:rgba(255,255,255,.55);line-height:1.6">💡 ${tipFor(d.label,d,false)}</p>
       </div>`;
     }).join('')
     :`<div style="font-size:.78rem;color:var(--muted);padding:12px">모든 항목이 시장 평균 이상입니다!</div>`}`;
 
-  // ── 공고 텍스트 기반 개별 분석 ──
-  const dutyText = (j.DTY_CN||'').trim();
-  const bsnsText = (j.BSNS_SUMRY_CN||'').trim();
-  const welfText = (j.RET_GRANTS_NM||j.JO_FEINSR_SBSCRB_NM||'').trim();
-  const addrText = (j.WORK_PARAR_BASS_ADRES_CN||'').trim();
-  const wageText = (j.HOPE_WAGE||'').trim();
-  const subwayText = (j.SUBWAY_NM||'').trim();
-
-  // 직무 키워드 추출 (상위 5개)
-  const dutyKws = ['업무','개발','분석','관리','기획','운영','협업','마케팅','영업','설계','제조','서비스','지원','처리','검토'];
-  const foundDuty = dutyKws.filter(k=>dutyText.includes(k)).slice(0,4);
-
-  // 기업 특징 추출
-  const bsnsKws = ['글로벌','스타트업','중견','대기업','코스피','코스닥','벤처','IT','제조','유통','금융','의료','건설'];
-  const foundBsns = bsnsKws.filter(k=>bsnsText.includes(k));
-  const companyChar = foundBsns.length ? foundBsns.slice(0,2).join('·')+' 기업' : '공공기관/기업';
-
-  // 복지 키워드
-  const welfKws = ['식대','교통','연차','교육','건강검진','성과급','인센티브','재택','유연'];
-  const foundWelf = welfKws.filter(k=>welfText.includes(k));
-
+  // ── 공고 텍스트 기반 개별 분석 (데이터는 위에서 이미 추출됨) ──
   const topStr=strItems.slice(0,2).map(d=>d.label).join(', ')||'없음';
   const topWk=wkItems.slice(0,2).map(d=>d.label).join(', ')||'없음';
   const qualityLevel=total>=80?'상위권 우수 공고':total>=70?'평균 이상 공고':total>=55?'평균 수준 공고':'개선이 필요한 공고';
 
   // 공고별 맞춤 인사이트 생성
   const dutyInsight = dutyText.length > 50
-    ? `직무 내용에 <b style="color:#fff">${foundDuty.length?foundDuty.join(', ')+'등 키워드':'다양한 업무 내용'}</b>이 포함되어 있어 지원자가 구체적인 업무를 파악하기 ${strItems.find(d=>d.label==='직무상세성')?'용이합니다':'어렵습니다'}.`
+    ? `직무 내용에 <b style="color:#fff">${foundDuty.length?foundDuty.slice(0,4).join(', ')+' 등 키워드':'다양한 업무 내용'}</b>이 포함되어 있어 지원자가 구체적인 업무를 파악하기 ${strItems.find(d=>d.label==='직무상세성')?'용이합니다':'어렵습니다'}.`
     : `직무 내용이 간략하게 기재되어 있어 구체적인 담당 업무 서술이 필요합니다.`;
 
   const welfInsight = foundWelf.length >= 3
@@ -1643,7 +1652,7 @@ function drawPie(sid,lid,data,colors){
 }
 
 function drawRadar(sid,myV,mkV,cx,cy){
-  const n=6,r=74,mx=[30,20,20,15,20,10];
+  const n=6,r=140,mx=[30,20,20,15,20,10];
   const labelColors=['#4f7fff','#a78bfa','#00d68f','#ffcc00','#3b6eff','#ff4433'];
   function pt(i,v,m){const a=(i/n)*2*Math.PI-Math.PI/2,ratio=Math.min(1,v/m);return[cx+r*ratio*Math.cos(a),cy+r*ratio*Math.sin(a)];}
   function ptR(i,ratio){const a=(i/n)*2*Math.PI-Math.PI/2;return[cx+r*ratio*Math.cos(a),cy+r*ratio*Math.sin(a)];}
@@ -1670,17 +1679,17 @@ function drawRadar(sid,myV,mkV,cx,cy){
   }
   // 내 공고 폴리곤
   const mP=myV.map((v,i)=>pt(i,v,mx[i]));
-  s+=`<polygon points="${mP.map(p=>p.join(',')).join(' ')}" fill="rgba(59,110,255,.15)" stroke="#3b6eff" stroke-width="2.5" stroke-linejoin="round"/>`;
+  s+=`<polygon points="${mP.map(p=>p.join(',')).join(' ')}" fill="rgba(59,110,255,.15)" stroke="#3b6eff" stroke-width="3" stroke-linejoin="round"/>`;
   // 꼭짓점 — 겹침 방지: 축 방향으로 충분히 밀어냄
   mP.forEach(([x,y],i)=>{
-    s+=`<circle cx="${x}" cy="${y}" r="5" fill="#3b6eff" stroke="rgba(12,13,16,.8)" stroke-width="2"/>`;
-    // 수치 배지: 꼭짓점에서 축 방향으로 28px 밀어냄
+    s+=`<circle cx="${x}" cy="${y}" r="6.5" fill="#3b6eff" stroke="rgba(12,13,16,.8)" stroke-width="2.5"/>`;
+    // 수치 배지: 꼭짓점에서 축 방향으로 밀어냄
     const angle=(i/n)*2*Math.PI-Math.PI/2;
-    const bx=x+Math.cos(angle)*26, by=y+Math.sin(angle)*22;
+    const bx=x+Math.cos(angle)*38, by=y+Math.sin(angle)*32;
     const val=myV[i].toFixed(1);
-    const bw=val.length>3?28:24;
-    s+=`<rect x="${bx-bw/2}" y="${by-9}" width="${bw}" height="18" rx="5" fill="#3b6eff"/>`;
-    s+=`<text x="${bx}" y="${by+1}" text-anchor="middle" dominant-baseline="middle" font-size="9" fill="#fff" font-family="Pretendard,sans-serif" font-weight="700">${val}</text>`;
+    const bw=val.length>3?40:34;
+    s+=`<rect x="${bx-bw/2}" y="${by-13}" width="${bw}" height="26" rx="7" fill="#3b6eff"/>`;
+    s+=`<text x="${bx}" y="${by+1}" text-anchor="middle" dominant-baseline="middle" font-size="13" fill="#fff" font-family="Pretendard,sans-serif" font-weight="700">${val}</text>`;
   });
   // 축 레이블 — 두 줄로 나눠서 표시 (잘림 방지)
   const labelShort=[['직무','상세성'],['기업','소개'],['급여','품질'],['복지',''],['근무','조건'],['출퇴근','편의']];
@@ -1688,21 +1697,21 @@ function drawRadar(sid,myV,mkV,cx,cy){
     const[lx,ly]=ptR(i,1.34);
     const parts=labelShort[i];
     if(parts[1]){
-      s+=`<text x="${lx}" y="${ly-7}" text-anchor="middle" dominant-baseline="middle" font-size="10" fill="${labelColors[i]}" font-family="Pretendard,sans-serif" font-weight="700">${parts[0]}</text>`;
-      s+=`<text x="${lx}" y="${ly+7}" text-anchor="middle" dominant-baseline="middle" font-size="10" fill="${labelColors[i]}" font-family="Pretendard,sans-serif" font-weight="700">${parts[1]}</text>`;
+      s+=`<text x="${lx}" y="${ly-10}" text-anchor="middle" dominant-baseline="middle" font-size="14" fill="${labelColors[i]}" font-family="Pretendard,sans-serif" font-weight="700">${parts[0]}</text>`;
+      s+=`<text x="${lx}" y="${ly+10}" text-anchor="middle" dominant-baseline="middle" font-size="14" fill="${labelColors[i]}" font-family="Pretendard,sans-serif" font-weight="700">${parts[1]}</text>`;
     } else {
-      s+=`<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle" font-size="10" fill="${labelColors[i]}" font-family="Pretendard,sans-serif" font-weight="700">${parts[0]}</text>`;
+      s+=`<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle" font-size="14" fill="${labelColors[i]}" font-family="Pretendard,sans-serif" font-weight="700">${parts[0]}</text>`;
     }
   });
   // 범례 — SVG 하단 중앙 정렬
-  const ly=cy+r+28;
-  s+=`<rect x="${cx-70}" y="${ly}" width="62" height="18" rx="6" fill="rgba(59,110,255,.2)" stroke="#3b6eff" stroke-width="1.2"/>`;
-  s+=`<circle cx="${cx-59}" cy="${ly+9}" r="4" fill="#3b6eff"/>`;
-  s+=`<text x="${cx-52}" y="${ly+9}" dominant-baseline="middle" font-size="9" fill="#4f7fff" font-family="Pretendard,sans-serif" font-weight="600">내 공고</text>`;
+  const ly=cy+r+46;
+  s+=`<rect x="${cx-98}" y="${ly}" width="86" height="26" rx="8" fill="rgba(59,110,255,.2)" stroke="#3b6eff" stroke-width="1.4"/>`;
+  s+=`<circle cx="${cx-82}" cy="${ly+13}" r="5.5" fill="#3b6eff"/>`;
+  s+=`<text x="${cx-71}" y="${ly+13}" dominant-baseline="middle" font-size="13" fill="#4f7fff" font-family="Pretendard,sans-serif" font-weight="600">내 공고</text>`;
   if(mkV&&mkV.length){
-    s+=`<rect x="${cx+8}" y="${ly}" width="62" height="18" rx="6" fill="rgba(255,255,255,.05)" stroke="rgba(255,255,255,.3)" stroke-width="1.2" stroke-dasharray="4,2"/>`;
-    s+=`<circle cx="${cx+19}" cy="${ly+9}" r="3" fill="rgba(255,255,255,.35)" stroke="rgba(255,255,255,.6)" stroke-width="1"/>`;
-    s+=`<text x="${cx+26}" y="${ly+9}" dominant-baseline="middle" font-size="9" fill="rgba(255,255,255,.55)" font-family="Pretendard,sans-serif" font-weight="600">시장 평균</text>`;
+    s+=`<rect x="${cx+12}" y="${ly}" width="86" height="26" rx="8" fill="rgba(255,255,255,.05)" stroke="rgba(255,255,255,.3)" stroke-width="1.4" stroke-dasharray="5,3"/>`;
+    s+=`<circle cx="${cx+28}" cy="${ly+13}" r="4.5" fill="rgba(255,255,255,.35)" stroke="rgba(255,255,255,.6)" stroke-width="1"/>`;
+    s+=`<text x="${cx+38}" y="${ly+13}" dominant-baseline="middle" font-size="13" fill="rgba(255,255,255,.55)" font-family="Pretendard,sans-serif" font-weight="600">시장 평균</text>`;
   }
   document.getElementById(sid).innerHTML=s;
 }
