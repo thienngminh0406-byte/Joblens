@@ -468,8 +468,8 @@ input[type=range]{flex:1;accent-color:var(--accent)}
       <div class="ct">시장 평균 vs TOP10 비교 분석</div>
       <div class="cs">상위 10개 채용공고는 시장 평균 대비 모든 영역에서 높은 점수를 기록하며 명확한 우위를 보인다</div>
       <div style="display:grid;grid-template-columns:1fr 280px;gap:32px;align-items:start;margin-top:16px">
-        <div>
-          <svg viewBox="0 0 560 200" width="100%" id="top10CompSvg" style="overflow:visible"></svg>
+        <div style="max-width:660px">
+          <svg viewBox="0 0 660 200" width="100%" id="top10CompSvg" style="overflow:visible;display:block"></svg>
         </div>
         <div>
           <div style="font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:12px">항목별 격차</div>
@@ -488,7 +488,7 @@ input[type=range]{flex:1;accent-color:var(--accent)}
       <div class="ct">급여 vs 종합점수 산점도 분석</div>
       <div class="cs">급여 수준과 공고 품질 점수 사이의 관계를 분석합니다</div>
       <div style="display:grid;grid-template-columns:1fr 220px;gap:28px;align-items:start;margin-top:16px">
-        <svg viewBox="0 0 500 220" width="100%" id="scatterSvg" style="overflow:visible"></svg>
+        <svg viewBox="0 0 500 220" width="100%" id="scatterSvg" style="overflow:visible;display:block;max-width:640px"></svg>
         <div style="display:flex;flex-direction:column;gap:8px">
           <div style="font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:4px">분석 해석</div>
           <div style="background:rgba(59,110,255,.08);border:1px solid rgba(59,110,255,.2);border-radius:10px;padding:12px">
@@ -512,7 +512,7 @@ input[type=range]{flex:1;accent-color:var(--accent)}
     <div class="full-card">
       <div class="ct">항목별 영향요인 상관관계 분석</div>
       <div class="cs">각 항목이 종합점수에 미치는 영향도를 분석합니다</div>
-      <div style="margin-top:16px" id="corrMatrix"></div>
+      <div style="margin-top:16px;overflow-x:auto;text-align:center" id="corrMatrix"></div>
     </div>
 
   </div>
@@ -618,9 +618,9 @@ input[type=range]{flex:1;accent-color:var(--accent)}
         <span style="font-size:.7rem;font-weight:700;color:var(--green);letter-spacing:.08em;text-transform:uppercase">HR Analytics Platform</span>
       </div>
       <h1 style="font-size:clamp(2rem,4vw,3.8rem);font-weight:800;color:#fff;letter-spacing:-.05em;line-height:1.1;margin-bottom:18px">채용공고의 <span style="color:var(--accent)">정보 품질</span>을<br>데이터로 측정합니다</h1>
-      <p style="font-size:.96rem;color:var(--muted2);line-height:1.75;max-width:560px;margin:0 auto 36px">서울시 공공 채용공고 26,000건을 실시간으로 수집하고<br>6가지 지표로 정보 품질을 자동 분석하는 HR Analytics 서비스</p>
+      <p style="font-size:.96rem;color:var(--muted2);line-height:1.75;max-width:560px;margin:0 auto 36px">서울시 공공 채용공고 20,000건을 실시간으로 수집하고<br>6가지 지표로 정보 품질을 자동 분석하는 HR Analytics 서비스</p>
       <div style="display:flex;align-items:center;justify-content:center;gap:32px;flex-wrap:wrap">
-        <div style="text-align:center"><div style="font-size:2.2rem;font-weight:800;color:#fff;letter-spacing:-.04em;line-height:1">26,000<span style="color:var(--accent)">+</span></div><div style="font-size:.72rem;color:var(--muted);margin-top:4px">실시간 채용공고</div></div>
+        <div style="text-align:center"><div style="font-size:2.2rem;font-weight:800;color:#fff;letter-spacing:-.04em;line-height:1">20,000<span style="color:var(--accent)">+</span></div><div style="font-size:.72rem;color:var(--muted);margin-top:4px">실시간 채용공고</div></div>
         <div style="width:1px;height:40px;background:var(--line2)"></div>
         <div style="text-align:center"><div style="font-size:2.2rem;font-weight:800;color:#fff;letter-spacing:-.04em;line-height:1">6<span style="color:var(--accent)">개</span></div><div style="font-size:.72rem;color:var(--muted);margin-top:4px">진단 지표</div></div>
         <div style="width:1px;height:40px;background:var(--line2)"></div>
@@ -1046,7 +1046,7 @@ function renderTop10Comp(data){
     return top10jobs.reduce((s,j)=>s+(parseFloat(j[col])||0),0)/Math.max(top10jobs.length,1);
   });
   const maxes=[30,20,20,15,20,10];
-  const W=560,H=200,padL=10,padB=30,padT=20,barW=50,gap=28;
+  const W=660,H=200,padL=10,padB=30,padT=24,barW=38,gap=18;
   const chartW=W-padL-40, chartH=H-padB-padT;
   const maxVal=Math.max(...topVals,...mktVals,1);
   let s=``;
@@ -1169,9 +1169,9 @@ function renderCorrMatrix(data){
     const den=Math.sqrt(pairs.reduce((s,p)=>s+(p.a-ma)**2,0)*pairs.reduce((s,p)=>s+(p.b-mb)**2,0)||1);
     return num/den;
   }
-  const cell=60,fontSize=9,padL=64,padT=48;
+  const cell=62,fontSize=10,padL=68,padT=50;
   const W=padL+cell*labels.length+10,H=padT+cell*labels.length+10;
-  let s=`<svg viewBox="0 0 ${W} ${H}" width="100%" style="overflow:visible">`;
+  let s=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="overflow:visible;display:inline-block">`;
   // 헤더
   shortLabels.forEach((l,i)=>{
     s+=`<text x="${padL+i*cell+cell/2}" y="${padT-6}" text-anchor="middle" font-size="${fontSize}" fill="rgba(255,255,255,.55)" font-family="Pretendard,sans-serif" font-weight="600">${l}</text>`;
