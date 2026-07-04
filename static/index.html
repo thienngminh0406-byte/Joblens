@@ -15,7 +15,7 @@
   --bg:#0c0d10;--bg2:#13151b;--bg3:#1a1d26;
   --line:#ffffff12;--line2:#ffffff1e;
   --accent:#3b6eff;--ag:#4f7fff;
-  --red:#ff4433;--green:#00d68f;--yellow:#ffcc00;--purple:#a78bfa;
+  --red:#ff4433;--green:#00d68f;--yellow:#ffcc00;--purple:#a78bfa;--lime:#a3e635;
   --text:#e8eaf0;--muted:#6b7280;--muted2:#9ca3af;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -173,7 +173,7 @@ td.bold{color:#fff;font-weight:600}
 .gb{display:inline-block;padding:2px 7px;border-radius:5px;font-size:.62rem;font-weight:800;letter-spacing:.05em}
 .g-S{background:rgba(167,139,250,.15);color:var(--purple)}
 .g-A{background:rgba(0,214,143,.12);color:var(--green)}
-.g-B{background:rgba(59,110,255,.12);color:var(--ag)}
+.g-B{background:rgba(163,230,53,.12);color:var(--lime)}
 .g-C{background:rgba(255,204,0,.1);color:var(--yellow)}
 .g-D{background:rgba(255,68,51,.1);color:var(--red)}
 .sbar{display:flex;gap:9px;margin-bottom:14px;flex-wrap:wrap}
@@ -713,7 +713,7 @@ input[type=range]{flex:1;accent-color:var(--accent)}
         <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--line);border-radius:10px;overflow:hidden">
           <div style="background:var(--bg3);padding:16px;text-align:center"><div style="font-size:1.4rem;font-weight:800;color:#a78bfa;margin-bottom:4px">S</div><div style="font-size:.72rem;font-weight:700;color:#fff;margin-bottom:3px">90점+</div><div style="font-size:.66rem;color:var(--muted2)">시장 최상위</div></div>
           <div style="background:var(--bg3);padding:16px;text-align:center"><div style="font-size:1.4rem;font-weight:800;color:#00d68f;margin-bottom:4px">A</div><div style="font-size:.72rem;font-weight:700;color:#fff;margin-bottom:3px">80점+</div><div style="font-size:.66rem;color:var(--muted2)">정보 매우 충실</div></div>
-          <div style="background:var(--bg3);padding:16px;text-align:center"><div style="font-size:1.4rem;font-weight:800;color:#3b6eff;margin-bottom:4px">B</div><div style="font-size:.72rem;font-weight:700;color:#fff;margin-bottom:3px">70점+</div><div style="font-size:.66rem;color:var(--muted2)">주요 정보 제공</div></div>
+          <div style="background:var(--bg3);padding:16px;text-align:center"><div style="font-size:1.4rem;font-weight:800;color:var(--lime);margin-bottom:4px">B</div><div style="font-size:.72rem;font-weight:700;color:#fff;margin-bottom:3px">70점+</div><div style="font-size:.66rem;color:var(--muted2)">주요 정보 제공</div></div>
           <div style="background:var(--bg3);padding:16px;text-align:center"><div style="font-size:1.4rem;font-weight:800;color:#ffcc00;margin-bottom:4px">C</div><div style="font-size:.72rem;font-weight:700;color:#fff;margin-bottom:3px">55점+</div><div style="font-size:.66rem;color:var(--muted2)">일부 보완 필요</div></div>
           <div style="background:var(--bg3);padding:16px;text-align:center"><div style="font-size:1.4rem;font-weight:800;color:#ff4433;margin-bottom:4px">D</div><div style="font-size:.72rem;font-weight:700;color:#fff;margin-bottom:3px">~55점</div><div style="font-size:.66rem;color:var(--muted2)">핵심 정보 부족</div></div>
         </div>
@@ -786,7 +786,7 @@ input[type=range]{flex:1;accent-color:var(--accent)}
 const API = '';  // 같은 서버이므로 빈 문자열 (상대경로)
 const SCOLS = ['직무상세성점수','기업소개점수','급여품질점수','복지점수','근무조건점수','출퇴근편의점수'];
 const SLABELS = ['직무상세성','기업소개','급여품질','복지','근무조건','출퇴근편의'];
-const GC = {S:'#a78bfa',A:'#00d68f',B:'#3b6eff',C:'#ffcc00',D:'#ff4433'};
+const GC = {S:'#a78bfa',A:'#00d68f',B:'#a3e635',C:'#ffcc00',D:'#ff4433'};
 
 // ── 글로벌 상태 ──
 let statsCache = null;
@@ -1182,7 +1182,7 @@ function renderScatter(){
   const minY=Math.min(...ys),maxY=Math.max(...ys);
   const toX=v=>padL+(v-minX)/(maxX-minX||1)*cW;
   const toY=v=>padT+cH-(v-minY)/(maxY-minY||1)*cH;
-  const gc={S:'#a78bfa',A:'#00d68f',B:'#3b6eff',C:'#ffcc00',D:'#ff4433'};
+  const gc={S:'#a78bfa',A:'#00d68f',B:'#a3e635',C:'#ffcc00',D:'#ff4433'};
   // 추세선 계산 (단순 선형 회귀)
   const n=pts.length,sx=pts.reduce((s,p)=>s+p.x,0),sy=pts.reduce((s,p)=>s+p.y,0);
   const sxy=pts.reduce((s,p)=>s+p.x*p.y,0),sxx=pts.reduce((s,p)=>s+p.x*p.x,0);
