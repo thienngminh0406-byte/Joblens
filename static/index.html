@@ -52,6 +52,12 @@ nav.scrolled{border-bottom-color:var(--line);background:rgba(12,13,16,.88);backd
 .hkicker{display:inline-flex;align-items:center;gap:8px;background:rgba(59,110,255,.1);border:1px solid rgba(59,110,255,.25);padding:5px 14px;border-radius:100px;margin-bottom:26px}
 .hkicker-dot{width:6px;height:6px;background:var(--green);border-radius:50%;animation:blink 2s infinite;box-shadow:0 0 6px var(--green)}
 .hkicker span{font-size:.7rem;font-weight:700;color:var(--green);letter-spacing:.08em;text-transform:uppercase}
+.live-strip{display:inline-flex;align-items:center;gap:14px;background:rgba(255,255,255,.035);border:1px solid var(--line2);padding:9px 18px;border-radius:100px;margin-bottom:26px;backdrop-filter:blur(6px)}
+.ls-item{display:flex;align-items:center;gap:6px;font-size:.71rem;font-weight:600;color:var(--muted2);letter-spacing:.01em;white-space:nowrap;font-variant-numeric:tabular-nums}
+.ls-item:first-child{color:var(--green);font-weight:700;text-transform:uppercase;letter-spacing:.06em;font-size:.68rem}
+.ls-dot{width:6px;height:6px;background:var(--green);border-radius:50%;animation:blink 2s infinite;box-shadow:0 0 6px var(--green)}
+.ls-sep{width:1px;height:12px;background:var(--line2)}
+@media(max-width:640px){.live-strip{gap:9px;padding:8px 12px}.ls-item{font-size:.62rem}}
 .hero h1{font-size:clamp(2.5rem,4.2vw,4.8rem);font-weight:800;line-height:1.07;letter-spacing:-.05em;color:#fff;margin-bottom:22px}
 .hero h1 em{font-style:normal;color:var(--accent)}
 .hero-sub{font-size:.96rem;color:var(--muted2);line-height:1.75;max-width:440px;margin-bottom:38px}
@@ -324,7 +330,13 @@ input[type=range]{flex:1;accent-color:var(--accent)}
   <div class="l-grid"></div><div class="l-glow"></div>
   <div class="hero">
     <div class="hero-left">
-      <div class="hkicker"><div class="hkicker-dot"></div><span>서울시 Open API · 실시간 수집</span></div>
+      <div class="live-strip">
+        <div class="ls-item"><span class="ls-dot"></span>실시간 수집 중</div>
+        <div class="ls-sep"></div>
+        <div class="ls-item" id="lsClock">🕐 --:--:--</div>
+        <div class="ls-sep"></div>
+        <div class="ls-item" id="lsWeather">🌤️ 서울 날씨 불러오는 중</div>
+      </div>
       <h1>채용공고의<br><em>정보 품질</em>을<br>수치로 말하다</h1>
       <p class="hero-sub">서울시 공공 채용공고 데이터를 실시간으로 수집하고 6가지 지표로 자동 분석합니다. 어떤 공고가 구직자를 잃고 있는지 데이터가 정확히 알려줍니다.</p>
       <div class="hbtns">
@@ -357,7 +369,7 @@ input[type=range]{flex:1;accent-color:var(--accent)}
 </div>
 
 <!-- MARQUEE -->
-<div class="marquee"><div class="mi">
+<div class="marquee"><div class="mi" id="mqTrack">
   <span>채용공고 <b>정보 품질</b> 분석</span><span>서울시 Open API <b>실시간 수집</b></span><span>6개 지표 <b>자동 스코어링</b></span><span>시장 평균 대비 <b>순위 진단</b></span><span>HR <b>Analytics</b> 플랫폼</span><span>공고 작성자 <b>개선 가이드</b></span>
   <span>채용공고 <b>정보 품질</b> 분석</span><span>서울시 Open API <b>실시간 수집</b></span><span>6개 지표 <b>자동 스코어링</b></span><span>시장 평균 대비 <b>순위 진단</b></span><span>HR <b>Analytics</b> 플랫폼</span><span>공고 작성자 <b>개선 가이드</b></span>
 </div></div>
@@ -1031,7 +1043,19 @@ async function loadRecentJobs(){
         <div><div class="rj-co">${j.CMPNY_NM||''}</div><div class="rj-ti">${sh(j.JO_SJ,52)}</div></div>
         <div class="rj-right"><div class="rj-sc">${j.종합점수}</div><span class="gb g-${j.등급}">${j.등급}</span></div>
       </div>`).join('');
+    buildMarquee(jobs);
   }catch(e){console.error('recent jobs failed:',e);}
+}
+
+// ── 마퀴 티커: 실제 최근 등록 공고 + 고정 태그라인 조합 ──
+function buildMarquee(liveJobs){
+  const track=document.getElementById('mqTrack');
+  if(!track)return;
+  const staticItems=['채용공고 <b>정보 품질</b> 분석','서울시 Open API <b>실시간 수집</b>','6개 지표 <b>자동 스코어링</b>','시장 평균 대비 <b>순위 진단</b>','HR <b>Analytics</b> 플랫폼','공고 작성자 <b>개선 가이드</b>'];
+  const liveItems=(liveJobs||[]).filter(j=>j.CMPNY_NM).slice(0,5).map(j=>`🟢 ${sh(j.CMPNY_NM,14)} <b>${j.종합점수}점</b> 신규 등록`);
+  const all=[...liveItems,...staticItems];
+  const html=all.map(t=>`<span>${t}</span>`).join('');
+  track.innerHTML=html+html;
 }
 
 function drawTrendSVG(svgId, labelsId, trend){
@@ -1799,8 +1823,41 @@ function drawRadar(sid,myV,mkV,cx,cy){
 
 function sh(v,n){if(!v)return'';const s=String(v).trim();return s.length<=n?s:s.slice(0,n)+'…';}
 
+// ── 실시간 시각 / 서울 날씨 (히어로 라이브 스트립) ──
+function updateLiveClock(){
+  const el=document.getElementById('lsClock');
+  if(!el)return;
+  const now=new Date();
+  el.textContent='🕐 '+now.toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
+}
+function weatherIcon(code){
+  if(code===0)return'☀️';
+  if([1,2,3].includes(code))return'⛅';
+  if([45,48].includes(code))return'🌫️';
+  if([51,53,55,56,57,61,63,65,66,67,80,81,82].includes(code))return'🌧️';
+  if([71,73,75,77,85,86].includes(code))return'❄️';
+  if([95,96,99].includes(code))return'⛈️';
+  return'🌤️';
+}
+async function loadSeoulWeather(){
+  const el=document.getElementById('lsWeather');
+  if(!el)return;
+  try{
+    const r=await fetch('https://api.open-meteo.com/v1/forecast?latitude=37.5665&longitude=126.9780&current=temperature_2m,weather_code&timezone=Asia%2FSeoul');
+    const d=await r.json();
+    const t=Math.round(d.current.temperature_2m);
+    el.textContent=`${weatherIcon(d.current.weather_code)} 서울 ${t}°C`;
+  }catch(e){
+    el.textContent='🌤️ 서울';
+  }
+}
+
 // ── INIT ──
 (async function(){
+  updateLiveClock();
+  setInterval(updateLiveClock,1000);
+  loadSeoulWeather();
+  setInterval(loadSeoulWeather,600000);
   await loadStats();
   await initSearch();
 })();
