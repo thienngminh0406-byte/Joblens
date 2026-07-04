@@ -370,15 +370,15 @@ input[type=range]{flex:1;accent-color:var(--accent)}
       <div class="story-body" id="sbody">스크롤하며 서울시 공공 채용데이터가 발견한 핵심 사실들을 확인하세요.</div>
     </div>
     <div class="story-right">
-      <div class="s-item" data-h="공고 10건 중<br>7건이 <em>C·D등급</em>" data-b="정보가 충분한 A·B등급 공고는 전체의 22.4%에 불과합니다.">
+      <div class="s-item" id="storyItem1" data-h="공고 10건 중<br>7건이 <em>C·D등급</em>" data-b="정보가 충분한 A·B등급 공고는 전체의 22.4%에 불과합니다.">
         <div class="s-num">01</div><div class="s-tag">충격 데이터</div>
         <h3>대부분의 공고는 정보가 불충분하다</h3>
-        <p>C등급이 41.5%, D등급이 35.4%로, 채용공고 10건 중 7건 이상이 정보 부족 상태예요. 정보가 충실한 A·S등급 공고는 2.3%에 그칩니다.</p>
+        <p id="storyGradeP">C등급이 41.5%, D등급이 35.4%로, 채용공고 10건 중 7건 이상이 정보 부족 상태예요. 정보가 충실한 A·S등급 공고는 2.3%에 그칩니다.</p>
         <div class="s-insight"><div class="s-insight-label">등급별 공고 비율</div>
-          <div class="mbr"><div class="mbl">S · A 등급</div><div class="mbt"><div class="mbf" style="width:2.3%;background:var(--green)"></div></div><div class="mbv">2.3%</div></div>
-          <div class="mbr"><div class="mbl">B 등급</div><div class="mbt"><div class="mbf" style="width:20.8%;background:var(--accent)"></div></div><div class="mbv">20.8%</div></div>
-          <div class="mbr"><div class="mbl">C 등급</div><div class="mbt"><div class="mbf" style="width:41.5%;background:var(--yellow)"></div></div><div class="mbv">41.5%</div></div>
-          <div class="mbr"><div class="mbl">D 등급</div><div class="mbt"><div class="mbf" style="width:35.4%;background:var(--red)"></div></div><div class="mbv">35.4%</div></div>
+          <div class="mbr"><div class="mbl">S · A 등급</div><div class="mbt"><div class="mbf" id="gSA" style="width:2.3%;background:var(--green)"></div></div><div class="mbv" id="gSAv">2.3%</div></div>
+          <div class="mbr"><div class="mbl">B 등급</div><div class="mbt"><div class="mbf" id="gB" style="width:20.8%;background:var(--accent)"></div></div><div class="mbv" id="gBv">20.8%</div></div>
+          <div class="mbr"><div class="mbl">C 등급</div><div class="mbt"><div class="mbf" id="gC" style="width:41.5%;background:var(--yellow)"></div></div><div class="mbv" id="gCv">41.5%</div></div>
+          <div class="mbr"><div class="mbl">D 등급</div><div class="mbt"><div class="mbf" id="gD" style="width:35.4%;background:var(--red)"></div></div><div class="mbv" id="gDv">35.4%</div></div>
         </div>
       </div>
       <div class="s-item" data-h="출퇴근편의가<br><em>가장 낮은</em><br>항목" data-b="지원 방법·담당자 정보가 가장 자주 누락됩니다.">
@@ -387,7 +387,7 @@ input[type=range]{flex:1;accent-color:var(--accent)}
         <p>6개 항목 가운데 출퇴근편의 점수가 가장 낮아요. 지원 방법, 담당자 연락처, 인근 지하철역 정보만 추가해도 등급이 한 단계 올라갈 수 있습니다.</p>
         <div class="s-insight"><div class="s-insight-label">실시간 항목별 평균 점수</div><div id="storyScoreBar">로딩 중...</div></div>
       </div>
-      <div class="s-item" data-h="경력 무관<br>공고가 <em>60%+</em><br>차지" data-b="신입·경력 구분 없는 공고가 시장 대다수입니다.">
+      <div class="s-item" id="storyItem3" data-h="경력 무관<br>공고가 <em>60%+</em><br>차지" data-b="신입·경력 구분 없는 공고가 시장 대다수입니다.">
         <div class="s-num">03</div><div class="s-tag">시장 구조</div>
         <h3>경력 무관 공고가 시장 과반수</h3>
         <p>경력 무관 공고가 전체의 절반을 넘습니다. 특히 돌봄·서비스 직군에 몰려 있는데, 이 영역일수록 공고별 정보 품질 차이가 큰 편입니다.</p>
@@ -929,6 +929,37 @@ function updateHeroStats(data){
 
 function updateStoryStats(data){
   // 스토리 섹션 실시간 데이터 업데이트
+
+  // 등급별 분포 (S·A / B / C / D)
+  const gd=data.grade_dist||{};
+  const totalG=Object.values(gd).reduce((a,b)=>a+b,0);
+  if(totalG){
+    const sa=((gd['S']||0)+(gd['A']||0)),b=(gd['B']||0),c=(gd['C']||0),d=(gd['D']||0);
+    const saPct=(sa/totalG*100),bPct=(b/totalG*100),cPct=(c/totalG*100),dPct=(d/totalG*100);
+    const set=(barId,valId,pct)=>{
+      const barEl=document.getElementById(barId),valEl=document.getElementById(valId);
+      if(barEl)barEl.style.width=pct.toFixed(1)+'%';
+      if(valEl)valEl.textContent=pct.toFixed(1)+'%';
+    };
+    set('gSA','gSAv',saPct);set('gB','gBv',bPct);set('gC','gCv',cPct);set('gD','gDv',dPct);
+
+    const cdOutOf10=Math.round((cPct+dPct)/10);
+    const abPct=(( (gd['A']||0)+b )/totalG*100).toFixed(1);
+    const pEl=document.getElementById('storyGradeP');
+    if(pEl)pEl.textContent=`C등급이 ${cPct.toFixed(1)}%, D등급이 ${dPct.toFixed(1)}%로, 채용공고 10건 중 ${cdOutOf10}건 이상이 정보 부족 상태예요. 정보가 충실한 A·S등급 공고는 ${saPct.toFixed(1)}%에 그칩니다.`;
+    const itemEl=document.getElementById('storyItem1');
+    if(itemEl){
+      const newH=`공고 10건 중<br>${cdOutOf10}건이 <em>C·D등급</em>`;
+      const newB=`정보가 충분한 A·B등급 공고는 전체의 ${abPct}%에 불과합니다.`;
+      itemEl.dataset.h=newH;itemEl.dataset.b=newB;
+      if(itemEl.classList.contains('active')){
+        const hEl=document.getElementById('shl'),bEl=document.getElementById('sbody');
+        if(hEl)hEl.innerHTML=newH;
+        if(bEl)bEl.textContent=newB;
+      }
+    }
+  }
+
   const avgs=data.score_cols_avg||{};
   const labels=Object.keys(avgs),vals=Object.values(avgs),maxV=Math.max(...vals,1);
   document.getElementById('storyScoreBar').innerHTML=labels.map((l,i)=>{
@@ -946,6 +977,15 @@ function updateStoryStats(data){
   const el2=document.getElementById('storyCareerCount');
   if(el1)el1.textContent=pct+'%';
   if(el2)el2.textContent=muGwan.toLocaleString()+' 건 / '+total.toLocaleString()+'건';
+  const item3=document.getElementById('storyItem3');
+  if(item3&&pct!=='—'){
+    const newH3=`경력 무관<br>공고가 <em>${Math.round(pct)}%+</em><br>차지`;
+    item3.dataset.h=newH3;
+    if(item3.classList.contains('active')){
+      const hEl=document.getElementById('shl');
+      if(hEl)hEl.innerHTML=newH3;
+    }
+  }
 }
 
 function renderHome(data){
