@@ -1,0 +1,52 @@
+name: Daily Data Update
+
+on:
+  schedule:
+    - cron: '0 0 * * *'   # 오전 9시(KST)
+    - cron: '0 3 * * *'   # 오후 12시(KST)
+  workflow_dispatch:
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 저장소 체크아웃
+        uses: actions/checkout@v4
+
+      - name: Python 설정
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 패키지 설치
+        run: |
+          pip install requests pandas
+
+      - name: 데이터 수집 및 스코어링
+        env:
+          SEOUL_API_KEY: ${{ secrets.SEOUL_API_KEY }}
+        run: |
+          python scripts/collect_and_score.py
+
+      - name: Git 상태 확인
+        run: |
+          git status
+          ls -lh
+          md5sum JobLens_Scores.csv
+          git diff --stat
+
+      - name: CSV 자동 커밋
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add JobLens_Scores.csv
+
+          git commit -m "data: 채용공고 자동 업데이트 $(date '+%Y-%m-%d')" || echo "No changes to commit"
+
+          git push
+
+      - name: Render 재배포 트리거
+        run: |
+          curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
