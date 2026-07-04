@@ -343,12 +343,12 @@ input[type=range]{flex:1;accent-color:var(--accent)}
       </span>
       <span><b>Gmail로 문의하기</b><br><small>thienngminh0406@gmail.com</small></span>
     </a>
-    <button class="contact-link" onclick="copyKakao(this)">
+    <a class="contact-link" href="https://open.kakao.com/o/sBbOvxCi" target="_blank" rel="noopener">
       <span class="contact-icon-wrap" style="background:#FEE500">
         <svg viewBox="0 0 24 24" width="20" height="20"><path fill="#3C1E1E" d="M12 3C6.48 3 2 6.48 2 10.8c0 2.76 1.86 5.19 4.66 6.58-.2.75-.73 2.7-.84 3.12-.13.52.19.51.4.37.16-.11 2.6-1.76 3.65-2.48.68.1 1.39.15 2.13.15 5.52 0 10-3.48 10-7.74C22 6.48 17.52 3 12 3z"/></svg>
       </span>
-      <span><b>카카오톡 ID 복사</b><br><small id="kakaoIdText">Minhthien_0406</small></span>
-    </button>
+      <span><b>카카오톡으로 채팅하기</b><br><small>바로 1:1 오픈채팅 연결</small></span>
+    </a>
   </div>
   <button class="contact-fab" id="contactFab" onclick="toggleContactCard()" aria-label="개발자에게 문의하기" aria-expanded="false">
     <svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="#2b3550"/><path d="M50 92c-16 0-29-7-29-16 0-11 13-18 29-18s29 7 29 18c0 9-13 16-29 16z" fill="#3d4a6b"/><circle cx="50" cy="42" r="21" fill="#f4c6a0"/><path d="M29 34c-1 8 1 13 3 16-1-6-1-11 1-15 3 2 7 3 11 3s8-1 11-3c2 4 2 9 1 15 2-3 4-8 3-16-3-3-8-5-13-5s-13 2-17 5z" fill="#1c1f2b"/><ellipse cx="43" cy="43" rx="2.2" ry="2.8" fill="#2b2118"/><ellipse cx="57" cy="43" rx="2.2" ry="2.8" fill="#2b2118"/><path d="M44 52c2 2.5 8 2.5 10 0" stroke="#a8674a" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
@@ -1923,15 +1923,6 @@ document.addEventListener('click',e=>{
   if(w&&!w.contains(e.target))toggleContactCard(false);
 });
 document.addEventListener('keydown',e=>{if(e.key==='Escape')toggleContactCard(false);});
-function copyKakao(btn){
-  const id='Minhthien_0406';
-  navigator.clipboard?.writeText(id).catch(()=>{});
-  const label=btn.querySelector('#kakaoIdText');
-  if(!label)return;
-  const orig=label.textContent;
-  label.textContent='복사됨! ✅';
-  setTimeout(()=>{label.textContent=orig;},1500);
-}
 
 // ── INIT ──
 (async function(){
