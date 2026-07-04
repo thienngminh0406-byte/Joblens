@@ -373,7 +373,7 @@ input[type=range]{flex:1;accent-color:var(--accent)}
       <div class="s-item" data-h="공고 10건 중<br>7건이 <em>C·D등급</em>" data-b="정보가 충분한 A·B등급 공고는 전체의 22.4%에 불과합니다.">
         <div class="s-num">01</div><div class="s-tag">충격 데이터</div>
         <h3>대부분의 공고는 정보가 불충분하다</h3>
-        <p>분석 결과 C등급 41.5%, D등급 35.4%로 전체 77%가 정보 부족 상태입니다. A·S등급 공고는 2.3%에 불과합니다.</p>
+        <p>C등급이 41.5%, D등급이 35.4%로, 채용공고 10건 중 7건 이상이 정보 부족 상태예요. 정보가 충실한 A·S등급 공고는 2.3%에 그칩니다.</p>
         <div class="s-insight"><div class="s-insight-label">등급별 공고 비율</div>
           <div class="mbr"><div class="mbl">S · A 등급</div><div class="mbt"><div class="mbf" style="width:2.3%;background:var(--green)"></div></div><div class="mbv">2.3%</div></div>
           <div class="mbr"><div class="mbl">B 등급</div><div class="mbt"><div class="mbf" style="width:20.8%;background:var(--accent)"></div></div><div class="mbv">20.8%</div></div>
@@ -384,20 +384,20 @@ input[type=range]{flex:1;accent-color:var(--accent)}
       <div class="s-item" data-h="출퇴근편의가<br><em>가장 낮은</em><br>항목" data-b="지원 방법·담당자 정보가 가장 자주 누락됩니다.">
         <div class="s-num">02</div><div class="s-tag">항목 분석</div>
         <h3>출퇴근편의 점수가 시장에서 가장 낮다</h3>
-        <p>6개 항목 중 출퇴근편의가 가장 낮습니다. 지원 방법·담당자 연락처·지하철역 정보 추가만으로도 등급이 올라갑니다.</p>
+        <p>6개 항목 가운데 출퇴근편의 점수가 가장 낮아요. 지원 방법, 담당자 연락처, 인근 지하철역 정보만 추가해도 등급이 한 단계 올라갈 수 있습니다.</p>
         <div class="s-insight"><div class="s-insight-label">실시간 항목별 평균 점수</div><div id="storyScoreBar">로딩 중...</div></div>
       </div>
       <div class="s-item" data-h="경력 무관<br>공고가 <em>60%+</em><br>차지" data-b="신입·경력 구분 없는 공고가 시장 대다수입니다.">
         <div class="s-num">03</div><div class="s-tag">시장 구조</div>
         <h3>경력 무관 공고가 시장 과반수</h3>
-        <p>경력 무관 공고가 과반 이상을 차지합니다. 돌봄·서비스 직군이 상위를 차지하며, 이 영역에서 정보 품질 격차가 가장 큰 경향이 있습니다.</p>
+        <p>경력 무관 공고가 전체의 절반을 넘습니다. 특히 돌봄·서비스 직군에 몰려 있는데, 이 영역일수록 공고별 정보 품질 차이가 큰 편입니다.</p>
         <div class="stat-pill"><div class="sp-num" id="storyCareerPct">—%</div><div class="sp-text">경력 무관 공고 비율<br><span id="storyCareerCount">— 건</span></div></div>
         <div class="qblock" style="margin-top:18px"><p>"직무 특성과 무관하게 경력 조건 미기재가 관행화된 영역에서 정보 품질 격차가 가장 크게 나타납니다."</p><cite>— JobLens 실시간 분석 결과</cite></div>
       </div>
       <div class="s-item" data-h="내 공고는<br>시장에서<br><em>몇 위?</em>" data-b="Diagnosis 탭에서 즉시 확인하세요.">
         <div class="s-num">04</div><div class="s-tag">지금 바로</div>
         <h3>공고 내용을 입력하면 시장과 즉시 비교</h3>
-        <p>Posting Diagnosis에서 공고 내용을 입력하면 실시간 수집된 데이터와 즉시 비교해 예상 점수·등급·순위·개선 포인트를 제공합니다.</p>
+        <p>Posting Diagnosis에 공고 내용을 입력하면, 실시간으로 수집된 데이터와 바로 비교해 예상 점수와 등급, 순위, 개선 포인트까지 확인할 수 있어요.</p>
         <div style="margin-top:18px"><button class="btn-p" onclick="goApp('diagnosis',null)" style="width:100%">📝 지금 진단받기 →</button></div>
       </div>
     </div>
@@ -1284,9 +1284,11 @@ function renderPagination(pages){
 // ── MODAL ──
 function openJobModal(j){
   if(typeof j==='string') j=JSON.parse(j);
+  const searchQ=encodeURIComponent(`${j.CMPNY_NM||''} ${j.JO_SJ||''} 채용`);
   document.getElementById('moContent').innerHTML=`
     <div class="mo-title">${j.JO_SJ||'공고명 없음'}</div>
     <div class="mo-company">${j.CMPNY_NM||''} &nbsp;·&nbsp; <span class="gb g-${j.등급}">${j.등급}</span> &nbsp;·&nbsp; <b style="color:var(--accent)">${j.종합점수}점</b></div>
+    <a href="https://www.google.com/search?q=${searchQ}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;font-size:.72rem;font-weight:600;color:var(--accent);text-decoration:none;background:rgba(59,110,255,.1);border:1px solid rgba(59,110,255,.3);border-radius:8px;padding:6px 12px;margin:8px 0 4px">🔗 원본 공고 찾아보기</a>
     <div class="mo-row">
       <div class="mo-field"><div class="mo-fl">직무</div><div class="mo-fv">${j.JOBCODE_NM||'-'}</div></div>
       <div class="mo-field"><div class="mo-fl">경력</div><div class="mo-fv">${j.CAREER_CND_NM||'-'}</div></div>
