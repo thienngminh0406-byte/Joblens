@@ -598,7 +598,7 @@ input[type=range]{flex:1;accent-color:var(--accent)}
     <p class="pg-sub">실시간 수집된 채용공고 중 JobLens Score 기준 상위 100개입니다</p>
     <div class="metrics-row" style="grid-template-columns:repeat(3,1fr)">
       <div class="mc"><div class="ml">Top100 평균 점수</div><div class="mv" id="t100avg">—</div></div>
-      <div class="mc"><div class="ml">A등급 개수</div><div class="mv" id="t100s">—</div></div>
+      <div class="mc"><div class="ml">TOP100 진입 커트라인</div><div class="mv" id="t100cut">—</div></div>
       <div class="mc"><div class="ml">직무 종류</div><div class="mv" id="t100jobs">—</div></div>
     </div>
     <div class="al al-i">🏆 Top100 우수 공고 특징 — ✅ 직무 설명이 상세 · ✅ 급여 정보 명확 · ✅ 복지 혜택 다양 · ✅ 근무시간·휴일 구체적 · 정보 투명성이 높을수록 높은 점수를 받습니다.</div>
@@ -1626,8 +1626,8 @@ async function loadTop100(){
     const [jobs, t100stats]=await Promise.all([apiFetch('/api/jobs/top?n=100'),apiFetch('/api/top100/stats')]);
     topJobsCache=jobs;
     document.getElementById('t100avg').textContent=t100stats.avg||'—';
-    const aCount=jobs.filter(j=>j.등급==='A').length;
-    document.getElementById('t100s').textContent=aCount;
+    const cutoffScore=jobs.length?jobs[jobs.length-1].종합점수:'—';
+    document.getElementById('t100cut').textContent=cutoffScore;
     document.getElementById('t100jobs').textContent=t100stats.job_types||'—';
     const j10=t100stats.job_top10||{},mc=Math.max(...Object.values(j10),1);
     document.getElementById('t100JobBars').innerHTML=Object.entries(j10).map(([l,v])=>`<div class="hbar-row"><div class="hbl">${l}</div><div class="hbt"><div class="hbf" data-mkt="1" style="width:0%" data-w="${(v/mc*100).toFixed(1)}"></div></div><div class="hbv">${v}</div></div>`).join('');
