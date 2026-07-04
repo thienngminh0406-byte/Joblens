@@ -790,6 +790,8 @@ const GC = {S:'#a78bfa',A:'#00d68f',B:'#3b6eff',C:'#ffcc00',D:'#ff4433'};
 // ── 글로벌 상태 ──
 let statsCache = null;
 let topJobsCache = [];
+let recentJobsCache = [];
+let searchJobsCache = [];
 let searchPage = 1;
 let debounceTimer = null;
 const PER = 20;
@@ -981,8 +983,9 @@ function renderHome(data){
 async function loadRecentJobs(){
   try{
     const jobs = await apiFetch('/api/jobs/recent?n=5');
+    recentJobsCache = jobs;
     document.getElementById('recentJobs').innerHTML=jobs.map((j,i)=>`
-      <div class="rj" onclick="openJobModal(${JSON.stringify(j).replace(/'/g,"&apos;")})">
+      <div class="rj" onclick="openJobModal(recentJobsCache[${i}])">
         <div><div class="rj-co">${j.CMPNY_NM||''}</div><div class="rj-ti">${sh(j.JO_SJ,52)}</div></div>
         <div class="rj-right"><div class="rj-sc">${j.종합점수}</div><span class="gb g-${j.등급}">${j.등급}</span></div>
       </div>`).join('');
@@ -1257,9 +1260,10 @@ async function filterJobs(page){
   document.getElementById('sc').innerHTML='검색 중...';
   try{
     const data=await apiFetch(`/api/jobs?${params}`);
+    searchJobsCache = data.jobs||[];
     document.getElementById('sc').innerHTML=`검색 결과: <b>${data.total.toLocaleString()}</b>건`;
-    document.getElementById('jtb').innerHTML=(data.jobs||[]).map((j,i)=>`
-      <tr onclick='openJobModal(${JSON.stringify(j)})'>
+    document.getElementById('jtb').innerHTML=searchJobsCache.map((j,i)=>`
+      <tr onclick="openJobModal(searchJobsCache[${i}])">
         <td class="bold">${sh(j.CMPNY_NM,16)}</td><td class="bold">${sh(j.JO_SJ,26)}</td>
         <td>${sh(j.JOBCODE_NM,14)}</td><td>${j.CAREER_CND_NM||''}</td>
         <td>${sh(j.EMPLYM_STLE_CMMN_MM,9)}</td><td>${sh(j.HOPE_WAGE,13)}</td>
