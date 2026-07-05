@@ -376,6 +376,11 @@ input[type=range]{flex:1;accent-color:var(--accent)}
 
 .reveal{opacity:0;transform:translateY(20px);transition:opacity .6s ease,transform .6s ease}
 .reveal.in{opacity:1;transform:none}
+.reveal-group>.reveal:nth-child(1){transition-delay:0s}
+.reveal-group>.reveal:nth-child(2){transition-delay:.08s}
+.reveal-group>.reveal:nth-child(3){transition-delay:.16s}
+.reveal-group>.reveal:nth-child(4){transition-delay:.24s}
+.reveal-group>.reveal:nth-child(5){transition-delay:.32s}
 #toast{position:fixed;bottom:28px;right:28px;background:var(--bg2);border:1px solid var(--line2);border-radius:10px;padding:11px 18px;font-size:.76rem;color:var(--text);font-weight:600;z-index:600;opacity:0;transform:translateY(8px);transition:all .3s;pointer-events:none}
 
 /* API 로딩 배너 */
@@ -486,10 +491,10 @@ input[type=range]{flex:1;accent-color:var(--accent)}
         <button class="btn-p" onclick="goApp('home',null)">대시보드 보기</button>
         <button class="btn-ghost" onclick="scrollToStory()">데이터 인사이트 ↓</button>
       </div>
-      <div class="hstats">
-        <div><div class="hs-num" id="heroTotal">—</div><div class="hs-label">분석 채용공고</div></div>
-        <div><div class="hs-num" id="heroAvg">—<span>점</span></div><div class="hs-label">시장 평균 점수</div></div>
-        <div><div class="hs-num">6<span>개</span></div><div class="hs-label">진단 지표</div></div>
+      <div class="hstats reveal-group">
+        <div class="reveal"><div class="hs-num" id="heroTotal">—</div><div class="hs-label">분석 채용공고</div></div>
+        <div class="reveal"><div class="hs-num" id="heroAvg">—<span>점</span></div><div class="hs-label">시장 평균 점수</div></div>
+        <div class="reveal"><div class="hs-num">6<span>개</span></div><div class="hs-label">진단 지표</div></div>
       </div>
     </div>
     <div class="hero-right">
@@ -582,22 +587,22 @@ input[type=range]{flex:1;accent-color:var(--accent)}
     <h1 class="pg-title">📈 JobLens <em>Dashboard</em></h1>
     <p class="pg-sub" id="homeSubtitle">서울시 공공 채용공고 실시간 분석 · 데이터 수집 중...</p>
     <div class="api-banner" id="apiBanner"><div class="api-spinner"></div><span id="apiBannerText">서울시 오픈API에서 실시간으로 채용공고 데이터를 수집하고 있습니다. 잠시만 기다려주세요...</span></div>
-    <div class="metrics-row" id="homeMetrics">
-      <div class="mc"><div class="ml">전체 활성 공고</div><div class="mv skeleton sk-text"></div></div>
-      <div class="mc"><div class="ml">평균 점수</div><div class="mv skeleton sk-text"></div></div>
-      <div class="mc"><div class="ml">A등급 비율</div><div class="mv skeleton sk-text"></div></div>
-      <div class="mc"><div class="ml">직무 종류</div><div class="mv skeleton sk-text"></div></div>
-      <div class="mc"><div class="ml">최근 7일 신규</div><div class="mv skeleton sk-text"></div></div>
+    <div class="metrics-row reveal-group" id="homeMetrics">
+      <div class="mc reveal"><div class="ml">전체 활성 공고</div><div class="mv skeleton sk-text"></div></div>
+      <div class="mc reveal"><div class="ml">평균 점수</div><div class="mv skeleton sk-text"></div></div>
+      <div class="mc reveal"><div class="ml">A등급 비율</div><div class="mv skeleton sk-text"></div></div>
+      <div class="mc reveal"><div class="ml">직무 종류</div><div class="mv skeleton sk-text"></div></div>
+      <div class="mc reveal"><div class="ml">최근 7일 신규</div><div class="mv skeleton sk-text"></div></div>
     </div>
     <div class="sec-tag" style="margin-top:4px">오늘의 하이라이트</div>
-    <div class="chart-row" id="highlightRow">
-      <div class="cb highlight-cb">
+    <div class="chart-row reveal-group" id="highlightRow">
+      <div class="cb highlight-cb reveal">
         <div class="hl-icon">🔥</div>
         <div class="hl-label">가장 많이 등록된 직무</div>
         <div class="hl-main skeleton sk-text" id="hlJobType">&nbsp;</div>
         <div class="hl-sub" id="hlJobCount"></div>
       </div>
-      <div class="cb highlight-cb" id="hlTopJobCard" style="cursor:pointer">
+      <div class="cb highlight-cb reveal" id="hlTopJobCard" style="cursor:pointer">
         <div class="hl-icon">🏆</div>
         <div class="hl-label">최신 등록 중 최고 점수</div>
         <div class="hl-main skeleton sk-text" id="hlTopJobName">&nbsp;</div>
@@ -619,17 +624,17 @@ input[type=range]{flex:1;accent-color:var(--accent)}
     <div class="sec-tag">Market Analysis</div>
     <h1 class="pg-title">📊 Market <em>Analysis</em></h1>
     <p class="pg-sub">채용 시장의 직무 분포, 경력 조건, 공고 추이를 실시간으로 분석합니다</p>
-    <div class="chart-row">
+    <div class="chart-row reveal">
       <div class="cb"><div class="ct">Top 10 Job Categories</div><div class="cs">직무 종류별 공고 건수</div><div id="jobTopBars" class="skeleton" style="margin-top:8px;min-height:160px"></div></div>
       <div class="cb"><div class="ct">Career Requirement</div><div class="cs">경력 조건 분포</div><div style="display:flex;gap:18px;align-items:center;margin-top:8px"><svg viewBox="0 0 140 140" width="120" height="120" id="careerPieSvg" class="skeleton"></svg><div class="grade-legend skeleton" id="careerLegend" style="min-height:80px;flex:1"></div></div></div>
     </div>
     <div class="sec-tag">신규 채용공고 추이</div>
-    <div class="full-card"><div class="ct">Daily Job Posting Trend</div><div class="cs">일별 신규 공고 등록 수</div><svg viewBox="0 0 800 110" width="100%" id="trendSvg2" class="skeleton" style="overflow:visible"></svg></div>
-    <div class="chart-row">
+    <div class="full-card reveal"><div class="ct">Daily Job Posting Trend</div><div class="cs">일별 신규 공고 등록 수</div><svg viewBox="0 0 800 110" width="100%" id="trendSvg2" class="skeleton" style="overflow:visible"></svg></div>
+    <div class="chart-row reveal">
       <div class="cb"><div class="ct">Grade Distribution</div><div class="cs">등급별 공고 비율</div><div style="display:flex;gap:18px;align-items:center;margin-top:8px"><svg viewBox="0 0 140 140" width="120" height="120" id="gradePieSvg2" class="skeleton"></svg><div class="grade-legend skeleton" id="gradeLegend2" style="min-height:80px;flex:1"></div></div></div>
       <div class="cb"><div class="ct">Score Distribution</div><div class="cs">점수 분포</div><div class="hist-bars skeleton" id="histBars2"></div><div class="hist-labels"><span>30</span><span>45</span><span>60</span><span>75</span><span>95</span></div></div>
     </div>
-    <div class="gl"><div class="gc" style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px">
+    <div class="gl reveal"><div class="gc" style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px">
       <div><div class="ml">평균 점수</div><div class="mv" id="mktAvg">—</div></div>
       <div><div class="ml">A등급 이상</div><div class="mv" id="mktA">—</div></div>
       <div><div class="ml">직무 종류</div><div class="mv" id="mktJobs">—</div></div>
@@ -637,7 +642,7 @@ input[type=range]{flex:1;accent-color:var(--accent)}
 
     <!-- 시장 평균 vs TOP10 비교 -->
     <div class="sec-tag" style="margin-top:8px">TOP vs AVERAGE</div>
-    <div class="full-card">
+    <div class="full-card reveal">
       <div class="ct">시장 평균 vs TOP10 비교 분석</div>
       <div class="cs">상위 10개 채용공고는 시장 평균 대비 모든 영역에서 높은 점수를 기록하며 명확한 우위를 보인다</div>
       <div style="display:grid;grid-template-columns:1fr 280px;gap:32px;align-items:start;margin-top:16px">
@@ -657,7 +662,7 @@ input[type=range]{flex:1;accent-color:var(--accent)}
 
     <!-- 연봉 vs 종합점수 산점도 / 항목 간 상관관계 -->
     <div class="sec-tag">SCATTER & CORRELATION</div>
-    <div class="chart-row" style="grid-template-columns:1fr 1fr;align-items:stretch">
+    <div class="chart-row reveal" style="grid-template-columns:1fr 1fr;align-items:stretch">
       <div class="cb">
         <div class="ct">급여 vs 종합점수 산점도 분석</div>
         <div class="cs">급여 수준과 공고 품질 점수 사이의 관계를 분석합니다</div>
@@ -783,10 +788,10 @@ input[type=range]{flex:1;accent-color:var(--accent)}
     <div class="sec-tag">Top 100</div>
     <h1 class="pg-title">🏆 Top100 <em>Premium Jobs</em></h1>
     <p class="pg-sub">실시간 수집된 채용공고 중 JobLens Score 기준 상위 100개입니다</p>
-    <div class="metrics-row" style="grid-template-columns:repeat(3,1fr)">
-      <div class="mc"><div class="ml">Top100 평균 점수</div><div class="mv" id="t100avg">—</div></div>
-      <div class="mc"><div class="ml">TOP100 진입 커트라인</div><div class="mv" id="t100cut">—</div></div>
-      <div class="mc"><div class="ml">직무 종류</div><div class="mv" id="t100jobs">—</div></div>
+    <div class="metrics-row reveal-group" style="grid-template-columns:repeat(3,1fr)">
+      <div class="mc reveal"><div class="ml">Top100 평균 점수</div><div class="mv" id="t100avg">—</div></div>
+      <div class="mc reveal"><div class="ml">TOP100 진입 커트라인</div><div class="mv" id="t100cut">—</div></div>
+      <div class="mc reveal"><div class="ml">직무 종류</div><div class="mv" id="t100jobs">—</div></div>
     </div>
     <div class="al al-i">🏆 Top100 우수 공고 특징 — ✅ 직무 설명이 상세 · ✅ 급여 정보 명확 · ✅ 복지 혜택 다양 · ✅ 근무시간·휴일 구체적 · 정보 투명성이 높을수록 높은 점수를 받습니다.</div>
     <div class="chart-row">
@@ -824,18 +829,18 @@ input[type=range]{flex:1;accent-color:var(--accent)}
       <div class="sec-tag">Problem</div>
       <h2 style="font-size:1.6rem;font-weight:800;color:var(--text);letter-spacing:-.03em;margin-bottom:8px">왜 채용공고 품질이 중요한가?</h2>
       <p style="font-size:.86rem;color:var(--muted2);margin-bottom:28px;line-height:1.7">정보가 부족한 채용공고는 지원자의 이탈을 유발하고 기업 이미지에 부정적 영향을 미칩니다.</p>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line2);border-radius:16px;overflow:hidden">
-        <div style="background:var(--bg2);padding:28px 24px">
+      <div class="reveal-group" style="display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line2);border-radius:16px;overflow:hidden">
+        <div class="reveal" style="background:var(--bg2);padding:28px 24px">
           <div style="font-size:2rem;font-weight:800;color:var(--red);letter-spacing:-.04em;margin-bottom:8px" id="aboutCdPct">77%</div>
           <div style="font-size:.84rem;font-weight:700;color:var(--text);margin-bottom:6px">C·D등급 공고 비율</div>
           <div style="font-size:.76rem;color:var(--muted2);line-height:1.6" id="aboutCdDesc">분석된 공고의 77%가 핵심 정보 부족으로 구직자의 지원 판단을 어렵게 만듭니다.</div>
         </div>
-        <div style="background:var(--bg2);padding:28px 24px">
+        <div class="reveal" style="background:var(--bg2);padding:28px 24px">
           <div style="font-size:2rem;font-weight:800;color:var(--yellow);letter-spacing:-.04em;margin-bottom:8px" id="aboutSaPct">2.3%</div>
           <div style="font-size:.84rem;font-weight:700;color:var(--text);margin-bottom:6px">S·A등급 공고 비율</div>
           <div style="font-size:.76rem;color:var(--muted2);line-height:1.6" id="aboutSaDesc">정보가 충분한 최상위 공고는 전체의 2.3%에 불과합니다. 차별화 기회가 열려있습니다.</div>
         </div>
-        <div style="background:var(--bg2);padding:28px 24px">
+        <div class="reveal" style="background:var(--bg2);padding:28px 24px">
           <div style="font-size:2rem;font-weight:800;color:var(--green);letter-spacing:-.04em;margin-bottom:8px" id="aboutLowScore">5.68</div>
           <div style="font-size:.84rem;font-weight:700;color:var(--text);margin-bottom:6px" id="aboutLowLabel">출퇴근편의 평균 점수</div>
           <div style="font-size:.76rem;color:var(--muted2);line-height:1.6" id="aboutLowDesc">6개 항목 중 가장 낮은 점수. 지하철역 정보 한 줄만 추가해도 등급이 올라갑니다.</div>
@@ -896,12 +901,12 @@ input[type=range]{flex:1;accent-color:var(--accent)}
       <!-- 등급 기준 -->
       <div style="background:var(--bg2);border:1px solid var(--line2);border-radius:14px;padding:24px">
         <div style="font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:16px">등급 기준</div>
-        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--line);border-radius:10px;overflow:hidden">
-          <div style="background:var(--bg3);padding:16px;text-align:center"><div style="font-size:1.4rem;font-weight:800;color:#a78bfa;margin-bottom:4px">S</div><div style="font-size:.72rem;font-weight:700;color:var(--text);margin-bottom:3px">90점+</div><div style="font-size:.66rem;color:var(--muted2)">시장 최상위</div></div>
-          <div style="background:var(--bg3);padding:16px;text-align:center"><div style="font-size:1.4rem;font-weight:800;color:#00d68f;margin-bottom:4px">A</div><div style="font-size:.72rem;font-weight:700;color:var(--text);margin-bottom:3px">80점+</div><div style="font-size:.66rem;color:var(--muted2)">정보 매우 충실</div></div>
-          <div style="background:var(--bg3);padding:16px;text-align:center"><div style="font-size:1.4rem;font-weight:800;color:var(--lime);margin-bottom:4px">B</div><div style="font-size:.72rem;font-weight:700;color:var(--text);margin-bottom:3px">70점+</div><div style="font-size:.66rem;color:var(--muted2)">주요 정보 제공</div></div>
-          <div style="background:var(--bg3);padding:16px;text-align:center"><div style="font-size:1.4rem;font-weight:800;color:#ffcc00;margin-bottom:4px">C</div><div style="font-size:.72rem;font-weight:700;color:var(--text);margin-bottom:3px">55점+</div><div style="font-size:.66rem;color:var(--muted2)">일부 보완 필요</div></div>
-          <div style="background:var(--bg3);padding:16px;text-align:center"><div style="font-size:1.4rem;font-weight:800;color:#ff4433;margin-bottom:4px">D</div><div style="font-size:.72rem;font-weight:700;color:var(--text);margin-bottom:3px">~55점</div><div style="font-size:.66rem;color:var(--muted2)">핵심 정보 부족</div></div>
+        <div class="reveal-group" style="display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--line);border-radius:10px;overflow:hidden">
+          <div class="reveal" style="background:var(--bg3);padding:16px;text-align:center"><div style="font-size:1.4rem;font-weight:800;color:#a78bfa;margin-bottom:4px">S</div><div style="font-size:.72rem;font-weight:700;color:var(--text);margin-bottom:3px">90점+</div><div style="font-size:.66rem;color:var(--muted2)">시장 최상위</div></div>
+          <div class="reveal" style="background:var(--bg3);padding:16px;text-align:center"><div style="font-size:1.4rem;font-weight:800;color:#00d68f;margin-bottom:4px">A</div><div style="font-size:.72rem;font-weight:700;color:var(--text);margin-bottom:3px">80점+</div><div style="font-size:.66rem;color:var(--muted2)">정보 매우 충실</div></div>
+          <div class="reveal" style="background:var(--bg3);padding:16px;text-align:center"><div style="font-size:1.4rem;font-weight:800;color:var(--lime);margin-bottom:4px">B</div><div style="font-size:.72rem;font-weight:700;color:var(--text);margin-bottom:3px">70점+</div><div style="font-size:.66rem;color:var(--muted2)">주요 정보 제공</div></div>
+          <div class="reveal" style="background:var(--bg3);padding:16px;text-align:center"><div style="font-size:1.4rem;font-weight:800;color:#ffcc00;margin-bottom:4px">C</div><div style="font-size:.72rem;font-weight:700;color:var(--text);margin-bottom:3px">55점+</div><div style="font-size:.66rem;color:var(--muted2)">일부 보완 필요</div></div>
+          <div class="reveal" style="background:var(--bg3);padding:16px;text-align:center"><div style="font-size:1.4rem;font-weight:800;color:#ff4433;margin-bottom:4px">D</div><div style="font-size:.72rem;font-weight:700;color:var(--text);margin-bottom:3px">~55점</div><div style="font-size:.66rem;color:var(--muted2)">핵심 정보 부족</div></div>
         </div>
       </div>
     </div>
@@ -911,8 +916,8 @@ input[type=range]{flex:1;accent-color:var(--accent)}
       <div class="sec-tag">Data Pipeline</div>
       <h2 style="font-size:1.6rem;font-weight:800;color:var(--text);letter-spacing:-.03em;margin-bottom:8px">데이터 수집 및 처리 파이프라인</h2>
       <p style="font-size:.86rem;color:var(--muted2);margin-bottom:28px;line-height:1.7">서울시 오픈API부터 프론트엔드 서빙까지 자동화된 4단계 파이프라인으로 운영됩니다.</p>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line2);border-radius:16px;overflow:hidden">
-        <div style="background:var(--bg2);padding:28px 22px;position:relative">
+      <div class="reveal-group" style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line2);border-radius:16px;overflow:hidden">
+        <div class="reveal" style="background:var(--bg2);padding:28px 22px;position:relative">
           <div style="font-size:.6rem;font-weight:800;color:rgba(59,110,255,.3);letter-spacing:.1em;margin-bottom:14px">01</div>
           <div style="font-size:1.5rem;margin-bottom:10px">🌐</div>
           <div style="font-size:.88rem;font-weight:800;color:var(--text);margin-bottom:4px">실시간 수집</div>
@@ -920,7 +925,7 @@ input[type=range]{flex:1;accent-color:var(--accent)}
           <div style="font-size:.74rem;color:var(--muted2);line-height:1.65">서울시 GetJobInfo API에서 1,000건씩 페이징하여 전체 공고 수집. 마감 공고 자동 필터링</div>
           <div style="position:absolute;top:50%;right:-8px;transform:translateY(-50%);font-size:.8rem;color:var(--accent);z-index:1">›</div>
         </div>
-        <div style="background:var(--bg2);padding:28px 22px;position:relative">
+        <div class="reveal" style="background:var(--bg2);padding:28px 22px;position:relative">
           <div style="font-size:.6rem;font-weight:800;color:rgba(59,110,255,.3);letter-spacing:.1em;margin-bottom:14px">02</div>
           <div style="font-size:1.5rem;margin-bottom:10px">⚡</div>
           <div style="font-size:.88rem;font-weight:800;color:var(--text);margin-bottom:4px">캐시 관리</div>
@@ -928,7 +933,7 @@ input[type=range]{flex:1;accent-color:var(--accent)}
           <div style="font-size:.74rem;color:var(--muted2);line-height:1.65">수집 데이터를 서버 메모리에 캐싱. TTL 1시간, 만료 시 백그라운드 자동 갱신</div>
           <div style="position:absolute;top:50%;right:-8px;transform:translateY(-50%);font-size:.8rem;color:var(--accent);z-index:1">›</div>
         </div>
-        <div style="background:var(--bg2);padding:28px 22px;position:relative">
+        <div class="reveal" style="background:var(--bg2);padding:28px 22px;position:relative">
           <div style="font-size:.6rem;font-weight:800;color:rgba(59,110,255,.3);letter-spacing:.1em;margin-bottom:14px">03</div>
           <div style="font-size:1.5rem;margin-bottom:10px">📊</div>
           <div style="font-size:.88rem;font-weight:800;color:var(--text);margin-bottom:4px">스코어링</div>
@@ -936,7 +941,7 @@ input[type=range]{flex:1;accent-color:var(--accent)}
           <div style="font-size:.74rem;color:var(--muted2);line-height:1.65">6개 항목 키워드 분석 및 조건 평가로 JobLens Score 자동 산출. S/A/B/C/D 등급 부여</div>
           <div style="position:absolute;top:50%;right:-8px;transform:translateY(-50%);font-size:.8rem;color:var(--accent);z-index:1">›</div>
         </div>
-        <div style="background:var(--bg2);padding:28px 22px">
+        <div class="reveal" style="background:var(--bg2);padding:28px 22px">
           <div style="font-size:.6rem;font-weight:800;color:rgba(59,110,255,.3);letter-spacing:.1em;margin-bottom:14px">04</div>
           <div style="font-size:1.5rem;margin-bottom:10px">🚀</div>
           <div style="font-size:.88rem;font-weight:800;color:var(--text);margin-bottom:4px">API 서빙</div>
@@ -1047,7 +1052,7 @@ window.addEventListener('scroll',()=>{
   document.getElementById('progress').style.width=((window.scrollY/(document.body.scrollHeight-window.innerHeight))*100)+'%';
   document.getElementById('mainNav').classList.toggle('scrolled',window.scrollY>60);
 });
-const revIO=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in')}),{threshold:.08});
+const revIO=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');revIO.unobserve(e.target);}}),{threshold:.08});
 document.querySelectorAll('.reveal').forEach(el=>revIO.observe(el));
 setTimeout(()=>{document.querySelectorAll('.hbf2').forEach(el=>{el.style.width=el.dataset.w+'%'});},700);
 
