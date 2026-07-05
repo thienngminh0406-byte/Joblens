@@ -17,6 +17,13 @@
   --accent:#3b6eff;--ag:#4f7fff;
   --red:#ff4433;--green:#00d68f;--yellow:#ffcc00;--purple:#a78bfa;--lime:#a3e635;
   --text:#e8eaf0;--muted:#6b7280;--muted2:#9ca3af;
+  --fg-rgb:232,234,240;--bg-rgb:12,13,16;
+}
+.light-mode{
+  --bg:#f3f4f7;--bg2:#ffffff;--bg3:#ecedf1;
+  --line:#00000014;--line2:#00000022;
+  --text:#14161c;--muted:#6b7280;--muted2:#4b5563;
+  --fg-rgb:20,22,28;--bg-rgb:243,244,247;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
@@ -27,17 +34,32 @@ body::before{content:'';position:fixed;inset:0;background-image:url('data:image/
 #progress{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--purple));z-index:1000;width:0%}
 
 nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:13px 52px;border-bottom:1px solid transparent;background:transparent;backdrop-filter:blur(0);transition:all .4s}
-nav.scrolled{border-bottom-color:var(--line);background:rgba(12,13,16,.88);backdrop-filter:blur(20px)}
-.nav-logo{font-weight:800;font-size:1.2rem;color:#fff;text-decoration:none;letter-spacing:-.03em;cursor:pointer}
+nav.scrolled{border-bottom-color:var(--line);background:rgba(var(--bg-rgb),.88);backdrop-filter:blur(20px)}
+.nav-logo{font-weight:800;font-size:1.2rem;color:var(--text);text-decoration:none;letter-spacing:-.03em;cursor:pointer}
 .nav-logo span{color:var(--accent)}
 .nav-menu{display:flex;gap:3px}
 .nb{background:none;border:none;color:var(--muted2);font-family:'Pretendard',sans-serif;font-size:.74rem;font-weight:600;padding:7px 11px;border-radius:7px;cursor:pointer;transition:color .2s,background .2s;text-transform:uppercase;letter-spacing:.04em}
-.nb:hover,.nb.active{color:#fff;background:rgba(255,255,255,.06)}
+.nb:hover,.nb.active{color:var(--text);background:rgba(var(--fg-rgb),.06)}
 .nav-right{display:flex;align-items:center;gap:8px}
-.period-select{background:rgba(255,255,255,.06);border:1px solid var(--line2);border-radius:8px;color:var(--muted2);font-family:'Pretendard',sans-serif;font-size:.7rem;padding:6px 10px;outline:none;cursor:pointer}
-.period-select option{background:var(--bg3);color:#fff}
+.period-select{background:rgba(var(--fg-rgb),.06);border:1px solid var(--line2);border-radius:8px;color:var(--muted2);font-family:'Pretendard',sans-serif;font-size:.7rem;padding:6px 10px;outline:none;cursor:pointer}
+.period-select option{background:var(--bg3);color:var(--text)}
 .nav-refresh{display:flex;align-items:center;gap:5px;background:rgba(59,110,255,.12);border:1px solid rgba(59,110,255,.25);color:var(--accent);font-family:'Pretendard',sans-serif;font-size:.7rem;font-weight:700;padding:7px 13px;border-radius:100px;cursor:pointer;transition:opacity .2s}
 .nav-refresh:hover{opacity:.75}
+.theme-toggle{display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:var(--bg2);border:1px solid var(--line2);color:var(--text);font-size:.9rem;border-radius:50%;cursor:pointer;transition:transform .3s,background .2s}
+.theme-toggle:hover{transform:rotate(20deg);background:var(--bg3)}
+.bm-pill{display:flex;align-items:center;gap:5px;background:rgba(255,204,0,.1);border:1px solid rgba(255,204,0,.3);color:var(--yellow);font-family:'Pretendard',sans-serif;font-size:.72rem;font-weight:700;padding:6px 12px;border-radius:100px;cursor:pointer;transition:opacity .2s}
+.bm-pill:hover{opacity:.75}
+.scroll-progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--purple));z-index:250;width:0%;transition:width .1s linear}
+.mobile-tabbar{display:none}
+@media(max-width:768px){
+  .mobile-tabbar{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:220;background:rgba(var(--bg-rgb),.92);backdrop-filter:blur(16px);border-top:1px solid var(--line2);padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
+  .mtb{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:none;color:var(--muted);padding:6px 2px;cursor:pointer;border-radius:10px;transition:color .2s,background .2s}
+  .mtb span{font-size:1.15rem;line-height:1}
+  .mtb small{font-size:.6rem;font-weight:600}
+  .mtb.active{color:var(--accent);background:rgba(59,110,255,.1)}
+  body{padding-bottom:64px}
+  .contact-widget{bottom:76px}
+}
 .nav-status{font-size:.65rem;color:var(--muted);display:flex;align-items:center;gap:5px}
 .status-dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 5px var(--green);animation:blink 2s infinite}
 .status-dot.loading{background:var(--yellow);box-shadow:0 0 5px var(--yellow);animation:spin .8s linear infinite}
@@ -46,28 +68,28 @@ nav.scrolled{border-bottom-color:var(--line);background:rgba(12,13,16,.88);backd
 
 /* LANDING */
 #landing{position:relative;min-height:100vh;display:flex;flex-direction:column;overflow:hidden;z-index:1}
-.l-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);background-size:64px 64px;pointer-events:none}
+.l-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(var(--fg-rgb),.025) 1px,transparent 1px),linear-gradient(90deg,rgba(var(--fg-rgb),.025) 1px,transparent 1px);background-size:64px 64px;pointer-events:none}
 .l-glow{position:absolute;top:8%;left:28%;width:700px;height:700px;border-radius:50%;background:radial-gradient(circle,rgba(59,110,255,.13),transparent 65%);pointer-events:none}
 .hero{flex:1;display:grid;grid-template-columns:1fr 1fr;align-items:center;padding:120px 60px 80px;gap:56px;position:relative;z-index:2}
 .hkicker{display:inline-flex;align-items:center;gap:8px;background:rgba(59,110,255,.1);border:1px solid rgba(59,110,255,.25);padding:5px 14px;border-radius:100px;margin-bottom:26px}
 .hkicker-dot{width:6px;height:6px;background:var(--green);border-radius:50%;animation:blink 2s infinite;box-shadow:0 0 6px var(--green)}
 .hkicker span{font-size:.7rem;font-weight:700;color:var(--green);letter-spacing:.08em;text-transform:uppercase}
-.live-strip{display:inline-flex;align-items:center;gap:14px;background:rgba(255,255,255,.035);border:1px solid var(--line2);padding:9px 18px;border-radius:100px;margin-bottom:26px;backdrop-filter:blur(6px)}
+.live-strip{display:inline-flex;align-items:center;gap:14px;background:rgba(var(--fg-rgb),.035);border:1px solid var(--line2);padding:9px 18px;border-radius:100px;margin-bottom:26px;backdrop-filter:blur(6px)}
 .ls-item{display:flex;align-items:center;gap:6px;font-size:.71rem;font-weight:600;color:var(--muted2);letter-spacing:.01em;white-space:nowrap;font-variant-numeric:tabular-nums}
 .ls-item:first-child{color:var(--green);font-weight:700;text-transform:uppercase;letter-spacing:.06em;font-size:.68rem}
 .ls-dot{width:6px;height:6px;background:var(--green);border-radius:50%;animation:blink 2s infinite;box-shadow:0 0 6px var(--green)}
 .ls-sep{width:1px;height:12px;background:var(--line2)}
 @media(max-width:640px){.live-strip{gap:9px;padding:8px 12px}.ls-item{font-size:.62rem}}
-.hero h1{font-size:clamp(2.5rem,4.2vw,4.8rem);font-weight:800;line-height:1.07;letter-spacing:-.05em;color:#fff;margin-bottom:22px}
+.hero h1{font-size:clamp(2.5rem,4.2vw,4.8rem);font-weight:800;line-height:1.07;letter-spacing:-.05em;color:var(--text);margin-bottom:22px}
 .hero h1 em{font-style:normal;color:var(--accent)}
 .hero-sub{font-size:.96rem;color:var(--muted2);line-height:1.75;max-width:440px;margin-bottom:38px}
 .hbtns{display:flex;align-items:center;gap:12px;margin-bottom:48px}
-.btn-p{background:var(--accent);color:#fff;padding:12px 28px;border-radius:100px;font-size:.88rem;font-weight:700;border:none;cursor:pointer;box-shadow:0 0 28px rgba(59,110,255,.35);transition:transform .15s,box-shadow .15s;font-family:'Pretendard',sans-serif}
+.btn-p{background:var(--accent);color:var(--text);padding:12px 28px;border-radius:100px;font-size:.88rem;font-weight:700;border:none;cursor:pointer;box-shadow:0 0 28px rgba(59,110,255,.35);transition:transform .15s,box-shadow .15s;font-family:'Pretendard',sans-serif}
 .btn-p:hover{transform:translateY(-2px);box-shadow:0 0 44px rgba(59,110,255,.55)}
 .btn-ghost{display:flex;align-items:center;gap:5px;font-size:.84rem;color:var(--muted2);font-weight:500;transition:color .2s;cursor:pointer;border:none;background:none;font-family:'Pretendard',sans-serif}
-.btn-ghost:hover{color:#fff}
+.btn-ghost:hover{color:var(--text)}
 .hstats{display:flex;gap:32px;padding-top:32px;border-top:1px solid var(--line2)}
-.hs-num{font-size:1.9rem;font-weight:800;color:#fff;letter-spacing:-.04em;line-height:1}
+.hs-num{font-size:1.9rem;font-weight:800;color:var(--text);letter-spacing:-.04em;line-height:1}
 .hs-num span{color:var(--accent)}
 .hs-label{font-size:.68rem;color:var(--muted);margin-top:3px}
 .hero-right{position:relative}
@@ -77,9 +99,9 @@ nav.scrolled{border-bottom-color:var(--line);background:rgba(12,13,16,.88);backd
 .live-badge::before{content:'';width:5px;height:5px;background:var(--green);border-radius:50%;box-shadow:0 0 4px var(--green);animation:blink 1.5s infinite}
 .hbar-row2{display:flex;align-items:center;gap:9px;margin-bottom:9px}
 .hbl2{font-size:.72rem;color:var(--muted2);width:58px;flex-shrink:0}
-.hbt2{flex:1;height:5px;background:rgba(255,255,255,.06);border-radius:100px;overflow:hidden}
+.hbt2{flex:1;height:5px;background:rgba(var(--fg-rgb),.06);border-radius:100px;overflow:hidden}
 .hbf2{height:100%;border-radius:100px;transition:width 1.4s cubic-bezier(.16,1,.3,1)}
-.hbv2{font-size:.68rem;color:#fff;font-weight:700;width:24px;text-align:right}
+.hbv2{font-size:.68rem;color:var(--text);font-weight:700;width:24px;text-align:right}
 .hdiv{height:1px;background:var(--line);margin:16px 0}
 .hcard-bottom{display:flex;align-items:center;justify-content:space-between}
 
@@ -95,10 +117,10 @@ nav.scrolled{border-bottom-color:var(--line);background:rgba(12,13,16,.88);backd
 .story-grid{display:grid;grid-template-columns:1fr 1fr}
 .story-left{position:sticky;top:0;height:100vh;display:flex;flex-direction:column;justify-content:center;padding:80px 60px;border-right:1px solid var(--line);background:var(--bg);overflow:hidden}
 .story-glow{position:absolute;inset:-25%;background:radial-gradient(circle at 32% 42%,var(--glow-c,#3b6eff) 0%,transparent 58%);opacity:.22;filter:blur(60px);transition:background 1.1s ease;pointer-events:none;z-index:0}
-.story-grid-bg{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.02) 1px,transparent 1px);background-size:56px 56px;pointer-events:none;z-index:0}
+.story-grid-bg{position:absolute;inset:0;background-image:linear-gradient(rgba(var(--fg-rgb),.02) 1px,transparent 1px),linear-gradient(90deg,rgba(var(--fg-rgb),.02) 1px,transparent 1px);background-size:56px 56px;pointer-events:none;z-index:0}
 .story-left .sec-tag,.story-left .story-hl,.story-left .story-body{position:relative;z-index:1}
 .story-right{padding:0 60px}
-.story-hl{font-size:clamp(1.7rem,2.8vw,3rem);font-weight:800;line-height:1.1;letter-spacing:-.04em;color:#fff;transition:all .5s ease}
+.story-hl{font-size:clamp(1.7rem,2.8vw,3rem);font-weight:800;line-height:1.1;letter-spacing:-.04em;color:var(--text);transition:all .5s ease}
 .story-hl em{font-style:normal;color:var(--accent)}
 .story-body{font-size:.92rem;color:var(--muted2);line-height:1.8;margin-top:16px;max-width:320px;transition:all .5s ease}
 .s-num{font-size:6.5rem;font-weight:800;color:var(--accent);opacity:.06;line-height:1;letter-spacing:-.05em;margin-bottom:-18px}
@@ -107,23 +129,23 @@ nav.scrolled{border-bottom-color:var(--line);background:rgba(12,13,16,.88);backd
 .s-item:last-child{border-bottom:none;padding-bottom:120px}
 .s-tag{font-size:.62rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:10px;display:flex;align-items:center;gap:5px}
 .s-tag::before{content:'';width:13px;height:1px;background:var(--accent)}
-.s-item h3{font-size:1.35rem;font-weight:800;color:#fff;letter-spacing:-.03em;margin-bottom:11px;line-height:1.2}
+.s-item h3{font-size:1.35rem;font-weight:800;color:var(--text);letter-spacing:-.03em;margin-bottom:11px;line-height:1.2}
 .s-item p{font-size:.85rem;color:var(--muted2);line-height:1.75}
 .s-insight{background:var(--bg3);border:1px solid var(--line2);border-radius:11px;padding:16px 18px;margin-top:18px}
 .s-insight-label{font-size:.6rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:9px}
 .mbr{display:flex;align-items:center;gap:7px;margin-bottom:6px}
 .mbl{font-size:.7rem;color:var(--muted2);width:62px;flex-shrink:0}
-.mbt{flex:1;height:4px;background:rgba(255,255,255,.06);border-radius:100px;overflow:hidden}
+.mbt{flex:1;height:4px;background:rgba(var(--fg-rgb),.06);border-radius:100px;overflow:hidden}
 .mbf{height:100%;border-radius:100px}
 .mbv{font-size:.62rem;color:var(--muted);width:28px;text-align:right;font-weight:600}
 .stat-pill{display:inline-flex;align-items:baseline;gap:7px;background:rgba(59,110,255,.1);border:1px solid rgba(59,110,255,.2);border-radius:8px;padding:9px 14px;margin-top:14px}
 .sp-num{font-size:1.9rem;font-weight:800;color:var(--accent);letter-spacing:-.04em;line-height:1}
 .sp-text{font-size:.75rem;color:var(--muted2)}
 .qblock{border-left:2px solid var(--accent);padding-left:16px;margin-top:16px}
-.qblock p{font-size:.86rem;color:rgba(255,255,255,.68);line-height:1.7;font-style:italic;font-weight:300}
+.qblock p{font-size:.86rem;color:rgba(var(--fg-rgb),.68);line-height:1.7;font-style:italic;font-weight:300}
 .qblock cite{font-size:.68rem;color:var(--muted);font-style:normal;margin-top:5px;display:block}
 .bq{background:var(--bg2);border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:96px 60px;text-align:center;position:relative;z-index:1}
-.bq-text{font-size:clamp(1.4rem,3vw,2.7rem);font-weight:700;line-height:1.3;letter-spacing:-.03em;color:#fff;max-width:800px;margin:0 auto}
+.bq-text{font-size:clamp(1.4rem,3vw,2.7rem);font-weight:700;line-height:1.3;letter-spacing:-.03em;color:var(--text);max-width:800px;margin:0 auto}
 .bq-text em{font-style:normal;color:var(--accent)}
 .bq-sub{font-size:.82rem;color:var(--muted);margin-top:18px}
 
@@ -131,20 +153,20 @@ nav.scrolled{border-bottom-color:var(--line);background:rgba(12,13,16,.88);backd
 .app-section{position:relative;z-index:1;padding-bottom:80px}
 .app-nav{display:flex;gap:0;border-bottom:1px solid var(--line);padding:0 52px;background:var(--bg);position:sticky;top:54px;z-index:100;overflow-x:auto}
 .anb{background:none;border:none;color:var(--muted2);font-family:'Pretendard',sans-serif;font-size:.74rem;font-weight:600;padding:12px 16px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .2s,border-color .2s;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
-.anb:hover,.anb.active{color:#fff;border-bottom-color:var(--accent)}
+.anb:hover,.anb.active{color:var(--text);border-bottom-color:var(--accent)}
 
 .page{display:none;padding:36px 52px 52px;position:relative;z-index:1}
 .page.active{display:block}
 .sec-tag{font-size:.65rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:7px}
 .sec-tag::before{content:'';width:18px;height:1px;background:var(--accent)}
-.pg-title{font-size:clamp(1.4rem,2vw,2.3rem);font-weight:800;color:#fff;letter-spacing:-.04em;margin-bottom:7px;line-height:1.1}
+.pg-title{font-size:clamp(1.4rem,2vw,2.3rem);font-weight:800;color:var(--text);letter-spacing:-.04em;margin-bottom:7px;line-height:1.1}
 .pg-title em{font-style:normal;color:var(--accent)}
 .pg-sub{font-size:.82rem;color:var(--muted2);margin-bottom:32px;line-height:1.6}
 
 .metrics-row{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--line);border:1px solid var(--line2);border-radius:15px;overflow:hidden;margin-bottom:18px}
 .mc{background:var(--bg2);padding:22px 18px}
 .ml{font-size:.62rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
-.mv{font-size:1.8rem;font-weight:800;color:#fff;letter-spacing:-.04em;line-height:1}
+.mv{font-size:1.8rem;font-weight:800;color:var(--text);letter-spacing:-.04em;line-height:1}
 .ms{font-size:.68rem;color:var(--muted2);margin-top:4px}
 .chart-row{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line2);border-radius:15px;overflow:hidden;margin-bottom:18px}
 .cb{background:var(--bg2);padding:26px}
@@ -157,19 +179,21 @@ nav.scrolled{border-bottom-color:var(--line);background:rgba(12,13,16,.88);backd
 .grade-legend{display:flex;flex-direction:column;gap:6px;margin-top:12px}
 .gli{display:flex;align-items:center;gap:6px;font-size:.72rem;color:var(--muted2)}
 .gd{width:9px;height:9px;border-radius:2px;flex-shrink:0}
-.gp{margin-left:auto;font-weight:700;color:#fff}
+.gp{margin-left:auto;font-weight:700;color:var(--text)}
 .hbar-row{display:flex;align-items:center;gap:9px;margin-bottom:8px}
 .hbl{font-size:.7rem;color:var(--muted2);width:120px;flex-shrink:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;text-align:right}
-.hbt{flex:1;height:5px;background:rgba(255,255,255,.05);border-radius:100px;overflow:hidden}
+.hbt{flex:1;height:5px;background:rgba(var(--fg-rgb),.05);border-radius:100px;overflow:hidden}
 .hbf{height:100%;border-radius:100px;background:var(--accent);transition:width 1.2s cubic-bezier(.16,1,.3,1)}
 .hbv{font-size:.65rem;color:var(--muted);width:36px;text-align:right;font-weight:600}
 .recent-jobs{display:flex;flex-direction:column;gap:9px;margin-bottom:18px}
 .rj{background:var(--bg2);border:1px solid var(--line2);border-radius:12px;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;transition:border-color .2s,background .2s;cursor:pointer}
 .rj:focus-visible,#jtb tr:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .rj:hover{border-color:rgba(59,110,255,.4);background:var(--bg3)}
-.rj-co{font-size:.82rem;font-weight:800;color:#fff;margin-bottom:3px}
+.rj-co{font-size:.82rem;font-weight:800;color:var(--text);margin-bottom:3px}
 .rj-ti{font-size:.74rem;color:var(--muted2)}
 .rj-right{display:flex;flex-direction:column;align-items:flex-end;gap:5px}
+.rj-star{background:none;border:none;font-size:1.1rem;cursor:pointer;color:var(--yellow);padding:4px;line-height:1;transition:transform .15s}
+.rj-star:hover{transform:scale(1.2)}
 .rj-sc{font-size:1.2rem;font-weight:800;color:var(--accent);letter-spacing:-.03em}
 .dtw{overflow-x:auto;border:1px solid var(--line2);border-radius:13px;background:var(--bg2)}
 table{width:100%;border-collapse:collapse;font-size:.74rem}
@@ -178,7 +202,7 @@ tbody tr{border-bottom:1px solid var(--line);transition:background .15s;cursor:p
 tbody tr:hover{background:rgba(59,110,255,.05)}
 tbody tr:last-child{border-bottom:none}
 td{padding:9px 13px;color:var(--muted2);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle}
-td.bold{color:#fff;font-weight:600}
+td.bold{color:var(--text);font-weight:600}
 .gb{display:inline-block;padding:2px 7px;border-radius:5px;font-size:.62rem;font-weight:800;letter-spacing:.05em}
 .g-S{background:rgba(167,139,250,.15);color:var(--purple)}
 .g-A{background:rgba(0,214,143,.12);color:var(--green)}
@@ -186,29 +210,29 @@ td.bold{color:#fff;font-weight:600}
 .g-C{background:rgba(255,204,0,.1);color:var(--yellow)}
 .g-D{background:rgba(255,68,51,.1);color:var(--red)}
 .sbar{display:flex;gap:9px;margin-bottom:14px;flex-wrap:wrap}
-.si{flex:1;min-width:180px;background:var(--bg2);border:1px solid var(--line2);border-radius:9px;padding:9px 13px;color:#fff;font-family:'Pretendard',sans-serif;font-size:.84rem;outline:none;transition:border-color .2s}
+.si{flex:1;min-width:180px;background:var(--bg2);border:1px solid var(--line2);border-radius:9px;padding:9px 13px;color:var(--text);font-family:'Pretendard',sans-serif;font-size:.84rem;outline:none;transition:border-color .2s}
 .si:focus{border-color:var(--accent)}
 .si::placeholder{color:var(--muted)}
 .fs{background:var(--bg2);border:1px solid var(--line2);border-radius:9px;padding:9px 11px;color:var(--muted2);font-family:'Pretendard',sans-serif;font-size:.78rem;outline:none;cursor:pointer}
 .fs:focus{border-color:var(--accent)}
-.fs option{background:var(--bg3);color:#fff}
+.fs option{background:var(--bg3);color:var(--text)}
 .sc{font-size:.75rem;color:var(--muted);margin-bottom:11px}
-.sc b{color:#fff}
+.sc b{color:var(--text)}
 .pgn{display:flex;justify-content:center;align-items:center;gap:4px;margin-top:16px}
 .pb{background:var(--bg2);border:1px solid var(--line2);color:var(--muted2);padding:5px 11px;border-radius:6px;font-family:'Pretendard',sans-serif;font-size:.72rem;font-weight:600;cursor:pointer;transition:all .2s}
-.pb:hover,.pb.cur{background:var(--accent);border-color:var(--accent);color:#fff}
+.pb:hover,.pb.cur{background:var(--accent);border-color:var(--accent);color:var(--text)}
 .fg{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line2);border-radius:15px;overflow:hidden;margin-bottom:9px}
 .fb{background:var(--bg2);padding:24px}
 .fbt{font-size:.62rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
 .ff{margin-bottom:13px}
-.ff label{display:block;font-size:.62rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.32);margin-bottom:5px}
-.ff input,.ff select,.ff textarea{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--line2);border-radius:7px;padding:8px 11px;color:#fff;font-family:'Pretendard',sans-serif;font-size:.82rem;outline:none;transition:border-color .2s}
+.ff label{display:block;font-size:.62rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(var(--fg-rgb),.32);margin-bottom:5px}
+.ff input,.ff select,.ff textarea{width:100%;background:rgba(var(--fg-rgb),.04);border:1px solid var(--line2);border-radius:7px;padding:8px 11px;color:var(--text);font-family:'Pretendard',sans-serif;font-size:.82rem;outline:none;transition:border-color .2s}
 .ff input:focus,.ff select:focus,.ff textarea:focus{border-color:var(--accent)}
 .ff input::placeholder,.ff textarea::placeholder{color:var(--muted)}
-.ff select option{background:var(--bg3);color:#fff}
+.ff select option{background:var(--bg3);color:var(--text)}
 .ff textarea{resize:vertical;line-height:1.6}
 .ff-full{background:var(--bg2);padding:20px 24px;border:1px solid var(--line2);border-radius:15px;margin-bottom:9px}
-.btn-diag{background:var(--accent);color:#fff;padding:11px 32px;border-radius:100px;font-family:'Pretendard',sans-serif;font-size:.86rem;font-weight:700;border:none;cursor:pointer;box-shadow:0 0 24px rgba(59,110,255,.3);transition:transform .15s,box-shadow .15s}
+.btn-diag{background:var(--accent);color:var(--text);padding:11px 32px;border-radius:100px;font-family:'Pretendard',sans-serif;font-size:.86rem;font-weight:700;border:none;cursor:pointer;box-shadow:0 0 24px rgba(59,110,255,.3);transition:transform .15s,box-shadow .15s}
 .btn-diag:hover{transform:translateY(-2px);box-shadow:0 0 36px rgba(59,110,255,.5)}
 .dm{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line2);border-radius:13px;overflow:hidden;margin-bottom:16px}
 .dmc{background:var(--bg2);padding:18px 16px}
@@ -217,8 +241,8 @@ td.bold{color:#fff;font-weight:600}
 .dr .cb:first-child svg{flex:1;min-height:460px}
 .sct{width:100%;border-collapse:collapse;font-size:.76rem}
 .sct th{text-align:left;color:var(--muted);font-weight:700;font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;padding:6px 4px;border-bottom:1px solid var(--line)}
-.sct td{padding:7px 4px;border-bottom:1px solid rgba(255,255,255,.04);color:var(--muted2)}
-.sct td:first-child{color:#fff;font-weight:600}
+.sct td{padding:7px 4px;border-bottom:1px solid rgba(var(--fg-rgb),.04);color:var(--muted2)}
+.sct td:first-child{color:var(--text);font-weight:600}
 .al{padding:10px 14px;border-radius:8px;font-size:.78rem;line-height:1.6;margin-bottom:8px}
 .al-w{background:rgba(255,204,0,.07);border:1px solid rgba(255,204,0,.2);color:var(--yellow)}
 .al-i{background:rgba(59,110,255,.07);border:1px solid rgba(59,110,255,.2);color:var(--ag)}
@@ -226,7 +250,7 @@ td.bold{color:#fff;font-weight:600}
 .t100-card{background:var(--bg2);border:1px solid var(--line2);border-radius:12px;padding:18px 20px;display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center;transition:border-color .2s,background .2s;margin-bottom:8px}
 .t100-card:hover{border-color:rgba(59,110,255,.35);background:var(--bg3)}
 .t100-rank{font-size:.65rem;font-weight:800;color:var(--accent);margin-bottom:5px}
-.t100-title{font-size:.9rem;font-weight:800;color:#fff;margin-bottom:4px;letter-spacing:-.01em}
+.t100-title{font-size:.9rem;font-weight:800;color:var(--text);margin-bottom:4px;letter-spacing:-.01em}
 .t100-meta{font-size:.72rem;color:var(--muted2)}
 .t100-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
 .t100-score{font-size:1.4rem;font-weight:800;color:var(--accent);letter-spacing:-.03em}
@@ -240,19 +264,19 @@ input[type=range]{flex:1;accent-color:var(--accent)}
 .about-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line2);border-radius:15px;overflow:hidden;margin-bottom:18px}
 .ac{background:var(--bg2);padding:24px}
 .ac-icon{font-size:1.5rem;margin-bottom:9px}
-.ac-title{font-size:.84rem;font-weight:800;color:#fff;margin-bottom:6px;letter-spacing:-.01em}
+.ac-title{font-size:.84rem;font-weight:800;color:var(--text);margin-bottom:6px;letter-spacing:-.01em}
 .ac-text{font-size:.72rem;color:var(--muted2);line-height:1.7}
 .gl{display:grid;gap:1px;background:var(--line);border:1px solid var(--line2);border-radius:15px;overflow:hidden;margin-bottom:18px}
 .gc{background:var(--bg2);padding:24px 20px}
 .ps{display:flex;align-items:flex-start;gap:11px;padding:14px 0;border-bottom:1px solid var(--line)}
 .ps:last-child{border-bottom:none}
-.pn{flex-shrink:0;width:24px;height:24px;border-radius:7px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:.68rem;font-weight:800;color:#fff}
+.pn{flex-shrink:0;width:24px;height:24px;border-radius:7px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:.68rem;font-weight:800;color:var(--text)}
 .pt{font-size:.78rem;color:var(--muted2);line-height:1.6}
-.pt b{color:#fff;font-weight:700}
+.pt b{color:var(--text);font-weight:700}
 .mo{display:none;position:fixed;inset:0;background:rgba(10,10,14,.82);z-index:400;backdrop-filter:blur(10px);align-items:center;justify-content:center}
 
 .contact-widget{position:fixed;bottom:24px;right:24px;z-index:450;display:flex;flex-direction:column;align-items:flex-end;gap:12px}
-.contact-fab{position:relative;width:58px;height:58px;border-radius:50%;border:2px solid rgba(255,255,255,.15);padding:0;cursor:pointer;background:var(--bg2);box-shadow:0 6px 24px rgba(0,0,0,.4);transition:transform .2s,box-shadow .2s;overflow:visible}
+.contact-fab{position:relative;width:58px;height:58px;border-radius:50%;border:2px solid rgba(var(--fg-rgb),.15);padding:0;cursor:pointer;background:var(--bg2);box-shadow:0 6px 24px rgba(0,0,0,.4);transition:transform .2s,box-shadow .2s;overflow:visible}
 .contact-fab:hover{transform:translateY(-3px) scale(1.05);box-shadow:0 10px 30px rgba(59,110,255,.35)}
 .contact-fab svg{width:100%;height:100%;border-radius:50%;display:block}
 .contact-fab-dot{position:absolute;top:2px;right:2px;width:12px;height:12px;background:var(--green);border:2px solid var(--bg2);border-radius:50%;animation:blink 2s infinite}
@@ -261,35 +285,35 @@ input[type=range]{flex:1;accent-color:var(--accent)}
 .contact-card-head{display:flex;align-items:center;gap:10px;margin-bottom:10px;position:relative}
 .contact-avatar-sm{width:42px;height:42px;border-radius:50%;overflow:hidden;flex-shrink:0}
 .contact-avatar-sm svg{width:100%;height:100%;display:block}
-.contact-name{font-size:.85rem;font-weight:700;color:#fff}
+.contact-name{font-size:.85rem;font-weight:700;color:var(--text)}
 .contact-role{font-size:.68rem;color:var(--muted)}
 .contact-close{position:absolute;top:-4px;right:-4px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:.85rem;padding:4px}
-.contact-close:hover{color:#fff}
+.contact-close:hover{color:var(--text)}
 .contact-desc{font-size:.74rem;color:var(--muted2);line-height:1.6;margin-bottom:14px}
-.contact-link{display:flex;align-items:center;gap:10px;width:100%;background:var(--bg3);border:1px solid var(--line2);border-radius:10px;padding:9px 11px;margin-bottom:8px;text-decoration:none;color:#fff;cursor:pointer;font-family:inherit;text-align:left;transition:border-color .2s,background .2s}
+.contact-link{display:flex;align-items:center;gap:10px;width:100%;background:var(--bg3);border:1px solid var(--line2);border-radius:10px;padding:9px 11px;margin-bottom:8px;text-decoration:none;color:var(--text);cursor:pointer;font-family:inherit;text-align:left;transition:border-color .2s,background .2s}
 .contact-link:last-child{margin-bottom:0}
 .contact-link:hover{border-color:var(--accent);background:rgba(59,110,255,.06)}
 .contact-link b{font-size:.76rem;font-weight:700}
 .contact-link small{font-size:.66rem;color:var(--muted)}
 .contact-icon-wrap{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-@media(max-width:640px){.contact-widget{bottom:16px;right:16px}.contact-card{width:calc(100vw - 32px);max-width:280px}}
+@media(max-width:640px){.contact-widget{bottom:76px;right:16px}.contact-card{width:calc(100vw - 32px);max-width:280px}}
 .mo.show{display:flex}
 .mbox{background:var(--bg2);border:1px solid var(--line2);border-radius:16px;padding:30px;max-width:600px;width:90%;max-height:80vh;overflow-y:auto;position:relative}
 .mc-close{position:absolute;top:16px;right:16px;background:none;border:none;color:var(--muted);font-size:1rem;cursor:pointer;transition:color .2s}
-.mc-close:hover{color:#fff}
-.mo-title{font-size:.98rem;font-weight:800;color:#fff;letter-spacing:-.02em;margin-bottom:4px}
+.mc-close:hover{color:var(--text)}
+.mo-title{font-size:.98rem;font-weight:800;color:var(--text);letter-spacing:-.02em;margin-bottom:4px}
 .mo-company{font-size:.75rem;color:var(--ag);margin-bottom:16px}
 .mo-row{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:12px}
 .mo-field{background:var(--bg3);border-radius:8px;padding:10px}
 .mo-fl{font-size:.56rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
-.mo-fv{font-size:.75rem;color:rgba(255,255,255,.82);line-height:1.5}
+.mo-fv{font-size:.75rem;color:rgba(var(--fg-rgb),.82);line-height:1.5}
 .mo-body{font-size:.72rem;color:var(--muted2);line-height:1.7;background:var(--bg3);border-radius:8px;padding:11px;white-space:pre-wrap;margin-bottom:9px}
 .lov{display:none;position:fixed;inset:0;background:rgba(12,13,16,.9);z-index:500;align-items:center;justify-content:center;backdrop-filter:blur(10px)}
 .lov.show{display:flex}
 .lbox{text-align:center;padding:52px}
 .lic{font-size:2.4rem;animation:fl 2s ease-in-out infinite}
 @keyframes fl{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
-.lt{font-size:1.15rem;font-weight:800;color:#fff;letter-spacing:-.03em;margin-top:13px}
+.lt{font-size:1.15rem;font-weight:800;color:var(--text);letter-spacing:-.03em;margin-top:13px}
 .ls{font-size:.75rem;color:var(--muted);margin-top:4px}
 .lb{width:190px;height:2px;background:var(--line2);border-radius:100px;margin:17px auto 0;overflow:hidden}
 .lbf{height:100%;background:linear-gradient(90deg,var(--accent),var(--purple));border-radius:100px;animation:bl 1.5s ease forwards}
@@ -303,7 +327,7 @@ input[type=range]{flex:1;accent-color:var(--accent)}
 
 .reveal{opacity:0;transform:translateY(20px);transition:opacity .6s ease,transform .6s ease}
 .reveal.in{opacity:1;transform:none}
-#toast{position:fixed;bottom:28px;right:28px;background:var(--bg2);border:1px solid var(--line2);border-radius:10px;padding:11px 18px;font-size:.76rem;color:#fff;font-weight:600;z-index:600;opacity:0;transform:translateY(8px);transition:all .3s;pointer-events:none}
+#toast{position:fixed;bottom:28px;right:28px;background:var(--bg2);border:1px solid var(--line2);border-radius:10px;padding:11px 18px;font-size:.76rem;color:var(--text);font-weight:600;z-index:600;opacity:0;transform:translateY(8px);transition:all .3s;pointer-events:none}
 
 /* API 로딩 배너 */
 .api-banner{background:rgba(59,110,255,.08);border:1px solid rgba(59,110,255,.2);border-radius:12px;padding:14px 20px;margin-bottom:20px;display:flex;align-items:center;gap:12px;font-size:.82rem;color:var(--ag)}
@@ -320,11 +344,22 @@ input[type=range]{flex:1;accent-color:var(--accent)}
 </style>
 </head>
 <body>
+<script>if(localStorage.getItem('joblens_theme')==='light')document.body.classList.add('light-mode');</script>
+<div class="scroll-progress" id="scrollProgress"></div>
 <div id="progress"></div>
 <div id="cur"></div>
 <div id="cur-r"></div>
 <div class="lov" id="lov"><div class="lbox"><div class="lic">📊</div><div class="lt">진단 중입니다</div><div class="ls">시장 데이터와 비교 분석 중...</div><div class="lb"><div class="lbf" id="lbf"></div></div></div></div>
 <div class="mo" id="mo" role="dialog" aria-modal="true" aria-labelledby="moContent" onclick="closeMo(event)" onkeydown="if(event.key==='Escape')closeMo()"><div class="mbox"><button class="mc-close" onclick="closeMo()" aria-label="닫기">✕</button><div id="moContent"></div></div></div>
+
+<!-- 모바일 하단 탭바 -->
+<nav class="mobile-tabbar" id="mobileTabbar" aria-label="주요 메뉴">
+  <button class="mtb" id="mtb-home" onclick="goApp('home',this)"><span>📈</span><small>Home</small></button>
+  <button class="mtb" id="mtb-market" onclick="goApp('market',this)"><span>📊</span><small>Market</small></button>
+  <button class="mtb" id="mtb-search" onclick="goApp('search',this)"><span>🔍</span><small>Search</small></button>
+  <button class="mtb" id="mtb-diagnosis" onclick="goApp('diagnosis',this)"><span>📝</span><small>Diagnosis</small></button>
+  <button class="mtb" id="mtb-top100" onclick="goApp('top100',this)"><span>🏆</span><small>Top100</small></button>
+</nav>
 
 <!-- 개발자 연락처 위젯 -->
 <div class="contact-widget" id="contactWidget">
@@ -377,6 +412,8 @@ input[type=range]{flex:1;accent-color:var(--accent)}
       <option value="90">최근 3개월</option>
     </select>
     <div class="nav-status"><div class="status-dot" id="statusDot"></div><span id="statusText">데이터 수집 중...</span></div>
+    <button class="bm-pill" onclick="openBookmarksPanel()" aria-label="찜한 공고 목록">⭐ <span id="bmCount">0</span></button>
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" aria-label="테마 전환">🌙</button>
     <button class="nav-refresh" onclick="refreshData()">🔄 새로고침</button>
   </div>
 </nav>
@@ -417,7 +454,7 @@ input[type=range]{flex:1;accent-color:var(--accent)}
         <div class="hdiv"></div>
         <div class="hcard-bottom">
           <div><div style="font-size:1.7rem;font-weight:800;color:var(--green);letter-spacing:-.04em">B</div><div style="font-size:.62rem;color:var(--muted)">등급</div></div>
-          <div style="text-align:right"><div style="font-size:1.7rem;font-weight:800;color:#fff;letter-spacing:-.04em">76점</div><div style="font-size:.62rem;color:var(--muted)">시장 상위 ~15%</div></div>
+          <div style="text-align:right"><div style="font-size:1.7rem;font-weight:800;color:var(--text);letter-spacing:-.04em">76점</div><div style="font-size:.62rem;color:var(--muted)">시장 상위 ~15%</div></div>
         </div>
       </div>
     </div>
@@ -560,9 +597,9 @@ input[type=range]{flex:1;accent-color:var(--accent)}
         <div class="ct">급여 vs 종합점수 산점도 분석</div>
         <div class="cs">급여 수준과 공고 품질 점수 사이의 관계를 분석합니다</div>
         <svg viewBox="0 0 500 220" width="100%" id="scatterSvg" class="skeleton" style="overflow:visible;display:block;max-width:100%;margin-top:16px"></svg>
-        <div id="scatterEmptyState" style="display:none;margin-top:16px;padding:28px 20px;text-align:center;background:rgba(255,255,255,.02);border:1px dashed rgba(255,255,255,.12);border-radius:12px">
+        <div id="scatterEmptyState" style="display:none;margin-top:16px;padding:28px 20px;text-align:center;background:rgba(var(--fg-rgb),.02);border:1px dashed rgba(var(--fg-rgb),.12);border-radius:12px">
           <div style="font-size:1.8rem;margin-bottom:10px;opacity:.55">💰</div>
-          <div style="font-size:.85rem;font-weight:700;color:rgba(255,255,255,.7);margin-bottom:6px">급여 정보가 포함된 공고가 부족합니다</div>
+          <div style="font-size:.85rem;font-weight:700;color:rgba(var(--fg-rgb),.7);margin-bottom:6px">급여 정보가 포함된 공고가 부족합니다</div>
           <div id="scatterEmptyDesc" style="font-size:.75rem;color:var(--muted);line-height:1.65;max-width:340px;margin:0 auto"></div>
         </div>
         <div style="display:flex;flex-direction:column;gap:8px;margin-top:14px">
@@ -690,38 +727,38 @@ input[type=range]{flex:1;accent-color:var(--accent)}
         <div style="width:6px;height:6px;background:var(--green);border-radius:50%;box-shadow:0 0 6px var(--green);animation:blink 2s infinite"></div>
         <span style="font-size:.7rem;font-weight:700;color:var(--green);letter-spacing:.08em;text-transform:uppercase">HR Analytics Platform</span>
       </div>
-      <h1 style="font-size:clamp(2rem,4vw,3.8rem);font-weight:800;color:#fff;letter-spacing:-.05em;line-height:1.1;margin-bottom:18px">채용공고의 <span style="color:var(--accent)">정보 품질</span>을<br>데이터로 측정합니다</h1>
+      <h1 style="font-size:clamp(2rem,4vw,3.8rem);font-weight:800;color:var(--text);letter-spacing:-.05em;line-height:1.1;margin-bottom:18px">채용공고의 <span style="color:var(--accent)">정보 품질</span>을<br>데이터로 측정합니다</h1>
       <p style="font-size:.96rem;color:var(--muted2);line-height:1.75;max-width:560px;margin:0 auto 36px">서울시 공공 채용공고 20,000건을 실시간으로 수집하고<br>6가지 지표로 정보 품질을 자동 분석하는 HR Analytics 서비스</p>
       <div style="display:flex;align-items:center;justify-content:center;gap:32px;flex-wrap:wrap">
-        <div style="text-align:center"><div style="font-size:2.2rem;font-weight:800;color:#fff;letter-spacing:-.04em;line-height:1">20,000<span style="color:var(--accent)">+</span></div><div style="font-size:.72rem;color:var(--muted);margin-top:4px">실시간 채용공고</div></div>
+        <div style="text-align:center"><div style="font-size:2.2rem;font-weight:800;color:var(--text);letter-spacing:-.04em;line-height:1">20,000<span style="color:var(--accent)">+</span></div><div style="font-size:.72rem;color:var(--muted);margin-top:4px">실시간 채용공고</div></div>
         <div style="width:1px;height:40px;background:var(--line2)"></div>
-        <div style="text-align:center"><div style="font-size:2.2rem;font-weight:800;color:#fff;letter-spacing:-.04em;line-height:1">6<span style="color:var(--accent)">개</span></div><div style="font-size:.72rem;color:var(--muted);margin-top:4px">진단 지표</div></div>
+        <div style="text-align:center"><div style="font-size:2.2rem;font-weight:800;color:var(--text);letter-spacing:-.04em;line-height:1">6<span style="color:var(--accent)">개</span></div><div style="font-size:.72rem;color:var(--muted);margin-top:4px">진단 지표</div></div>
         <div style="width:1px;height:40px;background:var(--line2)"></div>
-        <div style="text-align:center"><div style="font-size:2.2rem;font-weight:800;color:#fff;letter-spacing:-.04em;line-height:1">1<span style="color:var(--accent)">시간</span></div><div style="font-size:.72rem;color:var(--muted);margin-top:4px">자동 갱신 주기</div></div>
+        <div style="text-align:center"><div style="font-size:2.2rem;font-weight:800;color:var(--text);letter-spacing:-.04em;line-height:1">1<span style="color:var(--accent)">시간</span></div><div style="font-size:.72rem;color:var(--muted);margin-top:4px">자동 갱신 주기</div></div>
         <div style="width:1px;height:40px;background:var(--line2)"></div>
-        <div style="text-align:center"><div style="font-size:2.2rem;font-weight:800;color:#fff;letter-spacing:-.04em;line-height:1">5<span style="color:var(--accent)">등급</span></div><div style="font-size:.72rem;color:var(--muted);margin-top:4px">S·A·B·C·D</div></div>
+        <div style="text-align:center"><div style="font-size:2.2rem;font-weight:800;color:var(--text);letter-spacing:-.04em;line-height:1">5<span style="color:var(--accent)">등급</span></div><div style="font-size:.72rem;color:var(--muted);margin-top:4px">S·A·B·C·D</div></div>
       </div>
     </div>
 
     <!-- PROBLEM -->
     <div style="margin-bottom:48px">
       <div class="sec-tag">Problem</div>
-      <h2 style="font-size:1.6rem;font-weight:800;color:#fff;letter-spacing:-.03em;margin-bottom:8px">왜 채용공고 품질이 중요한가?</h2>
+      <h2 style="font-size:1.6rem;font-weight:800;color:var(--text);letter-spacing:-.03em;margin-bottom:8px">왜 채용공고 품질이 중요한가?</h2>
       <p style="font-size:.86rem;color:var(--muted2);margin-bottom:28px;line-height:1.7">정보가 부족한 채용공고는 지원자의 이탈을 유발하고 기업 이미지에 부정적 영향을 미칩니다.</p>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line2);border-radius:16px;overflow:hidden">
         <div style="background:var(--bg2);padding:28px 24px">
           <div style="font-size:2rem;font-weight:800;color:var(--red);letter-spacing:-.04em;margin-bottom:8px">77%</div>
-          <div style="font-size:.84rem;font-weight:700;color:#fff;margin-bottom:6px">C·D등급 공고 비율</div>
+          <div style="font-size:.84rem;font-weight:700;color:var(--text);margin-bottom:6px">C·D등급 공고 비율</div>
           <div style="font-size:.76rem;color:var(--muted2);line-height:1.6">분석된 공고의 77%가 핵심 정보 부족으로 구직자의 지원 판단을 어렵게 만듭니다.</div>
         </div>
         <div style="background:var(--bg2);padding:28px 24px">
           <div style="font-size:2rem;font-weight:800;color:var(--yellow);letter-spacing:-.04em;margin-bottom:8px">2.3%</div>
-          <div style="font-size:.84rem;font-weight:700;color:#fff;margin-bottom:6px">S·A등급 공고 비율</div>
+          <div style="font-size:.84rem;font-weight:700;color:var(--text);margin-bottom:6px">S·A등급 공고 비율</div>
           <div style="font-size:.76rem;color:var(--muted2);line-height:1.6">정보가 충분한 최상위 공고는 전체의 2.3%에 불과합니다. 차별화 기회가 열려있습니다.</div>
         </div>
         <div style="background:var(--bg2);padding:28px 24px">
           <div style="font-size:2rem;font-weight:800;color:var(--green);letter-spacing:-.04em;margin-bottom:8px">5.68</div>
-          <div style="font-size:.84rem;font-weight:700;color:#fff;margin-bottom:6px">출퇴근편의 평균 점수</div>
+          <div style="font-size:.84rem;font-weight:700;color:var(--text);margin-bottom:6px">출퇴근편의 평균 점수</div>
           <div style="font-size:.76rem;color:var(--muted2);line-height:1.6">6개 항목 중 가장 낮은 점수. 지하철역 정보 한 줄만 추가해도 등급이 올라갑니다.</div>
         </div>
       </div>
@@ -730,47 +767,47 @@ input[type=range]{flex:1;accent-color:var(--accent)}
     <!-- SCORING SYSTEM -->
     <div style="margin-bottom:48px">
       <div class="sec-tag">Scoring System</div>
-      <h2 style="font-size:1.6rem;font-weight:800;color:#fff;letter-spacing:-.03em;margin-bottom:8px">JobLens Score 측정 방법</h2>
+      <h2 style="font-size:1.6rem;font-weight:800;color:var(--text);letter-spacing:-.03em;margin-bottom:8px">JobLens Score 측정 방법</h2>
       <p style="font-size:.86rem;color:var(--muted2);margin-bottom:28px;line-height:1.7">6개 항목의 키워드 분석과 정보 충실도를 기반으로 0~100점을 자동 산출합니다.</p>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">
         <div style="background:var(--bg2);border:1px solid var(--line2);border-radius:12px;padding:20px">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-            <div style="display:flex;align-items:center;gap:8px"><span style="font-size:1.2rem">📋</span><span style="font-size:.86rem;font-weight:700;color:#fff">직무상세성</span></div>
+            <div style="display:flex;align-items:center;gap:8px"><span style="font-size:1.2rem">📋</span><span style="font-size:.86rem;font-weight:700;color:var(--text)">직무상세성</span></div>
             <span style="font-size:.72rem;font-weight:700;color:#3b6eff;background:rgba(59,110,255,.12);padding:3px 9px;border-radius:100px">최대 30점</span>
           </div>
           <p style="font-size:.74rem;color:var(--muted2);line-height:1.65">담당 업무, 필요 역량, 사용 도구, 협업 방식, 성과 기준의 구체성을 평가</p>
         </div>
         <div style="background:var(--bg2);border:1px solid var(--line2);border-radius:12px;padding:20px">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-            <div style="display:flex;align-items:center;gap:8px"><span style="font-size:1.2rem">🏢</span><span style="font-size:.86rem;font-weight:700;color:#fff">기업소개</span></div>
+            <div style="display:flex;align-items:center;gap:8px"><span style="font-size:1.2rem">🏢</span><span style="font-size:.86rem;font-weight:700;color:var(--text)">기업소개</span></div>
             <span style="font-size:.72rem;font-weight:700;color:#a78bfa;background:rgba(167,139,250,.12);padding:3px 9px;border-radius:100px">최대 20점</span>
           </div>
           <p style="font-size:.74rem;color:var(--muted2);line-height:1.65">회사 규모, 주요 사업, 조직 문화, 성장 비전 등 기업 정보의 충실도를 평가</p>
         </div>
         <div style="background:var(--bg2);border:1px solid var(--line2);border-radius:12px;padding:20px">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-            <div style="display:flex;align-items:center;gap:8px"><span style="font-size:1.2rem">💰</span><span style="font-size:.86rem;font-weight:700;color:#fff">급여품질</span></div>
+            <div style="display:flex;align-items:center;gap:8px"><span style="font-size:1.2rem">💰</span><span style="font-size:.86rem;font-weight:700;color:var(--text)">급여품질</span></div>
             <span style="font-size:.72rem;font-weight:700;color:#00d68f;background:rgba(0,214,143,.12);padding:3px 9px;border-radius:100px">최대 20점</span>
           </div>
           <p style="font-size:.74rem;color:var(--muted2);line-height:1.65">급여 정보의 구체성과 투명성 평가. 금액 명시 여부가 핵심 평가 요소</p>
         </div>
         <div style="background:var(--bg2);border:1px solid var(--line2);border-radius:12px;padding:20px">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-            <div style="display:flex;align-items:center;gap:8px"><span style="font-size:1.2rem">🎁</span><span style="font-size:.86rem;font-weight:700;color:#fff">복지</span></div>
+            <div style="display:flex;align-items:center;gap:8px"><span style="font-size:1.2rem">🎁</span><span style="font-size:.86rem;font-weight:700;color:var(--text)">복지</span></div>
             <span style="font-size:.72rem;font-weight:700;color:#ffcc00;background:rgba(255,204,0,.1);padding:3px 9px;border-radius:100px">최대 15점</span>
           </div>
           <p style="font-size:.74rem;color:var(--muted2);line-height:1.65">4대보험 외 식대, 교통비, 연차, 교육비 등 실질 복지 혜택의 다양성 평가</p>
         </div>
         <div style="background:var(--bg2);border:1px solid var(--line2);border-radius:12px;padding:20px">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-            <div style="display:flex;align-items:center;gap:8px"><span style="font-size:1.2rem">🕐</span><span style="font-size:.86rem;font-weight:700;color:#fff">근무조건</span></div>
+            <div style="display:flex;align-items:center;gap:8px"><span style="font-size:1.2rem">🕐</span><span style="font-size:.86rem;font-weight:700;color:var(--text)">근무조건</span></div>
             <span style="font-size:.72rem;font-weight:700;color:#3b6eff;background:rgba(59,110,255,.12);padding:3px 9px;border-radius:100px">최대 20점</span>
           </div>
           <p style="font-size:.74rem;color:var(--muted2);line-height:1.65">근무지, 근무시간, 휴일, 주 근무시간 등 근무 환경 정보의 완성도 평가</p>
         </div>
         <div style="background:var(--bg2);border:1px solid var(--line2);border-radius:12px;padding:20px">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-            <div style="display:flex;align-items:center;gap:8px"><span style="font-size:1.2rem">🚇</span><span style="font-size:.86rem;font-weight:700;color:#fff">출퇴근편의</span></div>
+            <div style="display:flex;align-items:center;gap:8px"><span style="font-size:1.2rem">🚇</span><span style="font-size:.86rem;font-weight:700;color:var(--text)">출퇴근편의</span></div>
             <span style="font-size:.72rem;font-weight:700;color:#ff4433;background:rgba(255,68,51,.1);padding:3px 9px;border-radius:100px">최대 10점</span>
           </div>
           <p style="font-size:.74rem;color:var(--muted2);line-height:1.65">인근 지하철역, 버스 정류장, 도보 거리 등 접근성 정보 제공 여부 평가</p>
@@ -781,11 +818,11 @@ input[type=range]{flex:1;accent-color:var(--accent)}
       <div style="background:var(--bg2);border:1px solid var(--line2);border-radius:14px;padding:24px">
         <div style="font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:16px">등급 기준</div>
         <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--line);border-radius:10px;overflow:hidden">
-          <div style="background:var(--bg3);padding:16px;text-align:center"><div style="font-size:1.4rem;font-weight:800;color:#a78bfa;margin-bottom:4px">S</div><div style="font-size:.72rem;font-weight:700;color:#fff;margin-bottom:3px">90점+</div><div style="font-size:.66rem;color:var(--muted2)">시장 최상위</div></div>
-          <div style="background:var(--bg3);padding:16px;text-align:center"><div style="font-size:1.4rem;font-weight:800;color:#00d68f;margin-bottom:4px">A</div><div style="font-size:.72rem;font-weight:700;color:#fff;margin-bottom:3px">80점+</div><div style="font-size:.66rem;color:var(--muted2)">정보 매우 충실</div></div>
-          <div style="background:var(--bg3);padding:16px;text-align:center"><div style="font-size:1.4rem;font-weight:800;color:var(--lime);margin-bottom:4px">B</div><div style="font-size:.72rem;font-weight:700;color:#fff;margin-bottom:3px">70점+</div><div style="font-size:.66rem;color:var(--muted2)">주요 정보 제공</div></div>
-          <div style="background:var(--bg3);padding:16px;text-align:center"><div style="font-size:1.4rem;font-weight:800;color:#ffcc00;margin-bottom:4px">C</div><div style="font-size:.72rem;font-weight:700;color:#fff;margin-bottom:3px">55점+</div><div style="font-size:.66rem;color:var(--muted2)">일부 보완 필요</div></div>
-          <div style="background:var(--bg3);padding:16px;text-align:center"><div style="font-size:1.4rem;font-weight:800;color:#ff4433;margin-bottom:4px">D</div><div style="font-size:.72rem;font-weight:700;color:#fff;margin-bottom:3px">~55점</div><div style="font-size:.66rem;color:var(--muted2)">핵심 정보 부족</div></div>
+          <div style="background:var(--bg3);padding:16px;text-align:center"><div style="font-size:1.4rem;font-weight:800;color:#a78bfa;margin-bottom:4px">S</div><div style="font-size:.72rem;font-weight:700;color:var(--text);margin-bottom:3px">90점+</div><div style="font-size:.66rem;color:var(--muted2)">시장 최상위</div></div>
+          <div style="background:var(--bg3);padding:16px;text-align:center"><div style="font-size:1.4rem;font-weight:800;color:#00d68f;margin-bottom:4px">A</div><div style="font-size:.72rem;font-weight:700;color:var(--text);margin-bottom:3px">80점+</div><div style="font-size:.66rem;color:var(--muted2)">정보 매우 충실</div></div>
+          <div style="background:var(--bg3);padding:16px;text-align:center"><div style="font-size:1.4rem;font-weight:800;color:var(--lime);margin-bottom:4px">B</div><div style="font-size:.72rem;font-weight:700;color:var(--text);margin-bottom:3px">70점+</div><div style="font-size:.66rem;color:var(--muted2)">주요 정보 제공</div></div>
+          <div style="background:var(--bg3);padding:16px;text-align:center"><div style="font-size:1.4rem;font-weight:800;color:#ffcc00;margin-bottom:4px">C</div><div style="font-size:.72rem;font-weight:700;color:var(--text);margin-bottom:3px">55점+</div><div style="font-size:.66rem;color:var(--muted2)">일부 보완 필요</div></div>
+          <div style="background:var(--bg3);padding:16px;text-align:center"><div style="font-size:1.4rem;font-weight:800;color:#ff4433;margin-bottom:4px">D</div><div style="font-size:.72rem;font-weight:700;color:var(--text);margin-bottom:3px">~55점</div><div style="font-size:.66rem;color:var(--muted2)">핵심 정보 부족</div></div>
         </div>
       </div>
     </div>
@@ -793,13 +830,13 @@ input[type=range]{flex:1;accent-color:var(--accent)}
     <!-- DATA PIPELINE -->
     <div style="margin-bottom:48px">
       <div class="sec-tag">Data Pipeline</div>
-      <h2 style="font-size:1.6rem;font-weight:800;color:#fff;letter-spacing:-.03em;margin-bottom:8px">데이터 수집 및 처리 파이프라인</h2>
+      <h2 style="font-size:1.6rem;font-weight:800;color:var(--text);letter-spacing:-.03em;margin-bottom:8px">데이터 수집 및 처리 파이프라인</h2>
       <p style="font-size:.86rem;color:var(--muted2);margin-bottom:28px;line-height:1.7">서울시 오픈API부터 프론트엔드 서빙까지 자동화된 4단계 파이프라인으로 운영됩니다.</p>
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line2);border-radius:16px;overflow:hidden">
         <div style="background:var(--bg2);padding:28px 22px;position:relative">
           <div style="font-size:.6rem;font-weight:800;color:rgba(59,110,255,.3);letter-spacing:.1em;margin-bottom:14px">01</div>
           <div style="font-size:1.5rem;margin-bottom:10px">🌐</div>
-          <div style="font-size:.88rem;font-weight:800;color:#fff;margin-bottom:4px">실시간 수집</div>
+          <div style="font-size:.88rem;font-weight:800;color:var(--text);margin-bottom:4px">실시간 수집</div>
           <div style="font-size:.68rem;font-weight:600;color:var(--accent);margin-bottom:10px;letter-spacing:.04em">Seoul Open API</div>
           <div style="font-size:.74rem;color:var(--muted2);line-height:1.65">서울시 GetJobInfo API에서 1,000건씩 페이징하여 전체 공고 수집. 마감 공고 자동 필터링</div>
           <div style="position:absolute;top:50%;right:-8px;transform:translateY(-50%);font-size:.8rem;color:var(--accent);z-index:1">›</div>
@@ -807,7 +844,7 @@ input[type=range]{flex:1;accent-color:var(--accent)}
         <div style="background:var(--bg2);padding:28px 22px;position:relative">
           <div style="font-size:.6rem;font-weight:800;color:rgba(59,110,255,.3);letter-spacing:.1em;margin-bottom:14px">02</div>
           <div style="font-size:1.5rem;margin-bottom:10px">⚡</div>
-          <div style="font-size:.88rem;font-weight:800;color:#fff;margin-bottom:4px">캐시 관리</div>
+          <div style="font-size:.88rem;font-weight:800;color:var(--text);margin-bottom:4px">캐시 관리</div>
           <div style="font-size:.68rem;font-weight:600;color:var(--accent);margin-bottom:10px;letter-spacing:.04em">In-Memory Cache</div>
           <div style="font-size:.74rem;color:var(--muted2);line-height:1.65">수집 데이터를 서버 메모리에 캐싱. TTL 1시간, 만료 시 백그라운드 자동 갱신</div>
           <div style="position:absolute;top:50%;right:-8px;transform:translateY(-50%);font-size:.8rem;color:var(--accent);z-index:1">›</div>
@@ -815,7 +852,7 @@ input[type=range]{flex:1;accent-color:var(--accent)}
         <div style="background:var(--bg2);padding:28px 22px;position:relative">
           <div style="font-size:.6rem;font-weight:800;color:rgba(59,110,255,.3);letter-spacing:.1em;margin-bottom:14px">03</div>
           <div style="font-size:1.5rem;margin-bottom:10px">📊</div>
-          <div style="font-size:.88rem;font-weight:800;color:#fff;margin-bottom:4px">스코어링</div>
+          <div style="font-size:.88rem;font-weight:800;color:var(--text);margin-bottom:4px">스코어링</div>
           <div style="font-size:.68rem;font-weight:600;color:var(--accent);margin-bottom:10px;letter-spacing:.04em">Python · Pandas</div>
           <div style="font-size:.74rem;color:var(--muted2);line-height:1.65">6개 항목 키워드 분석 및 조건 평가로 JobLens Score 자동 산출. S/A/B/C/D 등급 부여</div>
           <div style="position:absolute;top:50%;right:-8px;transform:translateY(-50%);font-size:.8rem;color:var(--accent);z-index:1">›</div>
@@ -823,7 +860,7 @@ input[type=range]{flex:1;accent-color:var(--accent)}
         <div style="background:var(--bg2);padding:28px 22px">
           <div style="font-size:.6rem;font-weight:800;color:rgba(59,110,255,.3);letter-spacing:.1em;margin-bottom:14px">04</div>
           <div style="font-size:1.5rem;margin-bottom:10px">🚀</div>
-          <div style="font-size:.88rem;font-weight:800;color:#fff;margin-bottom:4px">API 서빙</div>
+          <div style="font-size:.88rem;font-weight:800;color:var(--text);margin-bottom:4px">API 서빙</div>
           <div style="font-size:.68rem;font-weight:600;color:var(--accent);margin-bottom:10px;letter-spacing:.04em">Flask · REST API</div>
           <div style="font-size:.74rem;color:var(--muted2);line-height:1.65">/api/stats, /api/jobs 등 7개 엔드포인트로 프론트엔드에 실시간 데이터 제공</div>
         </div>
@@ -833,7 +870,7 @@ input[type=range]{flex:1;accent-color:var(--accent)}
     <!-- TECH STACK -->
     <div style="margin-bottom:20px">
       <div class="sec-tag">Tech Stack</div>
-      <h2 style="font-size:1.6rem;font-weight:800;color:#fff;letter-spacing:-.03em;margin-bottom:20px">사용 기술</h2>
+      <h2 style="font-size:1.6rem;font-weight:800;color:var(--text);letter-spacing:-.03em;margin-bottom:20px">사용 기술</h2>
       <div style="display:flex;flex-wrap:wrap;gap:8px">
         <span style="background:var(--bg2);border:1px solid var(--line2);color:var(--muted2);font-size:.76rem;font-weight:600;padding:7px 14px;border-radius:100px">Python 3.11</span>
         <span style="background:var(--bg2);border:1px solid var(--line2);color:var(--muted2);font-size:.76rem;font-weight:600;padding:7px 14px;border-radius:100px">Flask</span>
@@ -863,8 +900,63 @@ let statsCache = null;
 let topJobsCache = [];
 let recentJobsCache = [];
 let searchJobsCache = [];
+let top100SliceCache = [];
 let searchPage = 1;
 let debounceTimer = null;
+
+// ── 찜하기(북마크) ──
+const BM_KEY='jl_bookmarks';
+function getBookmarks(){try{return JSON.parse(localStorage.getItem(BM_KEY)||'[]')}catch(e){return[]}}
+function saveBookmarks(arr){try{localStorage.setItem(BM_KEY,JSON.stringify(arr))}catch(e){}}
+function jobKey(j){return j.JO_REQST_NO||((j.CMPNY_NM||'')+'|'+(j.JO_SJ||''));}
+function isBookmarked(j){return getBookmarks().some(b=>jobKey(b)===jobKey(j));}
+function toggleBookmark(j,e){
+  if(e)e.stopPropagation();
+  let arr=getBookmarks();
+  const k=jobKey(j);
+  const idx=arr.findIndex(b=>jobKey(b)===k);
+  if(idx>=0)arr.splice(idx,1);else arr.unshift(j);
+  saveBookmarks(arr);
+  document.querySelectorAll(`[data-bmkey="${encodeURIComponent(k)}"]`).forEach(el=>{
+    const on=isBookmarked(j);
+    el.textContent=on?'★':'☆';
+    el.classList.toggle('bm-active',on);
+  });
+  updateBookmarkCount();
+  if(document.getElementById('page-bookmarks')?.classList.contains('active'))renderBookmarksPage();
+}
+function updateBookmarkCount(){
+  const n=getBookmarks().length;
+  document.querySelectorAll('.bm-count').forEach(el=>{el.textContent=n?`(${n})`:'';el.style.display=n?'inline':'none';});
+}
+function bmBtn(j){
+  const k=jobKey(j);
+  const on=isBookmarked(j);
+  const kEnc=encodeURIComponent(k);
+  return `<button class="bm-star${on?' bm-active':''}" data-bmkey="${kEnc}" onclick="toggleBookmark(${JSON_STR_SAFE(j)},event)" title="찜하기" aria-label="찜하기">${on?'★':'☆'}</button>`;
+}
+function JSON_STR_SAFE(j){
+  // 안전하게 JS 문자열 리터럴로 변환 (작은따옴표/특수문자까지 완전히 이스케이프)
+  const enc=encodeURIComponent(JSON.stringify(j)).replace(/'/g,'%27');
+  return "JSON.parse(decodeURIComponent('"+enc+"'))";
+}
+function renderBookmarksPage(){
+  const list=getBookmarks();
+  const el=document.getElementById('bmList');
+  if(!el)return;
+  if(!list.length){
+    el.innerHTML=`<div style="text-align:center;padding:60px 20px;color:var(--muted)">
+      <div style="font-size:2rem;margin-bottom:10px">☆</div>
+      <div style="font-size:.85rem">아직 찜한 공고가 없어요.<br>마음에 드는 공고의 ☆ 버튼을 눌러보세요.</div>
+    </div>`;
+    return;
+  }
+  el.innerHTML=list.map((j,i)=>`
+    <div class="rj" role="button" tabindex="0" aria-label="${(j.CMPNY_NM||'')} ${(j.JO_SJ||'')} 상세보기" onclick="openJobModal(getBookmarks()[${i}])" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}">
+      <div><div class="rj-co">${j.CMPNY_NM||''}</div><div class="rj-ti">${sh(j.JO_SJ,52)}</div></div>
+      <div class="rj-right">${bmBtn(j)}<div class="rj-sc">${j.종합점수||''}</div><span class="gb g-${j.등급}">${j.등급||''}</span></div>
+    </div>`).join('');
+}
 const PER = 20;
 
 // ── CURSOR ──
@@ -890,8 +982,10 @@ function goApp(page,btn){document.getElementById('appSection').scrollIntoView({b
 function showPage(name,btn){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.anb').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.mtb').forEach(b=>b.classList.remove('active'));
   document.getElementById('page-'+name).classList.add('active');
   const ab=document.getElementById('anb-'+name);if(ab)ab.classList.add('active');
+  const mb=document.getElementById('mtb-'+name);if(mb)mb.classList.add('active');
   if(name==='search') filterJobs();
   if(name==='ai') initAISel();
   if(name==='top100') loadTop100();
@@ -1099,7 +1193,10 @@ async function loadRecentJobs(){
     document.getElementById('recentJobs').innerHTML=jobs.map((j,i)=>`
       <div class="rj" role="button" tabindex="0" aria-label="${(j.CMPNY_NM||'')} ${(j.JO_SJ||'')} 상세보기" onclick="openJobModal(recentJobsCache[${i}])" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}">
         <div><div class="rj-co">${j.CMPNY_NM||''}</div><div class="rj-ti">${sh(j.JO_SJ,52)}</div></div>
-        <div class="rj-right"><div class="rj-sc">${j.종합점수}</div><span class="gb g-${j.등급}">${j.등급}</span></div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <button class="rj-star" onclick="event.stopPropagation();toggleBookmark(recentJobsCache[${i}]);this.textContent=isBookmarked(recentJobsCache[${i}])?'⭐':'☆';" aria-label="찜하기">${isBookmarked(j)?'⭐':'☆'}</button>
+          <div class="rj-right"><div class="rj-sc">${j.종합점수}</div><span class="gb g-${j.등급}">${j.등급}</span></div>
+        </div>
       </div>`).join('');
     buildMarquee(jobs);
   }catch(e){console.error('recent jobs failed:',e);}
@@ -1186,8 +1283,8 @@ function renderTop10Comp(data){
   [0,25,50,75,100].forEach(pct=>{
     const y=padT+chartH-(pct/100*chartH);
     const val=(pct/100*Math.max(...maxes)).toFixed(0);
-    s+=`<line x1="${padL+30}" y1="${y}" x2="${W-10}" y2="${y}" stroke="rgba(255,255,255,.05)" stroke-width="1"/>`;
-    s+=`<text x="${padL+26}" y="${y+4}" text-anchor="end" font-size="8" fill="rgba(255,255,255,.25)" font-family="Pretendard,sans-serif">${val}</text>`;
+    s+=`<line x1="${padL+30}" y1="${y}" x2="${W-10}" y2="${y}" stroke="rgba(var(--fg-rgb),.05)" stroke-width="1"/>`;
+    s+=`<text x="${padL+26}" y="${y+4}" text-anchor="end" font-size="8" fill="rgba(var(--fg-rgb),.25)" font-family="Pretendard,sans-serif">${val}</text>`;
   });
   labels.forEach((l,i)=>{
     const x=padL+40+i*(barW*2+gap);
@@ -1196,14 +1293,14 @@ function renderTop10Comp(data){
     const mY=padT+chartH-mH, tY=padT+chartH-tH;
     // 시장 평균 바
     s+=`<rect x="${x}" y="${mY}" width="${barW}" height="${mH}" rx="3" fill="rgba(59,110,255,.45)"/>`;
-    s+=`<text x="${x+barW/2}" y="${mY-5}" text-anchor="middle" font-size="8.5" fill="rgba(255,255,255,.6)" font-family="Pretendard,sans-serif">${mktVals[i].toFixed(1)}</text>`;
+    s+=`<text x="${x+barW/2}" y="${mY-5}" text-anchor="middle" font-size="8.5" fill="rgba(var(--fg-rgb),.6)" font-family="Pretendard,sans-serif">${mktVals[i].toFixed(1)}</text>`;
     // TOP10 바
     s+=`<rect x="${x+barW+4}" y="${tY}" width="${barW}" height="${tH}" rx="3" fill="#ffcc00"/>`;
     s+=`<text x="${x+barW+4+barW/2}" y="${tY-5}" text-anchor="middle" font-size="8.5" fill="#ffcc00" font-family="Pretendard,sans-serif" font-weight="700">${topVals[i].toFixed(1)}</text>`;
     // x축 레이블
     const parts=l.length>4?[l.slice(0,2),l.slice(2)]:[l,''];
-    s+=`<text x="${x+barW+2}" y="${padT+chartH+12}" text-anchor="middle" font-size="8.5" fill="rgba(255,255,255,.5)" font-family="Pretendard,sans-serif">${parts[0]}</text>`;
-    if(parts[1])s+=`<text x="${x+barW+2}" y="${padT+chartH+22}" text-anchor="middle" font-size="8.5" fill="rgba(255,255,255,.5)" font-family="Pretendard,sans-serif">${parts[1]}</text>`;
+    s+=`<text x="${x+barW+2}" y="${padT+chartH+12}" text-anchor="middle" font-size="8.5" fill="rgba(var(--fg-rgb),.5)" font-family="Pretendard,sans-serif">${parts[0]}</text>`;
+    if(parts[1])s+=`<text x="${x+barW+2}" y="${padT+chartH+22}" text-anchor="middle" font-size="8.5" fill="rgba(var(--fg-rgb),.5)" font-family="Pretendard,sans-serif">${parts[1]}</text>`;
   });
   document.getElementById('top10CompSvg').classList.remove('skeleton');
   document.getElementById('top10CompSvg').innerHTML=s;
@@ -1217,7 +1314,7 @@ function renderTop10Comp(data){
         <span style="font-size:.75rem;color:var(--muted2)">${l}</span>
         <span style="font-size:.75rem;font-weight:700;color:var(--green)">+${gap_pct}%</span>
       </div>
-      <div style="height:5px;background:rgba(255,255,255,.06);border-radius:100px;overflow:hidden">
+      <div style="height:5px;background:rgba(var(--fg-rgb),.06);border-radius:100px;overflow:hidden">
         <div style="height:100%;width:${Math.min(gap_pct,100)}%;background:linear-gradient(90deg,var(--accent),#ffcc00);border-radius:100px;transition:width 1s ease"></div>
       </div>
     </div>`;
@@ -1280,17 +1377,17 @@ function renderScatter(){
   // 그리드
   [0,25,50,75,100].forEach(pct=>{
     const y=padT+cH*(1-pct/100);
-    svg+=`<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="rgba(255,255,255,.05)" stroke-width="1"/>`;
-    svg+=`<text x="${padL-4}" y="${y+4}" text-anchor="end" font-size="8" fill="rgba(255,255,255,.25)" font-family="Pretendard,sans-serif">${Math.round(minY+(maxY-minY)*pct/100)}</text>`;
+    svg+=`<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="rgba(var(--fg-rgb),.05)" stroke-width="1"/>`;
+    svg+=`<text x="${padL-4}" y="${y+4}" text-anchor="end" font-size="8" fill="rgba(var(--fg-rgb),.25)" font-family="Pretendard,sans-serif">${Math.round(minY+(maxY-minY)*pct/100)}</text>`;
   });
   [0,25,50,75,100].forEach(pct=>{
     const x=padL+cW*pct/100;
     const val=Math.round(minX+(maxX-minX)*pct/100);
-    svg+=`<text x="${x}" y="${H-padB+14}" text-anchor="middle" font-size="8" fill="rgba(255,255,255,.25)" font-family="Pretendard,sans-serif">${val}</text>`;
+    svg+=`<text x="${x}" y="${H-padB+14}" text-anchor="middle" font-size="8" fill="rgba(var(--fg-rgb),.25)" font-family="Pretendard,sans-serif">${val}</text>`;
   });
   // 축 레이블
-  svg+=`<text x="${padL+cW/2}" y="${H-2}" text-anchor="middle" font-size="9" fill="rgba(255,255,255,.4)" font-family="Pretendard,sans-serif">급여 (백만원)</text>`;
-  svg+=`<text x="10" y="${padT+cH/2}" text-anchor="middle" font-size="9" fill="rgba(255,255,255,.4)" font-family="Pretendard,sans-serif" transform="rotate(-90,10,${padT+cH/2})">종합 점수</text>`;
+  svg+=`<text x="${padL+cW/2}" y="${H-2}" text-anchor="middle" font-size="9" fill="rgba(var(--fg-rgb),.4)" font-family="Pretendard,sans-serif">급여 (백만원)</text>`;
+  svg+=`<text x="10" y="${padT+cH/2}" text-anchor="middle" font-size="9" fill="rgba(var(--fg-rgb),.4)" font-family="Pretendard,sans-serif" transform="rotate(-90,10,${padT+cH/2})">종합 점수</text>`;
   // 추세선
   svg+=`<line x1="${toX(x1)}" y1="${toY(y1)}" x2="${toX(x2)}" y2="${toY(y2)}" stroke="rgba(255,204,0,.4)" stroke-width="1.5" stroke-dasharray="4,3"/>`;
   // 점 (샘플 200개)
@@ -1299,12 +1396,12 @@ function renderScatter(){
     svg+=`<circle cx="${toX(p.x)}" cy="${toY(p.y)}" r="3.5" fill="${gc[p.grade]||'#555'}" opacity=".65"/>`;
   });
   // 축선
-  svg+=`<line x1="${padL}" y1="${padT}" x2="${padL}" y2="${padT+cH}" stroke="rgba(255,255,255,.15)" stroke-width="1"/>`;
-  svg+=`<line x1="${padL}" y1="${padT+cH}" x2="${W-padR}" y2="${padT+cH}" stroke="rgba(255,255,255,.15)" stroke-width="1"/>`;
+  svg+=`<line x1="${padL}" y1="${padT}" x2="${padL}" y2="${padT+cH}" stroke="rgba(var(--fg-rgb),.15)" stroke-width="1"/>`;
+  svg+=`<line x1="${padL}" y1="${padT+cH}" x2="${W-padR}" y2="${padT+cH}" stroke="rgba(var(--fg-rgb),.15)" stroke-width="1"/>`;
   document.getElementById('scatterSvg').innerHTML=svg;
   const corrNum=parseFloat(corr);
   const corrDesc=corrNum>=0.7?'강한 양의 상관':corrNum>=0.4?'중간 양의 상관':corrNum>=0.1?'약한 양의 상관':corrNum<=-0.4?'음의 상관':'거의 없음';
-  document.getElementById('scatterCorr').innerHTML=`r = <b style="color:#fff">${corr}</b> (${corrDesc})<br>급여가 높을수록 점수가 ${corrNum>0?'높은':'낮은'} 경향이 있으나 결정적이지 않음`;
+  document.getElementById('scatterCorr').innerHTML=`r = <b style="color:var(--text)">${corr}</b> (${corrDesc})<br>급여가 높을수록 점수가 ${corrNum>0?'높은':'낮은'} 경향이 있으나 결정적이지 않음`;
 }
 
 function renderCorrMatrix(data){
@@ -1327,8 +1424,8 @@ function renderCorrMatrix(data){
   let s=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="overflow:visible;display:inline-block">`;
   // 헤더
   shortLabels.forEach((l,i)=>{
-    s+=`<text x="${padL+i*cell+cell/2}" y="${padT-6}" text-anchor="middle" font-size="${fontSize}" fill="rgba(255,255,255,.55)" font-family="Pretendard,sans-serif" font-weight="600">${l}</text>`;
-    s+=`<text x="${padL-6}" y="${padT+i*cell+cell/2+4}" text-anchor="end" font-size="${fontSize}" fill="rgba(255,255,255,.55)" font-family="Pretendard,sans-serif" font-weight="600">${l}</text>`;
+    s+=`<text x="${padL+i*cell+cell/2}" y="${padT-6}" text-anchor="middle" font-size="${fontSize}" fill="rgba(var(--fg-rgb),.55)" font-family="Pretendard,sans-serif" font-weight="600">${l}</text>`;
+    s+=`<text x="${padL-6}" y="${padT+i*cell+cell/2+4}" text-anchor="end" font-size="${fontSize}" fill="rgba(var(--fg-rgb),.55)" font-family="Pretendard,sans-serif" font-weight="600">${l}</text>`;
   });
   // 셀
   scCols.forEach((colA,i)=>{
@@ -1340,7 +1437,7 @@ function renderCorrMatrix(data){
       else if(corr>=0.5){bg=`rgba(0,214,143,${0.2+absC*0.6})`;textCol='var(--green)';}
       else if(corr>=0.2){bg=`rgba(59,110,255,${0.1+absC*0.4})`;textCol='var(--accent)';}
       else if(corr<=-0.2){bg=`rgba(255,68,51,${0.1+absC*0.4})`;textCol='var(--red)';}
-      else{bg='rgba(255,255,255,.04)';textCol='rgba(255,255,255,.35)';}
+      else{bg='rgba(var(--fg-rgb),.04)';textCol='rgba(var(--fg-rgb),.35)';}
       const x=padL+j*cell,y=padT+i*cell;
       s+=`<rect x="${x+1}" y="${y+1}" width="${cell-2}" height="${cell-2}" rx="4" fill="${bg}"/>`;
       s+=`<text x="${x+cell/2}" y="${y+cell/2+4}" text-anchor="middle" font-size="9.5" fill="${textCol}" font-family="Pretendard,sans-serif" font-weight="${absC>0.4?'700':'400'}">${corr.toFixed(2)}</text>`;
@@ -1420,9 +1517,11 @@ function renderPagination(pages){
 // ── MODAL ──
 function openJobModal(j){
   if(typeof j==='string') j=JSON.parse(j);
+  currentModalJob=j;
   const searchQ=encodeURIComponent(`${j.CMPNY_NM||''} ${j.JO_SJ||''} 채용`);
   document.getElementById('moContent').innerHTML=`
-    <div class="mo-title">${j.JO_SJ||'공고명 없음'}</div>
+    <div class="mo-title" style="padding-right:28px">${j.JO_SJ||'공고명 없음'}</div>
+    <button id="moBookmarkBtn" onclick="toggleBookmark(currentModalJob)" aria-label="찜하기" style="position:absolute;top:14px;right:44px;background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--yellow)">${isBookmarked(j)?'⭐':'☆'}</button>
     <div class="mo-company">${j.CMPNY_NM||''} &nbsp;·&nbsp; <span class="gb g-${j.등급}">${j.등급}</span> &nbsp;·&nbsp; <b style="color:var(--accent)">${j.종합점수}점</b></div>
     <a href="https://www.google.com/search?q=${searchQ}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;font-size:.72rem;font-weight:600;color:var(--accent);text-decoration:none;background:rgba(59,110,255,.1);border:1px solid rgba(59,110,255,.3);border-radius:8px;padding:6px 12px;margin:8px 0 4px">🔗 원본 공고 찾아보기</a>
     <div class="mo-row">
@@ -1443,7 +1542,42 @@ function openJobModal(j){
   document.getElementById('mo').classList.add('show');
   setTimeout(()=>document.querySelector('.mc-close')?.focus(),50);
 }
+// ── 찜하기(북마크) ──
+let currentModalJob=null;
+let bookmarks=[];
+try{bookmarks=JSON.parse(localStorage.getItem('joblens_bookmarks')||'[]');}catch(e){bookmarks=[];}
+function bookmarkId(j){return j.JO_REQST_NO||`${j.CMPNY_NM}_${j.JO_SJ}`;}
+function isBookmarked(j){return bookmarks.some(b=>bookmarkId(b)===bookmarkId(j));}
+function toggleBookmark(j){
+  if(!j)return;
+  const id=bookmarkId(j);
+  const idx=bookmarks.findIndex(b=>bookmarkId(b)===id);
+  if(idx>=0)bookmarks.splice(idx,1);else bookmarks.unshift(j);
+  try{localStorage.setItem('joblens_bookmarks',JSON.stringify(bookmarks));}catch(e){}
+  updateBookmarkUI();
+}
+function updateBookmarkUI(){
+  const countEl=document.getElementById('bmCount');
+  if(countEl)countEl.textContent=bookmarks.length;
+  const starBtn=document.getElementById('moBookmarkBtn');
+  if(starBtn&&currentModalJob)starBtn.textContent=isBookmarked(currentModalJob)?'⭐':'☆';
+}
+function openBookmarksPanel(){
+  const content=!bookmarks.length
+    ? `<div class="mo-title">⭐ 찜한 공고</div><p style="color:var(--muted);font-size:.8rem;margin-top:12px;line-height:1.7">아직 찜한 공고가 없어요.<br>공고 상세보기에서 ☆ 버튼을 눌러 저장해보세요.</p>`
+    : `<div class="mo-title">⭐ 찜한 공고 (${bookmarks.length})</div>
+       <div style="display:flex;flex-direction:column;gap:10px;margin-top:14px">
+       ${bookmarks.map((j,i)=>`<div class="rj" role="button" tabindex="0" aria-label="${(j.CMPNY_NM||'')} 상세보기" onclick="openJobModal(bookmarks[${i}])" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}">
+         <div><div class="rj-co">${j.CMPNY_NM||''}</div><div class="rj-ti">${sh(j.JO_SJ,44)}</div></div>
+         <div class="rj-right"><div class="rj-sc">${j.종합점수}</div><span class="gb g-${j.등급}">${j.등급}</span></div>
+       </div>`).join('')}
+       </div>`;
+  document.getElementById('moContent').innerHTML=content;
+  document.getElementById('mo').classList.add('show');
+}
 function closeMo(e){if(!e||e.target===document.getElementById('mo'))document.getElementById('mo').classList.remove('show');}
+
+
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.getElementById('mo').classList.contains('show'))closeMo();});
 
 // ── DIAGNOSIS (로컬 스코어링) ──
@@ -1504,7 +1638,7 @@ function runDiag(){
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
           <div style="display:flex;align-items:center;gap:8px">
             <span style="font-size:.65rem;font-weight:700;color:var(--muted);letter-spacing:.08em;text-transform:uppercase">${priority}</span>
-            <span style="font-size:.9rem;font-weight:800;color:#fff">${w.label}</span>
+            <span style="font-size:.9rem;font-weight:800;color:var(--text)">${w.label}</span>
           </div>
           <div style="display:flex;align-items:center;gap:8px">
             <span style="font-size:.72rem;color:var(--red);font-weight:700">현재 ${(sc[SCOLS[SLABELS.indexOf(w.label)]]||0).toFixed(1)}pt</span>
@@ -1513,7 +1647,7 @@ function runDiag(){
             <span style="background:rgba(255,68,51,.12);color:var(--red);font-size:.65rem;font-weight:700;padding:3px 8px;border-radius:100px">-${Math.abs(w.diff).toFixed(1)}pt</span>
           </div>
         </div>
-        <div style="height:4px;background:rgba(255,255,255,.06);border-radius:100px;overflow:hidden;margin-bottom:12px">
+        <div style="height:4px;background:rgba(var(--fg-rgb),.06);border-radius:100px;overflow:hidden;margin-bottom:12px">
           <div style="height:100%;width:${Math.round(((sc[SCOLS[SLABELS.indexOf(w.label)]]||0)/imp.max)*100)}%;background:linear-gradient(90deg,var(--red),var(--yellow));border-radius:100px;transition:width 1s ease"></div>
         </div>
         <p style="font-size:.82rem;color:var(--muted2);line-height:1.7">💡 ${imp.tip||w.label+' 정보를 더 구체적으로 보완하세요.'}</p>
@@ -1533,7 +1667,7 @@ function runDiag(){
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--line);border-radius:10px;overflow:hidden;margin-bottom:16px">
           <div style="background:var(--bg3);padding:14px 16px">
             <div style="font-size:.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px">시장 내 순위</div>
-            <div style="font-size:1.4rem;font-weight:800;color:#fff;letter-spacing:-.03em">${rank.toLocaleString()}<span style="font-size:.75rem;color:var(--muted);font-weight:400"> / ${totC.toLocaleString()}</span></div>
+            <div style="font-size:1.4rem;font-weight:800;color:var(--text);letter-spacing:-.03em">${rank.toLocaleString()}<span style="font-size:.75rem;color:var(--muted);font-weight:400"> / ${totC.toLocaleString()}</span></div>
           </div>
           <div style="background:var(--bg3);padding:14px 16px">
             <div style="font-size:.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px">경쟁력 수준</div>
@@ -1544,7 +1678,7 @@ function runDiag(){
             <div style="font-size:.82rem;font-weight:700;color:var(--green)">${topStrong}</div>
           </div>
         </div>
-        <p style="font-size:.82rem;color:var(--muted2);line-height:1.7">💡 <b style="color:#fff">우선 개선 항목: ${worstItem?worstItem.label:'—'}</b> — 위 개선 카드의 내용을 순서대로 보완하면 종합 점수가 상승하고 더 많은 지원자의 관심을 받을 수 있습니다.</p>
+        <p style="font-size:.82rem;color:var(--muted2);line-height:1.7">💡 <b style="color:var(--text)">우선 개선 항목: ${worstItem?worstItem.label:'—'}</b> — 위 개선 카드의 내용을 순서대로 보완하면 종합 점수가 상승하고 더 많은 지원자의 관심을 받을 수 있습니다.</p>
       </div>`;
     document.getElementById('diagResult').style.display='block';
     document.getElementById('diagResult').scrollIntoView({behavior:'smooth',block:'start'});
@@ -1614,23 +1748,23 @@ function runAI(){
     const diffTxt=Math.abs(item.diff).toFixed(1);
     switch(label){
       case '직무상세성':
-        if(isStrength)return dutyText.length?`<b style="color:#fff">${cName}</b>의 직무 설명은 ${dutyText.length}자 분량${foundDuty.length?`이며 <b style="color:#fff">${foundDuty.slice(0,4).join(', ')}</b> 등 ${foundDuty.length}개 키워드를 포함해`:''} 시장 평균 대비 +${diffTxt}pt 높습니다.`:`직무 설명이 시장 평균보다 +${diffTxt}pt 높게 평가되었습니다.`;
+        if(isStrength)return dutyText.length?`<b style="color:var(--text)">${cName}</b>의 직무 설명은 ${dutyText.length}자 분량${foundDuty.length?`이며 <b style="color:var(--text)">${foundDuty.slice(0,4).join(', ')}</b> 등 ${foundDuty.length}개 키워드를 포함해`:''} 시장 평균 대비 +${diffTxt}pt 높습니다.`:`직무 설명이 시장 평균보다 +${diffTxt}pt 높게 평가되었습니다.`;
         return dutyText.length?`직무 설명이 ${dutyText.length}자로 짧고 핵심 키워드가 ${foundDuty.length}개뿐입니다. 담당 업무·협업 방식·사용 도구를 더 구체적으로 추가하세요.`:`직무 설명이 비어 있어 시장 평균보다 ${diffTxt}pt 낮습니다. 담당 업무를 최소 3문장 이상 작성하세요.`;
       case '기업소개':
-        if(isStrength)return `<b style="color:#fff">${companyChar}</b>${foundBsns.length?` (${foundBsns.join(', ')})`:''} 특성이 잘 드러나 시장 평균 대비 +${diffTxt}pt 높습니다.`;
+        if(isStrength)return `<b style="color:var(--text)">${companyChar}</b>${foundBsns.length?` (${foundBsns.join(', ')})`:''} 특성이 잘 드러나 시장 평균 대비 +${diffTxt}pt 높습니다.`;
         return bsnsText.length?`기업 소개가 ${bsnsText.length}자로 짧아 회사 규모·비전 정보가 부족합니다. 시장 평균보다 ${diffTxt}pt 낮습니다.`:`기업 소개가 비어 있어 지원자 신뢰도가 낮아집니다 (시장 평균보다 ${diffTxt}pt 낮음).`;
       case '급여품질':
-        if(isStrength)return wageText?`급여 정보가 "<b style="color:#fff">${wageText}</b>"로 명확하게 제시되어 시장 평균 대비 +${diffTxt}pt 높습니다.`:`급여 정보가 시장 평균보다 +${diffTxt}pt 높게 평가되었습니다.`;
+        if(isStrength)return wageText?`급여 정보가 "<b style="color:var(--text)">${wageText}</b>"로 명확하게 제시되어 시장 평균 대비 +${diffTxt}pt 높습니다.`:`급여 정보가 시장 평균보다 +${diffTxt}pt 높게 평가되었습니다.`;
         return wageText?`급여가 "${wageText}"로 표기되어 있으나 구체적 금액 범위가 없어 시장 평균보다 ${diffTxt}pt 낮습니다.`:`급여 정보가 없어 시장 평균보다 ${diffTxt}pt 낮습니다. 연봉 범위를 명시하세요.`;
       case '복지':
-        if(isStrength)return foundWelf.length?`<b style="color:#fff">${foundWelf.slice(0,4).join(', ')}</b> 등 ${foundWelf.length}개 복지 항목이 명시되어 시장 평균 대비 +${diffTxt}pt 높습니다.`:`복지 정보가 시장 평균 대비 +${diffTxt}pt 높게 평가되었습니다.`;
+        if(isStrength)return foundWelf.length?`<b style="color:var(--text)">${foundWelf.slice(0,4).join(', ')}</b> 등 ${foundWelf.length}개 복지 항목이 명시되어 시장 평균 대비 +${diffTxt}pt 높습니다.`:`복지 정보가 시장 평균 대비 +${diffTxt}pt 높게 평가되었습니다.`;
         return `복지 항목이 ${foundWelf.length}개로 시장 평균보다 ${diffTxt}pt 적습니다. 식대·교통비·연차 등을 구체적으로 추가하세요.`;
       case '근무조건':
         if(isStrength)return (workTimeText||holidayText)?`근무시간(${workTimeText||'-'}), 휴일(${holidayText||'-'}) 정보가 명확하여 시장 평균 대비 +${diffTxt}pt 높습니다.`:`근무 조건이 시장 평균 대비 +${diffTxt}pt 높게 평가되었습니다.`;
         {const missing=[];if(!workTimeText)missing.push('근무시간');if(!holidayText)missing.push('휴일');if(!addrText)missing.push('근무지 주소');
         return missing.length?`${missing.join('·')} 정보가 누락되어 시장 평균보다 ${diffTxt}pt 낮습니다.`:`근무 조건 정보를 더 구체적으로 보완하면 ${diffTxt}pt 상승 여지가 있습니다.`;}
       case '출퇴근편의':
-        if(isStrength)return subwayText?`<b style="color:#fff">${subwayText}</b> 인근에 위치해 시장 평균 대비 +${diffTxt}pt 높습니다.`:`출퇴근 정보가 시장 평균 대비 +${diffTxt}pt 높게 평가되었습니다.`;
+        if(isStrength)return subwayText?`<b style="color:var(--text)">${subwayText}</b> 인근에 위치해 시장 평균 대비 +${diffTxt}pt 높습니다.`:`출퇴근 정보가 시장 평균 대비 +${diffTxt}pt 높게 평가되었습니다.`;
         return subwayText?`지하철역 정보는 있으나 도보 거리 등 세부 정보가 부족해 시장 평균보다 ${diffTxt}pt 낮습니다.`:`지하철역·버스 정류장 정보가 없어 시장 평균보다 ${diffTxt}pt 낮습니다.`;
       default:return '';
     }
@@ -1656,16 +1790,16 @@ function runAI(){
     ${strItems.length?strItems.map(d=>`
       <div style="background:rgba(0,214,143,.06);border:1px solid rgba(0,214,143,.15);border-radius:10px;padding:14px 16px;margin-bottom:8px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-          <span style="font-size:.84rem;font-weight:700;color:#fff">${d.label}</span>
+          <span style="font-size:.84rem;font-weight:700;color:var(--text)">${d.label}</span>
           <div style="display:flex;align-items:center;gap:6px">
             <span style="font-size:.72rem;color:var(--muted2)">${d.my.toFixed(1)}pt</span>
             <span style="font-size:.68rem;font-weight:700;color:var(--green);background:rgba(0,214,143,.12);padding:2px 8px;border-radius:100px">+${d.diff.toFixed(1)} 시장대비</span>
           </div>
         </div>
-        <div style="height:3px;background:rgba(255,255,255,.06);border-radius:100px;overflow:hidden;margin-bottom:8px">
+        <div style="height:3px;background:rgba(var(--fg-rgb),.06);border-radius:100px;overflow:hidden;margin-bottom:8px">
           <div style="height:100%;width:${Math.round((d.my/d.max)*100)}%;background:var(--green);border-radius:100px"></div>
         </div>
-        <p style="font-size:.76rem;color:rgba(255,255,255,.55);line-height:1.6">${tipFor(d.label,d,true)}</p>
+        <p style="font-size:.76rem;color:rgba(var(--fg-rgb),.55);line-height:1.6">${tipFor(d.label,d,true)}</p>
       </div>`).join('')
     :`<div style="font-size:.78rem;color:var(--muted);padding:12px">시장 평균보다 높은 항목이 없습니다.</div>`}`;
 
@@ -1677,14 +1811,14 @@ function runAI(){
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
           <div style="display:flex;align-items:center;gap:7px">
             <span style="font-size:.62rem;font-weight:700;color:var(--muted)">${priority}</span>
-            <span style="font-size:.84rem;font-weight:700;color:#fff">${d.label}</span>
+            <span style="font-size:.84rem;font-weight:700;color:var(--text)">${d.label}</span>
           </div>
           <span style="font-size:.68rem;font-weight:700;color:var(--red);background:rgba(255,68,51,.1);padding:2px 8px;border-radius:100px">${d.diff.toFixed(1)}pt</span>
         </div>
-        <div style="height:3px;background:rgba(255,255,255,.06);border-radius:100px;overflow:hidden;margin-bottom:8px">
+        <div style="height:3px;background:rgba(var(--fg-rgb),.06);border-radius:100px;overflow:hidden;margin-bottom:8px">
           <div style="height:100%;width:${Math.round((d.my/d.max)*100)}%;background:linear-gradient(90deg,var(--red),var(--yellow));border-radius:100px"></div>
         </div>
-        <p style="font-size:.76rem;color:rgba(255,255,255,.55);line-height:1.6">💡 ${tipFor(d.label,d,false)}</p>
+        <p style="font-size:.76rem;color:rgba(var(--fg-rgb),.55);line-height:1.6">💡 ${tipFor(d.label,d,false)}</p>
       </div>`;
     }).join('')
     :`<div style="font-size:.78rem;color:var(--muted);padding:12px">모든 항목이 시장 평균 이상입니다!</div>`}`;
@@ -1696,15 +1830,15 @@ function runAI(){
 
   // 공고별 맞춤 인사이트 생성
   const dutyInsight = dutyText.length > 50
-    ? `직무 내용에 <b style="color:#fff">${foundDuty.length?foundDuty.slice(0,4).join(', ')+' 등 키워드':'다양한 업무 내용'}</b>이 포함되어 있어 지원자가 구체적인 업무를 파악하기 ${strItems.find(d=>d.label==='직무상세성')?'용이합니다':'어렵습니다'}.`
+    ? `직무 내용에 <b style="color:var(--text)">${foundDuty.length?foundDuty.slice(0,4).join(', ')+' 등 키워드':'다양한 업무 내용'}</b>이 포함되어 있어 지원자가 구체적인 업무를 파악하기 ${strItems.find(d=>d.label==='직무상세성')?'용이합니다':'어렵습니다'}.`
     : `직무 내용이 간략하게 기재되어 있어 구체적인 담당 업무 서술이 필요합니다.`;
 
   const welfInsight = foundWelf.length >= 3
-    ? `<b style="color:#fff">${foundWelf.slice(0,3).join(', ')}</b> 등 다양한 복지 혜택이 명시되어 있어 지원자 만족도를 높입니다.`
+    ? `<b style="color:var(--text)">${foundWelf.slice(0,3).join(', ')}</b> 등 다양한 복지 혜택이 명시되어 있어 지원자 만족도를 높입니다.`
     : `복지 항목이 ${foundWelf.length}개로 시장 평균보다 적습니다. 식대, 교통비, 연차 등을 추가하면 점수가 올라갑니다.`;
 
   const locationInsight = subwayText
-    ? `<b style="color:#fff">${subwayText}</b> 인근에 위치하여 출퇴근 접근성이 우수합니다.`
+    ? `<b style="color:var(--text)">${subwayText}</b> 인근에 위치하여 출퇴근 접근성이 우수합니다.`
     : addrText
     ? `근무지(${addrText.slice(0,20)})는 명시되어 있으나 인근 지하철역 정보를 추가하면 출퇴근편의 점수가 상승합니다.`
     : `근무지와 교통 정보가 없어 지원자의 이탈 요인이 될 수 있습니다.`;
@@ -1723,7 +1857,7 @@ function runAI(){
         </div>
         <div style="background:var(--bg3);border-radius:10px;padding:13px">
           <div style="font-size:.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">기업 유형</div>
-          <div style="font-size:.82rem;font-weight:700;color:#fff">${companyChar}</div>
+          <div style="font-size:.82rem;font-weight:700;color:var(--text)">${companyChar}</div>
         </div>
       </div>
       <div style="display:flex;flex-direction:column;gap:10px">
@@ -1743,7 +1877,7 @@ function runAI(){
           <div style="font-size:.65rem;font-weight:700;color:var(--purple);margin-bottom:5px;text-transform:uppercase;letter-spacing:.06em">💡 개선 제안</div>
           <p style="font-size:.78rem;color:var(--muted2);line-height:1.65">
             ${wkItems.length
-              ? `<b style="color:var(--yellow)">${topWk}</b> 항목을 보완하면 종합 점수가 <b style="color:#fff">+${wkItems.slice(0,2).reduce((s,d)=>s+Math.abs(d.diff),0).toFixed(1)}pt</b> 상승할 것으로 예상됩니다. ${wkItems[0]?`특히 ${wkItems[0].label} 항목(현재 ${wkItems[0].my.toFixed(1)}pt → 목표 ${wkItems[0].max}pt)에 집중하세요.`:''}`
+              ? `<b style="color:var(--yellow)">${topWk}</b> 항목을 보완하면 종합 점수가 <b style="color:var(--text)">+${wkItems.slice(0,2).reduce((s,d)=>s+Math.abs(d.diff),0).toFixed(1)}pt</b> 상승할 것으로 예상됩니다. ${wkItems[0]?`특히 ${wkItems[0].label} 항목(현재 ${wkItems[0].my.toFixed(1)}pt → 목표 ${wkItems[0].max}pt)에 집중하세요.`:''}`
               : '모든 항목이 시장 평균 이상으로 매우 우수한 공고입니다. 현재 수준을 유지하면 상위권 경쟁력을 유지할 수 있습니다.'
             }
           </p>
@@ -1821,23 +1955,23 @@ function drawRadar(sid,myV,mkV,cx,cy){
   let s='';
   // 배경 채우기
   const outerPs=SLABELS.map((_,i)=>ptR(i,1));
-  s+=`<polygon points="${outerPs.map(p=>p.join(',')).join(' ')}" fill="rgba(255,255,255,.02)" stroke="none"/>`;
+  s+=`<polygon points="${outerPs.map(p=>p.join(',')).join(' ')}" fill="rgba(var(--fg-rgb),.02)" stroke="none"/>`;
   // 그리드
   [.25,.5,.75,1].forEach(ratio=>{
     const ps=SLABELS.map((_,i)=>ptR(i,ratio));
     const isOuter=ratio===1;
-    s+=`<polygon points="${ps.map(p=>p.join(',')).join(' ')}" fill="none" stroke="${isOuter?'rgba(255,255,255,.15)':'rgba(255,255,255,.06)'}" stroke-width="${isOuter?1.5:1}"/>`;
+    s+=`<polygon points="${ps.map(p=>p.join(',')).join(' ')}" fill="none" stroke="${isOuter?'rgba(var(--fg-rgb),.15)':'rgba(var(--fg-rgb),.06)'}" stroke-width="${isOuter?1.5:1}"/>`;
   });
   // 축선
   SLABELS.forEach((_,i)=>{
     const[x,y]=ptR(i,1);
-    s+=`<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="rgba(255,255,255,.08)" stroke-width="1"/>`;
+    s+=`<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="rgba(var(--fg-rgb),.08)" stroke-width="1"/>`;
   });
   // 시장 평균 (점선) — 레이블보다 먼저 그려서 뒤에 위치
   if(mkV&&mkV.length){
     const mP=mkV.map((v,i)=>pt(i,v,mx[i]));
-    s+=`<polygon points="${mP.map(p=>p.join(',')).join(' ')}" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.35)" stroke-width="1.5" stroke-dasharray="5,3"/>`;
-    mP.forEach(([x,y])=>{s+=`<circle cx="${x}" cy="${y}" r="3" fill="rgba(255,255,255,.35)" stroke="rgba(255,255,255,.6)" stroke-width="1"/>`;});
+    s+=`<polygon points="${mP.map(p=>p.join(',')).join(' ')}" fill="rgba(var(--fg-rgb),.04)" stroke="rgba(var(--fg-rgb),.35)" stroke-width="1.5" stroke-dasharray="5,3"/>`;
+    mP.forEach(([x,y])=>{s+=`<circle cx="${x}" cy="${y}" r="3" fill="rgba(var(--fg-rgb),.35)" stroke="rgba(var(--fg-rgb),.6)" stroke-width="1"/>`;});
   }
   // 내 공고 폴리곤
   const mP=myV.map((v,i)=>pt(i,v,mx[i]));
@@ -1871,9 +2005,9 @@ function drawRadar(sid,myV,mkV,cx,cy){
   s+=`<circle cx="${cx-82}" cy="${ly+13}" r="5.5" fill="#3b6eff"/>`;
   s+=`<text x="${cx-71}" y="${ly+13}" dominant-baseline="middle" font-size="13" fill="#4f7fff" font-family="Pretendard,sans-serif" font-weight="600">내 공고</text>`;
   if(mkV&&mkV.length){
-    s+=`<rect x="${cx+12}" y="${ly}" width="86" height="26" rx="8" fill="rgba(255,255,255,.05)" stroke="rgba(255,255,255,.3)" stroke-width="1.4" stroke-dasharray="5,3"/>`;
-    s+=`<circle cx="${cx+28}" cy="${ly+13}" r="4.5" fill="rgba(255,255,255,.35)" stroke="rgba(255,255,255,.6)" stroke-width="1"/>`;
-    s+=`<text x="${cx+38}" y="${ly+13}" dominant-baseline="middle" font-size="13" fill="rgba(255,255,255,.55)" font-family="Pretendard,sans-serif" font-weight="600">시장 평균</text>`;
+    s+=`<rect x="${cx+12}" y="${ly}" width="86" height="26" rx="8" fill="rgba(var(--fg-rgb),.05)" stroke="rgba(var(--fg-rgb),.3)" stroke-width="1.4" stroke-dasharray="5,3"/>`;
+    s+=`<circle cx="${cx+28}" cy="${ly+13}" r="4.5" fill="rgba(var(--fg-rgb),.35)" stroke="rgba(var(--fg-rgb),.6)" stroke-width="1"/>`;
+    s+=`<text x="${cx+38}" y="${ly+13}" dominant-baseline="middle" font-size="13" fill="rgba(var(--fg-rgb),.55)" font-family="Pretendard,sans-serif" font-weight="600">시장 평균</text>`;
   }
   document.getElementById(sid).classList.remove('skeleton');
   document.getElementById(sid).innerHTML=s;
@@ -1923,6 +2057,35 @@ document.addEventListener('click',e=>{
   if(w&&!w.contains(e.target))toggleContactCard(false);
 });
 document.addEventListener('keydown',e=>{if(e.key==='Escape')toggleContactCard(false);});
+
+// ── 라이트/다크 모드 토글 ──
+function applyThemeIcon(){
+  const btn=document.getElementById('themeToggle');
+  if(btn)btn.textContent=document.body.classList.contains('light-mode')?'☀️':'🌙';
+}
+function toggleTheme(){
+  document.body.classList.toggle('light-mode');
+  localStorage.setItem('joblens_theme',document.body.classList.contains('light-mode')?'light':'dark');
+  applyThemeIcon();
+}
+applyThemeIcon();
+updateBookmarkUI();
+
+// ── 스크롤 진행률 바 ──
+(function(){
+  const bar=document.getElementById('scrollProgress');
+  if(!bar)return;
+  let ticking=false;
+  function update(){
+    const h=document.documentElement;
+    const scrolled=h.scrollTop||document.body.scrollTop;
+    const max=(h.scrollHeight||document.body.scrollHeight)-h.clientHeight;
+    bar.style.width=(max>0?Math.min(100,(scrolled/max)*100):0)+'%';
+    ticking=false;
+  }
+  document.addEventListener('scroll',()=>{if(!ticking){requestAnimationFrame(update);ticking=true;}},{passive:true});
+  update();
+})();
 
 // ── INIT ──
 (async function(){
