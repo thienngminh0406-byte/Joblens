@@ -156,6 +156,31 @@ nav.scrolled{border-bottom-color:var(--line);background:rgba(var(--bg-rgb),.88);
 .anb:hover,.anb.active{color:var(--text);border-bottom-color:var(--accent)}
 
 .page{display:none;padding:36px 52px 52px;position:relative;z-index:1}
+.page.active{animation:pageFade .35s ease}
+@keyframes pageFade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── 마이크로 인터랙션: 버튼 프레스, 카드 호버 ── */
+button,.nb,.anb,.mtb,.btn-p,.btn-ghost,.btn-diag,.t100-link,.contact-link,.bm-pill,.nav-refresh{transition:transform .12s ease,opacity .2s,background .2s,border-color .2s}
+button:active,.nb:active,.anb:active,.mtb:active,.btn-p:active,.btn-ghost:active,.btn-diag:active,.t100-link:active,.contact-link:active,.bm-pill:active{transform:scale(.95)}
+.rj,.highlight-cb,.mc{transition:transform .18s ease,box-shadow .18s ease,background .18s ease}
+.rj:hover,.highlight-cb:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.25)}
+.mc:hover{transform:translateY(-2px)}
+
+/* ── 등급 배지 툴팁 ── */
+.gb{position:relative;cursor:help}
+.gb::after{position:absolute;bottom:calc(100% + 7px);left:50%;transform:translateX(-50%) translateY(4px);background:var(--bg3);color:var(--text);font-size:.66rem;font-weight:600;padding:6px 11px;border-radius:8px;white-space:nowrap;box-shadow:0 6px 18px rgba(0,0,0,.35);border:1px solid var(--line2);opacity:0;pointer-events:none;transition:opacity .15s,transform .15s;z-index:80}
+.gb:hover::after{opacity:1;transform:translateX(-50%) translateY(0)}
+.gb.g-S::after{content:'S등급 · 상위 5% 이내 최우수 공고'}
+.gb.g-A::after{content:'A등급 · 상위 20% 이내 우수 공고'}
+.gb.g-B::after{content:'B등급 · 상위 50% 이내, 평균 이상'}
+.gb.g-C::after{content:'C등급 · 정보 부족, 보완 필요'}
+.gb.g-D::after{content:'D등급 · 정보 매우 부족, 시급한 개선 필요'}
+
+/* ── 진단 결과 등급 리액션 ── */
+@keyframes celebratePulse{0%{box-shadow:0 0 0 0 rgba(255,204,0,.5)}70%{box-shadow:0 0 0 18px rgba(255,204,0,0)}100%{box-shadow:0 0 0 0 rgba(255,204,0,0)}}
+@keyframes badgeBounce{0%{transform:scale(.5) rotate(-8deg)}55%{transform:scale(1.3) rotate(4deg)}75%{transform:scale(.95)}100%{transform:scale(1) rotate(0)}}
+.dmc.celebrate{animation:celebratePulse 1.3s ease-out;border-radius:12px}
+.dmc.celebrate .gb{animation:badgeBounce .55s ease}
 .page.active{display:block}
 .sec-tag{font-size:.65rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:7px}
 .sec-tag::before{content:'';width:18px;height:1px;background:var(--accent)}
@@ -204,6 +229,12 @@ nav.scrolled{border-bottom-color:var(--line);background:rgba(var(--bg-rgb),.88);
 .hl-label{font-size:.68rem;color:var(--muted);font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin-bottom:8px}
 .hl-main{font-size:1.3rem;font-weight:800;color:var(--text);letter-spacing:-.02em;line-height:1.3}
 .hl-sub{font-size:.76rem;color:var(--muted2);margin-top:4px;font-weight:600}
+.live-score-badge{position:fixed;top:80px;right:24px;z-index:150;background:var(--bg2);border:1px solid var(--line2);border-radius:14px;padding:12px 18px;box-shadow:0 8px 24px rgba(0,0,0,.25);transition:transform .2s,border-color .3s}
+.live-score-badge.pulse{transform:scale(1.06)}
+.lsb-label{font-size:.62rem;font-weight:700;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;margin-bottom:4px}
+.lsb-value{font-size:1.3rem;font-weight:800;color:var(--text);letter-spacing:-.02em;transition:color .3s}
+.lsb-value small{font-size:.7rem;font-weight:600;color:var(--muted)}
+@media(max-width:900px){.live-score-badge{position:static;margin-bottom:16px;display:inline-flex;align-items:center;gap:10px}.lsb-label{margin-bottom:0}}
 .rj-sc{font-size:1.2rem;font-weight:800;color:var(--accent);letter-spacing:-.03em}
 .dtw{overflow-x:auto;border:1px solid var(--line2);border-radius:13px;background:var(--bg2)}
 table{width:100%;border-collapse:collapse;font-size:.74rem}
@@ -220,7 +251,13 @@ td.bold{color:var(--text);font-weight:600}
 .g-C{background:rgba(255,204,0,.1);color:var(--yellow)}
 .g-D{background:rgba(255,68,51,.1);color:var(--red)}
 .sbar{display:flex;gap:9px;margin-bottom:14px;flex-wrap:wrap}
-.si{flex:1;min-width:180px;background:var(--bg2);border:1px solid var(--line2);border-radius:9px;padding:9px 13px;color:var(--text);font-family:'Pretendard',sans-serif;font-size:.84rem;outline:none;transition:border-color .2s}
+.skw-wrap{position:relative;flex:1;min-width:180px}
+.si{width:100%;background:var(--bg2);border:1px solid var(--line2);border-radius:9px;padding:9px 13px;color:var(--text);font-family:'Pretendard',sans-serif;font-size:.84rem;outline:none;transition:border-color .2s;box-sizing:border-box}
+.skw-suggest{display:none;position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--bg2);border:1px solid var(--line2);border-radius:10px;box-shadow:0 12px 30px rgba(0,0,0,.35);z-index:120;overflow:hidden}
+.skw-suggest.show{display:block}
+.skw-suggest-item{padding:10px 14px;font-size:.8rem;color:var(--text);cursor:pointer;transition:background .15s}
+.skw-suggest-item:hover,.skw-suggest-item.active{background:var(--bg3)}
+.skw-suggest-item b{color:var(--accent)}
 .si:focus{border-color:var(--accent)}
 .si::placeholder{color:var(--muted)}
 .fs{background:var(--bg2);border:1px solid var(--line2);border-radius:9px;padding:9px 11px;color:var(--muted2);font-family:'Pretendard',sans-serif;font-size:.78rem;outline:none;cursor:pointer}
@@ -257,7 +294,9 @@ td.bold{color:var(--text);font-weight:600}
 .al-w{background:rgba(255,204,0,.07);border:1px solid rgba(255,204,0,.2);color:var(--yellow)}
 .al-i{background:rgba(59,110,255,.07);border:1px solid rgba(59,110,255,.2);color:var(--ag)}
 .al-s{background:rgba(0,214,143,.07);border:1px solid rgba(0,214,143,.2);color:var(--green)}
-.t100-card{background:var(--bg2);border:1px solid var(--line2);border-radius:12px;padding:18px 20px;display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center;transition:border-color .2s,background .2s;margin-bottom:8px}
+.t100-card{background:var(--bg2);border:1px solid var(--line2);border-radius:12px;padding:18px 20px;display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center;transition:border-color .2s,background .2s,transform .18s ease,box-shadow .18s ease;margin-bottom:8px}
+.t100-card:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.25)}
+.rj:active,.highlight-cb:active,.t100-card:active{transform:scale(.98)}
 .t100-card:hover{border-color:rgba(59,110,255,.35);background:var(--bg3)}
 .t100-rank{font-size:.65rem;font-weight:800;color:var(--accent);margin-bottom:5px}
 .t100-title{font-size:.9rem;font-weight:800;color:var(--text);margin-bottom:4px;letter-spacing:-.01em}
@@ -659,7 +698,10 @@ input[type=range]{flex:1;accent-color:var(--accent)}
     <h1 class="pg-title">🔍 Job <em>Search</em></h1>
     <p class="pg-sub">실시간 수집된 채용공고를 탐색합니다. 행을 클릭하면 상세 정보를 확인할 수 있습니다.</p>
     <div class="sbar">
-      <input class="si" id="skw" placeholder="🔍 회사명 또는 공고명 검색..." oninput="debounceFilter()">
+      <div class="skw-wrap">
+        <input class="si" id="skw" placeholder="🔍 회사명 또는 공고명 검색..." oninput="debounceFilter();updateSearchSuggestions()" onfocus="updateSearchSuggestions()" autocomplete="off">
+        <div class="skw-suggest" id="skwSuggest"></div>
+      </div>
       <select class="fs" id="fgrade" onchange="filterJobs()"><option value="">전체 등급</option><option value="S">S</option><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option></select>
       <select class="fs" id="fcareer" onchange="filterJobs()"><option value="">전체 경력</option></select>
       <select class="fs" id="fjob" onchange="filterJobs()"><option value="">전체 직무</option></select>
@@ -676,6 +718,10 @@ input[type=range]{flex:1;accent-color:var(--accent)}
 
   <!-- DIAGNOSIS -->
   <div class="page" id="page-diagnosis">
+    <div class="live-score-badge" id="liveScoreBadge">
+      <div class="lsb-label">⚡ 실시간 예상 점수</div>
+      <div class="lsb-value"><span id="lsbScore">0</span><small>점</small> <span class="gb g-D" id="lsbGrade" style="margin-left:4px">D</span></div>
+    </div>
     <div class="sec-tag">Posting Diagnosis</div>
     <h1 class="pg-title">📝 Posting <em>Diagnosis</em></h1>
     <p class="pg-sub">작성 중인 채용공고를 실시간 수집된 시장 데이터와 비교해 점수, 예상 순위, 개선 포인트를 진단합니다</p>
@@ -933,6 +979,8 @@ let statsCache = null;
 let topJobsCache = [];
 let recentJobsCache = [];
 let searchJobsCache = [];
+let knownCompanies = new Set();
+function trackCompanies(jobs){(jobs||[]).forEach(j=>{if(j&&j.CMPNY_NM)knownCompanies.add(j.CMPNY_NM);});}
 let top100SliceCache = [];
 let searchPage = 1;
 let debounceTimer = null;
@@ -1249,6 +1297,7 @@ async function loadRecentJobs(){
   try{
     const jobs = await apiFetch('/api/jobs/recent?n=5');
     recentJobsCache = jobs;
+    trackCompanies(jobs);
     document.getElementById('recentJobs').innerHTML=jobs.map((j,i)=>`
       <div class="rj" role="button" tabindex="0" aria-label="${(j.CMPNY_NM||'')} ${(j.JO_SJ||'')} 상세보기" onclick="openJobModal(recentJobsCache[${i}])" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}">
         <div><div class="rj-co">${j.CMPNY_NM||''}</div><div class="rj-ti">${sh(j.JO_SJ,52)}</div></div>
@@ -1565,6 +1614,7 @@ async function filterJobs(page){
   try{
     const data=await apiFetch(`/api/jobs?${params}`);
     searchJobsCache = data.jobs||[];
+    trackCompanies(searchJobsCache);
     // 백엔드가 정렬을 지원하지 않는 경우를 대비해 현재 페이지 결과에 클라이언트 정렬도 적용
     if(sort==='score_desc')searchJobsCache.sort((a,b)=>(b.종합점수||0)-(a.종합점수||0));
     else if(sort==='recent')searchJobsCache.sort((a,b)=>(b.JO_REG_DT||'').localeCompare(a.JO_REG_DT||''));
@@ -1692,9 +1742,15 @@ function runDiag(){
     const mktAvgs=statsCache?statsCache.score_cols_avg:{};
     document.getElementById('dm').innerHTML=`
       <div class="dmc"><div class="ml">예상 점수</div><div class="mv">${tot.toFixed(1)}</div></div>
-      <div class="dmc"><div class="ml">예상 등급</div><div class="mv"><span class="gb g-${grade}">${grade}</span></div></div>
+      <div class="dmc" id="dmGradeBox"><div class="ml">예상 등급</div><div class="mv"><span class="gb g-${grade}">${grade}</span></div></div>
       <div class="dmc"><div class="ml">시장 내 순위</div><div class="mv" style="font-size:1.2rem">${rank.toLocaleString()} <span style="font-size:.75rem;color:var(--muted)">/ ${totC.toLocaleString()}</span></div></div>
       <div class="dmc"><div class="ml">시장 백분위</div><div class="mv">${pct.toFixed(1)}%</div></div>`;
+    const gradeBox=document.getElementById('dmGradeBox');
+    if(gradeBox){
+      gradeBox.classList.remove('celebrate');
+      void gradeBox.offsetWidth;
+      if(grade==='S'||grade==='A')gradeBox.classList.add('celebrate');
+    }
     const myV=SCOLS.map(c=>sc[c]||0);
     const mkV=SLABELS.map(l=>mktAvgs[l]||0);
     drawRadar('dRadar',myV,mkV,240,205);
@@ -1834,12 +1890,46 @@ function sWage(s){if(!s||!s.trim())return 0;  // 빈 입력 → 0점
 function sWork(d){let s=0;if(d.wt&&d.wt.length>5)s+=5;if(d.ho&&d.ho.length>2)s+=5;if(d.wh)s+=4;if(d.ad&&d.ad.length>3)s+=6;return Math.min(20,s);}
 function sAcc(d){let s=0;if(d.me&&d.me.length>3)s+=3;if(d.do_&&d.do_.length>2)s+=2;if(d.ph&&d.ph.length>5)s+=2;if(d.ad&&/(역|정류장|버스|셔틀|지하철|도보)/.test(d.ad))s+=3;return Math.min(10,s);}
 
+// ── 실시간 예상 점수 미리보기 ──
+function gradeFromScore(score){
+  const stats=statsCache;
+  if(!stats||!stats.hist)return'D';
+  const hist=stats.hist||{},totC=stats.total||0;
+  const aboveCount=Object.entries(hist).reduce((acc,[range,cnt])=>{
+    const lo=parseInt(range.split('-')[0]);
+    return lo>=Math.ceil(score)?acc+cnt:acc;
+  },0);
+  const pct=((totC-(aboveCount+1))/Math.max(totC,1))*100;
+  if(pct>=95)return'S';if(pct>=80)return'A';if(pct>=50)return'B';if(pct>=20)return'C';return'D';
+}
+let liveDiagTimer=null;
+function updateLivePreview(){
+  clearTimeout(liveDiagTimer);
+  liveDiagTimer=setTimeout(()=>{
+    const gv=id=>document.getElementById(id)?.value||'';
+    const d={co:gv('d_co'),ti:gv('d_ti'),du:gv('d_du'),su:gv('d_su'),sa:gv('d_sa'),we:gv('d_we'),wt:gv('d_wt'),ho:gv('d_ho'),wh:gv('d_wh'),ad:gv('d_ad'),me:gv('d_me'),do_:gv('d_do'),ph:gv('d_ph')};
+    const score=Math.round(scorePost(d).종합점수);
+    const grade=gradeFromScore(score);
+    const scoreEl=document.getElementById('lsbScore'),gradeEl=document.getElementById('lsbGrade'),badge=document.getElementById('liveScoreBadge');
+    if(scoreEl)scoreEl.textContent=score;
+    if(gradeEl)gradeEl.className='gb g-'+grade,gradeEl.textContent=grade;
+    if(badge){badge.classList.add('pulse');setTimeout(()=>badge.classList.remove('pulse'),180);}
+  },150);
+}
+function initLivePreview(){
+  ['d_co','d_ti','d_du','d_su','d_sa','d_we','d_wt','d_ho','d_wh','d_ad','d_me','d_do','d_ph'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.addEventListener('input',updateLivePreview);
+  });
+}
+
 // ── AI DIAGNOSIS ──
 async function initAISel(){
   const sel=document.getElementById('aiJobSel');
   if(sel.options.length>1)return;
   try{
     const jobs=await apiFetch('/api/jobs/top?n=200');
+    trackCompanies(jobs);
     jobs.forEach((j,i)=>{const o=document.createElement('option');o.value=i;o.textContent=`${sh(j.CMPNY_NM,15)} - ${sh(j.JO_SJ,30)} (${j.종합점수}점)`;o.dataset.job=JSON.stringify(j);sel.appendChild(o);});
     topJobsCache=jobs;
   }catch(e){console.error('ai sel load failed:',e);}
@@ -2025,6 +2115,7 @@ async function loadTop100(){
   try{
     const [jobs, t100stats]=await Promise.all([apiFetch('/api/jobs/top?n=100'),apiFetch('/api/top100/stats')]);
     topJobsCache=jobs;
+    trackCompanies(jobs);
     document.getElementById('t100avg').textContent=t100stats.avg||'—';
     const cutoffScore=jobs.length?jobs[jobs.length-1].종합점수:'—';
     document.getElementById('t100cut').textContent=cutoffScore;
@@ -2137,6 +2228,32 @@ function drawRadar(sid,myV,mkV,cx,cy){
   document.getElementById(sid).innerHTML=s;
 }
 
+function updateSearchSuggestions(){
+  const input=document.getElementById('skw');
+  const box=document.getElementById('skwSuggest');
+  if(!input||!box)return;
+  const q=input.value.trim();
+  if(!q){box.classList.remove('show');box.innerHTML='';return;}
+  const qLower=q.toLowerCase();
+  const matches=[...knownCompanies].filter(c=>c.toLowerCase().includes(qLower)).slice(0,6);
+  if(!matches.length){box.classList.remove('show');box.innerHTML='';return;}
+  box.innerHTML=matches.map(c=>{
+    const idx=c.toLowerCase().indexOf(qLower);
+    const highlighted=idx>=0?`${c.slice(0,idx)}<b>${c.slice(idx,idx+q.length)}</b>${c.slice(idx+q.length)}`:c;
+    return `<div class="skw-suggest-item" onmousedown="selectSuggestion(this)" data-company="${c.replace(/"/g,'&quot;')}">${highlighted}</div>`;
+  }).join('');
+  box.classList.add('show');
+}
+function selectSuggestion(el){
+  const input=document.getElementById('skw');
+  input.value=el.dataset.company;
+  document.getElementById('skwSuggest').classList.remove('show');
+  filterJobs();
+}
+document.addEventListener('click',e=>{
+  const wrap=document.getElementById('skw')?.closest('.skw-wrap');
+  if(wrap&&!wrap.contains(e.target))document.getElementById('skwSuggest')?.classList.remove('show');
+});
 function wageNum(str){
   if(!str)return 0;
   const nums=(String(str).replace(/,/g,'').match(/\d+/g)||[]).map(Number);
@@ -2222,6 +2339,7 @@ updateBookmarkUI();
   setInterval(updateLiveClock,1000);
   loadSeoulWeather();
   setInterval(loadSeoulWeather,600000);
+  initLivePreview();
   await loadStats();
   await initSearch();
 })();
