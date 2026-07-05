@@ -194,6 +194,16 @@ nav.scrolled{border-bottom-color:var(--line);background:rgba(var(--bg-rgb),.88);
 .rj-right{display:flex;flex-direction:column;align-items:flex-end;gap:5px}
 .rj-star{background:none;border:none;font-size:1.1rem;cursor:pointer;color:var(--yellow);padding:4px;line-height:1;transition:transform .15s}
 .rj-star:hover{transform:scale(1.2)}
+.radar-legend{display:flex;gap:16px;margin-top:6px;margin-bottom:-6px}
+.radar-legend span{display:flex;align-items:center;gap:6px;font-size:.72rem;font-weight:600;color:var(--muted2)}
+.radar-legend i{width:14px;height:3px;border-radius:2px;background:#3b6eff;display:inline-block}
+.radar-legend i.dash{background:none;border-top:2px dashed rgba(var(--fg-rgb),.45)}
+.highlight-cb{position:relative;overflow:hidden;transition:background .2s}
+.highlight-cb:hover{background:var(--bg3)}
+.hl-icon{font-size:1.3rem;margin-bottom:6px}
+.hl-label{font-size:.68rem;color:var(--muted);font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin-bottom:8px}
+.hl-main{font-size:1.3rem;font-weight:800;color:var(--text);letter-spacing:-.02em;line-height:1.3}
+.hl-sub{font-size:.76rem;color:var(--muted2);margin-top:4px;font-weight:600}
 .rj-sc{font-size:1.2rem;font-weight:800;color:var(--accent);letter-spacing:-.03em}
 .dtw{overflow-x:auto;border:1px solid var(--line2);border-radius:13px;background:var(--bg2)}
 table{width:100%;border-collapse:collapse;font-size:.74rem}
@@ -336,6 +346,7 @@ input[type=range]{flex:1;accent-color:var(--accent)}
 
 @media(max-width:900px){
   nav{padding:12px 18px}.hero{grid-template-columns:1fr;padding:96px 20px 56px;gap:32px}.hero-right{display:none}
+  .nav-menu{display:none}
   .story-grid{grid-template-columns:1fr}.story-left{position:relative;height:auto;padding:56px 20px}.story-right{padding:0 20px}
   .bq{padding:56px 20px}.app-nav{padding:0 20px}.page{padding:28px 18px 44px}
   .metrics-row{grid-template-columns:1fr 1fr}.chart-row,.fg,.dr,.about-grid{grid-template-columns:1fr}
@@ -398,9 +409,9 @@ input[type=range]{flex:1;accent-color:var(--accent)}
   <div class="nav-menu">
     <button class="nb" onclick="goApp('home',this)">Home</button>
     <button class="nb" onclick="goApp('market',this)">Market</button>
-    <button class="nb" onclick="goApp('search',this)">Job Search</button>
+    <button class="nb" onclick="goApp('search',this)">Search</button>
     <button class="nb" onclick="goApp('diagnosis',this)">Diagnosis</button>
-    <button class="nb" onclick="goApp('ai',this)">AI Diagnosis</button>
+    <button class="nb" onclick="goApp('ai',this)">AI</button>
     <button class="nb" onclick="goApp('top100',this)">Top100</button>
     <button class="nb" onclick="goApp('about',this)">About</button>
   </div>
@@ -431,7 +442,7 @@ input[type=range]{flex:1;accent-color:var(--accent)}
         <div class="ls-item" id="lsWeather">🌤️ 서울 날씨 불러오는 중</div>
       </div>
       <h1>채용공고의<br><em>정보 품질</em>을<br>수치로 말하다</h1>
-      <p class="hero-sub">서울시 공공 채용공고 데이터를 실시간으로 수집하고 6가지 지표로 자동 분석합니다. 어떤 공고가 구직자를 잃고 있는지 데이터가 정확히 알려줍니다.</p>
+      <p class="hero-sub">서울시 채용공고 2만 건을 실시간으로 분석합니다.<br>어떤 공고가 지원자를 놓치고 있는지, 데이터가 정확히 짚어드립니다.</p>
       <div class="hbtns">
         <button class="btn-p" onclick="goApp('home',null)">대시보드 보기</button>
         <button class="btn-ghost" onclick="scrollToStory()">데이터 인사이트 ↓</button>
@@ -539,6 +550,21 @@ input[type=range]{flex:1;accent-color:var(--accent)}
       <div class="mc"><div class="ml">직무 종류</div><div class="mv skeleton sk-text"></div></div>
       <div class="mc"><div class="ml">최근 7일 신규</div><div class="mv skeleton sk-text"></div></div>
     </div>
+    <div class="sec-tag" style="margin-top:4px">오늘의 하이라이트</div>
+    <div class="chart-row" id="highlightRow">
+      <div class="cb highlight-cb">
+        <div class="hl-icon">🔥</div>
+        <div class="hl-label">가장 많이 등록된 직무</div>
+        <div class="hl-main skeleton sk-text" id="hlJobType">&nbsp;</div>
+        <div class="hl-sub" id="hlJobCount"></div>
+      </div>
+      <div class="cb highlight-cb" id="hlTopJobCard" style="cursor:pointer">
+        <div class="hl-icon">🏆</div>
+        <div class="hl-label">최신 등록 중 최고 점수</div>
+        <div class="hl-main skeleton sk-text" id="hlTopJobName">&nbsp;</div>
+        <div class="hl-sub" id="hlTopJobScore"></div>
+      </div>
+    </div>
     <div class="sec-tag" style="margin-top:4px">채용시장 추이</div>
     <div class="full-card"><div class="ct">Daily Job Posting Trend</div><div class="cs">일별 신규 채용공고 등록 건수</div><svg viewBox="0 0 800 110" width="100%" id="trendSvg" class="skeleton" style="overflow:visible"></svg><div style="display:flex;justify-content:space-between;font-size:.55rem;color:var(--muted);margin-top:4px" id="trendLabels"></div></div>
     <div class="sec-tag">최근 등록된 공고</div>
@@ -637,6 +663,11 @@ input[type=range]{flex:1;accent-color:var(--accent)}
       <select class="fs" id="fgrade" onchange="filterJobs()"><option value="">전체 등급</option><option value="S">S</option><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option></select>
       <select class="fs" id="fcareer" onchange="filterJobs()"><option value="">전체 경력</option></select>
       <select class="fs" id="fjob" onchange="filterJobs()"><option value="">전체 직무</option></select>
+      <select class="fs" id="fsort" onchange="filterJobs()">
+        <option value="score_desc">점수 높은순</option>
+        <option value="recent">최신순</option>
+        <option value="wage_desc">급여 높은순</option>
+      </select>
     </div>
     <div class="sc" id="sc">검색 중...</div>
     <div class="dtw"><table><thead><tr><th>회사명</th><th>공고명</th><th>직무</th><th>경력</th><th>고용형태</th><th>급여</th><th>근무지</th><th>접수마감</th><th>종합점수</th><th>등급</th></tr></thead><tbody id="jtb"></tbody></table></div>
@@ -675,8 +706,10 @@ input[type=range]{flex:1;accent-color:var(--accent)}
     <div id="diagResult" style="display:none;margin-top:26px">
       <div class="sec-tag">진단 결과</div>
       <div class="dm" id="dm"></div>
-      <div class="dr"><div class="cb"><div class="ct">Market Benchmark</div><svg viewBox="0 0 480 480" width="100%" id="dRadar"></svg></div><div class="cb"><div class="ct">항목별 점수 비교</div><div id="dTable"></div></div></div>
-      <div id="dAlerts"></div><div id="dSummary"></div>
+      <div class="dr"><div class="cb"><div class="ct">Market Benchmark</div><div class="radar-legend"><span><i style="background:#3b6eff"></i>내 공고</span><span><i class="dash"></i>시장 평균</span></div><svg viewBox="0 0 480 420" width="100%" id="dRadar"></svg></div><div class="cb"><div class="ct">항목별 점수 비교</div><div id="dTable"></div></div></div>
+      <div id="dAlerts"></div>
+      <div id="dRewrite"></div>
+      <div id="dSummary"></div>
     </div>
   </div>
 
@@ -689,7 +722,7 @@ input[type=range]{flex:1;accent-color:var(--accent)}
     <div id="aiResult" style="display:none;margin-top:20px">
       <div id="aiMetrics" style="margin-bottom:18px"></div>
       <div class="dr">
-        <div class="cb"><div class="ct">Benchmark Analysis</div><div class="cs">내 공고 vs 시장 평균</div><svg viewBox="0 0 480 480" width="100%" id="aiRadar"></svg></div>
+        <div class="cb"><div class="ct">Benchmark Analysis</div><div class="cs">내 공고 vs 시장 평균</div><div class="radar-legend"><span><i style="background:#3b6eff"></i>내 공고</span><span><i class="dash"></i>시장 평균</span></div><svg viewBox="0 0 480 420" width="100%" id="aiRadar"></svg></div>
         <div class="cb" style="display:flex;flex-direction:column;gap:0">
           <div id="aiStrength"></div>
           <div id="aiWeak" style="margin-top:12px"></div>
@@ -747,19 +780,19 @@ input[type=range]{flex:1;accent-color:var(--accent)}
       <p style="font-size:.86rem;color:var(--muted2);margin-bottom:28px;line-height:1.7">정보가 부족한 채용공고는 지원자의 이탈을 유발하고 기업 이미지에 부정적 영향을 미칩니다.</p>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line2);border-radius:16px;overflow:hidden">
         <div style="background:var(--bg2);padding:28px 24px">
-          <div style="font-size:2rem;font-weight:800;color:var(--red);letter-spacing:-.04em;margin-bottom:8px">77%</div>
+          <div style="font-size:2rem;font-weight:800;color:var(--red);letter-spacing:-.04em;margin-bottom:8px" id="aboutCdPct">77%</div>
           <div style="font-size:.84rem;font-weight:700;color:var(--text);margin-bottom:6px">C·D등급 공고 비율</div>
-          <div style="font-size:.76rem;color:var(--muted2);line-height:1.6">분석된 공고의 77%가 핵심 정보 부족으로 구직자의 지원 판단을 어렵게 만듭니다.</div>
+          <div style="font-size:.76rem;color:var(--muted2);line-height:1.6" id="aboutCdDesc">분석된 공고의 77%가 핵심 정보 부족으로 구직자의 지원 판단을 어렵게 만듭니다.</div>
         </div>
         <div style="background:var(--bg2);padding:28px 24px">
-          <div style="font-size:2rem;font-weight:800;color:var(--yellow);letter-spacing:-.04em;margin-bottom:8px">2.3%</div>
+          <div style="font-size:2rem;font-weight:800;color:var(--yellow);letter-spacing:-.04em;margin-bottom:8px" id="aboutSaPct">2.3%</div>
           <div style="font-size:.84rem;font-weight:700;color:var(--text);margin-bottom:6px">S·A등급 공고 비율</div>
-          <div style="font-size:.76rem;color:var(--muted2);line-height:1.6">정보가 충분한 최상위 공고는 전체의 2.3%에 불과합니다. 차별화 기회가 열려있습니다.</div>
+          <div style="font-size:.76rem;color:var(--muted2);line-height:1.6" id="aboutSaDesc">정보가 충분한 최상위 공고는 전체의 2.3%에 불과합니다. 차별화 기회가 열려있습니다.</div>
         </div>
         <div style="background:var(--bg2);padding:28px 24px">
-          <div style="font-size:2rem;font-weight:800;color:var(--green);letter-spacing:-.04em;margin-bottom:8px">5.68</div>
-          <div style="font-size:.84rem;font-weight:700;color:var(--text);margin-bottom:6px">출퇴근편의 평균 점수</div>
-          <div style="font-size:.76rem;color:var(--muted2);line-height:1.6">6개 항목 중 가장 낮은 점수. 지하철역 정보 한 줄만 추가해도 등급이 올라갑니다.</div>
+          <div style="font-size:2rem;font-weight:800;color:var(--green);letter-spacing:-.04em;margin-bottom:8px" id="aboutLowScore">5.68</div>
+          <div style="font-size:.84rem;font-weight:700;color:var(--text);margin-bottom:6px" id="aboutLowLabel">출퇴근편의 평균 점수</div>
+          <div style="font-size:.76rem;color:var(--muted2);line-height:1.6" id="aboutLowDesc">6개 항목 중 가장 낮은 점수. 지하철역 정보 한 줄만 추가해도 등급이 올라갑니다.</div>
         </div>
       </div>
     </div>
@@ -1123,6 +1156,15 @@ function updateStoryStats(data){
         if(bEl)bEl.textContent=newB;
       }
     }
+
+    // About 페이지 통계도 동일 데이터로 갱신 (하드코딩 → 실시간)
+    const cdPctTotal=(cPct+dPct);
+    const cdEl=document.getElementById('aboutCdPct'),cdDescEl=document.getElementById('aboutCdDesc');
+    if(cdEl)cdEl.textContent=cdPctTotal.toFixed(1)+'%';
+    if(cdDescEl)cdDescEl.textContent=`분석된 공고의 ${cdPctTotal.toFixed(1)}%가 핵심 정보 부족으로 구직자의 지원 판단을 어렵게 만듭니다.`;
+    const saEl=document.getElementById('aboutSaPct'),saDescEl=document.getElementById('aboutSaDesc');
+    if(saEl)saEl.textContent=saPct.toFixed(1)+'%';
+    if(saDescEl)saDescEl.textContent=`정보가 충분한 최상위 공고는 전체의 ${saPct.toFixed(1)}%에 불과합니다. 차별화 기회가 열려있습니다.`;
   }
 
   const avgs=data.score_cols_avg||{};
@@ -1132,6 +1174,14 @@ function updateStoryStats(data){
     const col=i===5?'var(--red)':i<=1?'var(--yellow)':'var(--accent)';
     return `<div class="mbr"><div class="mbl">${l}</div><div class="mbt"><div class="mbf" style="width:${pct}%;background:${col}"></div></div><div class="mbv">${v}</div></div>`;
   }).join('');
+  if(labels.length){
+    const minIdx=vals.indexOf(Math.min(...vals));
+    const lowLabel=labels[minIdx],lowVal=vals[minIdx];
+    const lsEl=document.getElementById('aboutLowScore'),llEl=document.getElementById('aboutLowLabel'),ldEl=document.getElementById('aboutLowDesc');
+    if(lsEl)lsEl.textContent=lowVal;
+    if(llEl)llEl.textContent=`${lowLabel} 평균 점수`;
+    if(ldEl)ldEl.textContent=`6개 항목 중 가장 낮은 점수. ${lowLabel} 정보를 보완하면 등급이 올라갈 수 있습니다.`;
+  }
 
   // 경력 무관 비율
   const career=data.career_dist||{};
@@ -1170,6 +1220,15 @@ function renderHome(data){
     <div class="mc"><div class="ml">직무 종류</div><div class="mv">${jobCount}<span style="font-size:.9rem;color:var(--muted)">+</span></div><div class="ms">직무군</div></div>
     <div class="mc"><div class="ml">최근 7일 신규</div><div class="mv">${data.recent7.toLocaleString()}</div><div class="ms">건 등록</div></div>`;
 
+  // 오늘의 하이라이트 — 가장 많이 등록된 직무
+  const jobTop10Entries=Object.entries(data.job_top10||{});
+  if(jobTop10Entries.length){
+    const[topJobName,topJobCount]=jobTop10Entries.sort((a,b)=>b[1]-a[1])[0];
+    document.getElementById('hlJobType').classList.remove('skeleton','sk-text');
+    document.getElementById('hlJobType').textContent=topJobName;
+    document.getElementById('hlJobCount').textContent=`전체 ${jobTop10Entries.length}개 직무군 중 ${topJobCount.toLocaleString()}건으로 1위`;
+  }
+
   // Trend SVG
   drawTrendSVG('trendSvg','trendLabels',data.trend||[]);
 
@@ -1199,6 +1258,21 @@ async function loadRecentJobs(){
         </div>
       </div>`).join('');
     buildMarquee(jobs);
+
+    // 오늘의 하이라이트 — 최신 등록 중 최고 점수 공고
+    if(jobs.length){
+      const topJob=[...jobs].sort((a,b)=>(b.종합점수||0)-(a.종합점수||0))[0];
+      const topIdx=jobs.indexOf(topJob);
+      document.getElementById('hlTopJobName').classList.remove('skeleton','sk-text');
+      document.getElementById('hlTopJobName').innerHTML=`${topJob.CMPNY_NM||''} <span class="gb g-${topJob.등급}" style="vertical-align:middle;margin-left:4px">${topJob.등급}</span>`;
+      document.getElementById('hlTopJobScore').textContent=`${sh(topJob.JO_SJ,30)} · ${topJob.종합점수}점`;
+      const card=document.getElementById('hlTopJobCard');
+      if(card){
+        card.onclick=()=>openJobModal(recentJobsCache[topIdx]);
+        card.setAttribute('role','button');card.setAttribute('tabindex','0');
+        card.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();card.click();}};
+      }
+    }
   }catch(e){console.error('recent jobs failed:',e);}
 }
 
@@ -1485,11 +1559,16 @@ async function filterJobs(page){
   const career=document.getElementById('fcareer').value;
   const job=document.getElementById('fjob').value;
   const period=document.getElementById('periodSel').value;
-  const params=new URLSearchParams({keyword:kw,grade,career,job,period,page:searchPage,per:PER});
+  const sort=document.getElementById('fsort')?.value||'score_desc';
+  const params=new URLSearchParams({keyword:kw,grade,career,job,period,sort,page:searchPage,per:PER});
   document.getElementById('sc').innerHTML='검색 중...';
   try{
     const data=await apiFetch(`/api/jobs?${params}`);
     searchJobsCache = data.jobs||[];
+    // 백엔드가 정렬을 지원하지 않는 경우를 대비해 현재 페이지 결과에 클라이언트 정렬도 적용
+    if(sort==='score_desc')searchJobsCache.sort((a,b)=>(b.종합점수||0)-(a.종합점수||0));
+    else if(sort==='recent')searchJobsCache.sort((a,b)=>(b.JO_REG_DT||'').localeCompare(a.JO_REG_DT||''));
+    else if(sort==='wage_desc')searchJobsCache.sort((a,b)=>wageNum(b.HOPE_WAGE)-wageNum(a.HOPE_WAGE));
     document.getElementById('sc').innerHTML=`검색 결과: <b>${data.total.toLocaleString()}</b>건`;
     document.getElementById('jtb').innerHTML=searchJobsCache.map((j,i)=>`
       <tr tabindex="0" aria-label="${(j.CMPNY_NM||'')} ${(j.JO_SJ||'')} 상세보기" onclick="openJobModal(searchJobsCache[${i}])" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}">
@@ -1519,11 +1598,16 @@ function openJobModal(j){
   if(typeof j==='string') j=JSON.parse(j);
   currentModalJob=j;
   const searchQ=encodeURIComponent(`${j.CMPNY_NM||''} ${j.JO_SJ||''} 채용`);
+  const companyQ=encodeURIComponent(j.CMPNY_NM||'');
   document.getElementById('moContent').innerHTML=`
     <div class="mo-title" style="padding-right:28px">${j.JO_SJ||'공고명 없음'}</div>
     <button id="moBookmarkBtn" onclick="toggleBookmark(currentModalJob)" aria-label="찜하기" style="position:absolute;top:14px;right:44px;background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--yellow)">${isBookmarked(j)?'⭐':'☆'}</button>
     <div class="mo-company">${j.CMPNY_NM||''} &nbsp;·&nbsp; <span class="gb g-${j.등급}">${j.등급}</span> &nbsp;·&nbsp; <b style="color:var(--accent)">${j.종합점수}점</b></div>
-    <a href="https://www.google.com/search?q=${searchQ}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;font-size:.72rem;font-weight:600;color:var(--accent);text-decoration:none;background:rgba(59,110,255,.1);border:1px solid rgba(59,110,255,.3);border-radius:8px;padding:6px 12px;margin:8px 0 4px">🔗 원본 공고 찾아보기</a>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 4px">
+      <a href="https://www.google.com/search?q=${searchQ}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;font-size:.72rem;font-weight:600;color:var(--accent);text-decoration:none;background:rgba(59,110,255,.1);border:1px solid rgba(59,110,255,.3);border-radius:8px;padding:6px 12px">🔍 구글 검색</a>
+      <a href="https://www.saramin.co.kr/zf_user/search/recruit?searchType=search&searchword=${companyQ}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;font-size:.72rem;font-weight:600;color:#ff7a00;text-decoration:none;background:rgba(255,122,0,.1);border:1px solid rgba(255,122,0,.3);border-radius:8px;padding:6px 12px">🟠 사람인</a>
+      <a href="https://www.jobkorea.co.kr/Search/?stext=${companyQ}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;font-size:.72rem;font-weight:600;color:#00a8e8;text-decoration:none;background:rgba(0,168,232,.1);border:1px solid rgba(0,168,232,.3);border-radius:8px;padding:6px 12px">🟦 잡코리아</a>
+    </div>
     <div class="mo-row">
       <div class="mo-field"><div class="mo-fl">직무</div><div class="mo-fv">${j.JOBCODE_NM||'-'}</div></div>
       <div class="mo-field"><div class="mo-fl">경력</div><div class="mo-fv">${j.CAREER_CND_NM||'-'}</div></div>
@@ -1658,6 +1742,26 @@ function runDiag(){
       <div class="sec-tag" style="margin-top:24px">개선이 필요한 부분 (우선순위 순)</div>
       ${weakCards}`;
 
+    // ✍️ 공고 문구 자동 생성 — 약점 항목별 개선 예시 문구 (규칙 기반, 실제 텍스트 생성 AI 아님)
+    if(weak.length){
+      document.getElementById('dRewrite').innerHTML=`
+        <div class="sec-tag" style="margin-top:24px">✍️ 이렇게 고쳐 써보세요</div>
+        ${weak.map(w=>{
+          const sample=generateRewrite(w.label,d);
+          const escaped=sample.replace(/`/g,'\\`').replace(/'/g,"\\'").replace(/\n/g,'\\n').replace(/"/g,'&quot;');
+          return `<div style="background:var(--bg2);border:1px solid var(--line2);border-radius:12px;padding:18px 20px;margin-bottom:10px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+              <span style="font-size:.82rem;font-weight:800;color:var(--text)">${w.label} 개선 예시</span>
+              <button onclick="copyRewrite(this,'${escaped}')" style="background:rgba(59,110,255,.1);border:1px solid rgba(59,110,255,.3);color:var(--accent);font-size:.68rem;font-weight:700;padding:5px 11px;border-radius:100px;cursor:pointer">📋 복사</button>
+            </div>
+            <p style="font-size:.82rem;color:var(--muted2);line-height:1.8;white-space:pre-wrap">${sample}</p>
+          </div>`;
+        }).join('')}
+        <p style="font-size:.68rem;color:var(--muted);margin-top:6px">* 규칙 기반으로 생성된 예시 문구입니다. 실제 근무 조건에 맞게 수정해서 사용하세요.</p>`;
+    } else {
+      document.getElementById('dRewrite').innerHTML='';
+    }
+
     // AI 종합 진단 카드 개선
     const strongItems=diffs.filter(d=>d.diff>0).sort((a,b)=>b.diff-a.diff);
     const topStrong=strongItems.slice(0,2).map(d=>d.label).join(', ')||'없음';
@@ -1685,7 +1789,35 @@ function runDiag(){
   },1200);
 }
 
+function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function generateRewrite(label,d){
+  const co=escHtml((d.co||'').trim()||'저희 회사'),ti=escHtml((d.ti||'').trim()||'담당자');
+  switch(label){
+    case '직무상세성':
+      return `${ti}로서 OO 업무를 주도적으로 담당하며, 관련 팀과 협업해 서비스 품질을 개선합니다.\n- 주요 업무: OO 기획/운영, △△ 데이터 분석 및 보고\n- 필요 역량: OO 툴 활용 경험, △△ 관련 실무 경험 1년 이상\n- 입사 후에는 OO 온보딩 과정을 통해 실무에 빠르게 적응하도록 지원합니다.`;
+    case '기업소개':
+      return `${co}는 OO 분야에서 △△년째 사업을 운영 중인 기업으로, 현재 임직원 OO명 규모로 성장하고 있습니다.\n최근 OO 사업 확장에 따라 함께할 동료를 찾고 있으며, 수평적인 조직문화와 성장 지원 제도를 운영하고 있습니다.`;
+    case '급여품질':
+      return `연봉 3,500~4,500만원 (경력 및 역량에 따라 협의)\n※ 별도 성과 인센티브 지급 / 수습기간(3개월) 중 급여 100% 동일 지급`;
+    case '복지':
+      return `4대보험, 퇴직금 별도 적립\n중식 제공(월 10만원 상당) 또는 식대 지원\n교통비 전액 지원, 연차 15일 + 반차 자유 사용\n명절 상여금 지급, 경조사 지원, 자기계발비 연 50만원 지원`;
+    case '근무조건':
+      return `근무지: ${escHtml((d.ad||'').trim())||'서울시 OO구 OO동 (상세 주소 명시 권장)'}\n근무시간: 09:00~18:00 (휴게시간 1시간 별도)\n근무일: 주 5일 근무 (토·일 휴무)\n휴일: 법정공휴일 및 회사 지정 휴일 준수`;
+    case '출퇴근편의':
+      return `지하철 2호선 OO역 3번 출구 도보 5분 거리\n인근 버스정류장 다수 위치, 통근버스 미운행\n개인 차량 이용 시 주차 지원 가능 (사전 등록 필요)`;
+    default:
+      return `${label} 항목에 구체적인 정보를 추가하면 점수가 개선됩니다.`;
+  }
+}
+function copyRewrite(btn,text){
+  const unescaped=text.replace(/\\n/g,'\n').replace(/\\'/g,"'").replace(/\\`/g,'`');
+  navigator.clipboard?.writeText(unescaped).catch(()=>{});
+  const orig=btn.textContent;
+  btn.textContent='✅ 복사됨';
+  setTimeout(()=>{btn.textContent=orig;},1500);
+}
 function scorePost(d){
+
   const duty=sTxt(d.du,'duty'),bsns=sTxt(d.su,'bsns'),wage=sWage(d.sa),welf=sTxt(d.we,'welf'),work=sWork(d),acc=sAcc(d);
   return{직무상세성점수:duty,기업소개점수:bsns,급여품질점수:wage,복지점수:welf,근무조건점수:work,출퇴근편의점수:acc,종합점수:duty+bsns+wage+welf+work+acc};
 }
@@ -1919,9 +2051,10 @@ function renderTop100Cards(jobs){
         <div class="t100-rank">#${i+1}</div>
         <div class="t100-title">${sh(j.JO_SJ,48)}</div>
         <div class="t100-meta">🏢 ${j.CMPNY_NM||''} &nbsp;·&nbsp; 💼 ${sh(j.JOBCODE_NM,16)} &nbsp;·&nbsp; 경력 ${j.CAREER_CND_NM||''}</div>
-        <div class="t100-links" style="margin-top:8px;display:flex;gap:6px">
-          <a class="t100-link" href="https://www.google.com/search?q=${q1}" target="_blank">🔍 채용공고 검색</a>
-          <a class="t100-link" href="https://www.google.com/search?q=${q2}" target="_blank">🌐 회사 검색</a>
+        <div class="t100-links" style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
+          <a class="t100-link" href="https://www.google.com/search?q=${q1}" target="_blank" rel="noopener">🔍 구글 검색</a>
+          <a class="t100-link" href="https://www.saramin.co.kr/zf_user/search/recruit?searchType=search&searchword=${q2}" target="_blank" rel="noopener">🟠 사람인</a>
+          <a class="t100-link" href="https://www.jobkorea.co.kr/Search/?stext=${q2}" target="_blank" rel="noopener">🟦 잡코리아</a>
         </div>
       </div>
       <div class="t100-right"><div class="t100-score">${j.종합점수}</div><span class="gb g-${j.등급}">${j.등급}</span></div>
@@ -1999,20 +2132,16 @@ function drawRadar(sid,myV,mkV,cx,cy){
       s+=`<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle" font-size="14" fill="${labelColors[i]}" font-family="Pretendard,sans-serif" font-weight="700">${parts[0]}</text>`;
     }
   });
-  // 범례 — SVG 하단 중앙 정렬 (레이블 링보다 충분히 아래)
-  const ly=cy+r*labelRatio+38;
-  s+=`<rect x="${cx-98}" y="${ly}" width="86" height="26" rx="8" fill="rgba(59,110,255,.2)" stroke="#3b6eff" stroke-width="1.4"/>`;
-  s+=`<circle cx="${cx-82}" cy="${ly+13}" r="5.5" fill="#3b6eff"/>`;
-  s+=`<text x="${cx-71}" y="${ly+13}" dominant-baseline="middle" font-size="13" fill="#4f7fff" font-family="Pretendard,sans-serif" font-weight="600">내 공고</text>`;
-  if(mkV&&mkV.length){
-    s+=`<rect x="${cx+12}" y="${ly}" width="86" height="26" rx="8" fill="rgba(var(--fg-rgb),.05)" stroke="rgba(var(--fg-rgb),.3)" stroke-width="1.4" stroke-dasharray="5,3"/>`;
-    s+=`<circle cx="${cx+28}" cy="${ly+13}" r="4.5" fill="rgba(var(--fg-rgb),.35)" stroke="rgba(var(--fg-rgb),.6)" stroke-width="1"/>`;
-    s+=`<text x="${cx+38}" y="${ly+13}" dominant-baseline="middle" font-size="13" fill="rgba(var(--fg-rgb),.55)" font-family="Pretendard,sans-serif" font-weight="600">시장 평균</text>`;
-  }
+  // 범례는 차트 바깥 HTML(.radar-legend)로 이동
   document.getElementById(sid).classList.remove('skeleton');
   document.getElementById(sid).innerHTML=s;
 }
 
+function wageNum(str){
+  if(!str)return 0;
+  const nums=(String(str).replace(/,/g,'').match(/\d+/g)||[]).map(Number);
+  return nums.length?Math.max(...nums):0;
+}
 function sh(v,n){if(!v)return'';const s=String(v).trim();return s.length<=n?s:s.slice(0,n)+'…';}
 
 // ── 실시간 시각 / 서울 날씨 (히어로 라이브 스트립) ──
