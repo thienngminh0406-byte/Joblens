@@ -43,15 +43,16 @@ nav.scrolled{border-bottom-color:var(--line);background:rgba(var(--bg-rgb),.88);
 .nav-right{display:flex;align-items:center;gap:8px}
 .period-select{background:rgba(var(--fg-rgb),.06);border:1px solid var(--line2);border-radius:8px;color:var(--muted2);font-family:'Pretendard',sans-serif;font-size:.7rem;padding:6px 10px;outline:none;cursor:pointer}
 .period-select option{background:var(--bg3);color:var(--text)}
-.nav-refresh{display:flex;align-items:center;gap:5px;background:rgba(59,110,255,.12);border:1px solid rgba(59,110,255,.25);color:var(--accent);font-family:'Pretendard',sans-serif;font-size:.7rem;font-weight:700;padding:7px 13px;border-radius:100px;cursor:pointer;transition:opacity .2s}
-.nav-refresh:hover{opacity:.75}
+.nav-refresh{display:flex;align-items:center;gap:5px;background:var(--bg2);border:1px solid var(--line2);color:var(--muted2);font-family:'Pretendard',sans-serif;font-size:.7rem;font-weight:700;padding:7px 13px;border-radius:100px;cursor:pointer;transition:opacity .2s,background .2s}
+.nav-refresh:hover{background:var(--bg3);color:var(--text)}
 .theme-toggle{display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:var(--bg2);border:1px solid var(--line2);color:var(--text);font-size:.9rem;border-radius:50%;cursor:pointer;transition:transform .3s,background .2s}
 .theme-toggle:hover{transform:rotate(20deg);background:var(--bg3)}
-.bm-pill{display:flex;align-items:center;gap:5px;background:rgba(255,204,0,.1);border:1px solid rgba(255,204,0,.3);color:var(--yellow);font-family:'Pretendard',sans-serif;font-size:.72rem;font-weight:700;padding:6px 12px;border-radius:100px;cursor:pointer;transition:opacity .2s}
+.bm-pill{display:flex;align-items:center;gap:5px;background:var(--bg2);border:1px solid var(--line2);color:var(--muted2);font-family:'Pretendard',sans-serif;font-size:.72rem;font-weight:700;padding:6px 12px;border-radius:100px;cursor:pointer;transition:opacity .2s,background .2s}
+.bm-pill #bmCount{color:var(--yellow);font-weight:800}
 .bm-pill:hover{opacity:.75}
 .scroll-progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--purple));z-index:250;width:0%;transition:width .1s linear}
 .mobile-tabbar{display:none}
-@media(max-width:768px){
+@media(max-width:900px){
   .mobile-tabbar{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:220;background:rgba(var(--bg-rgb),.92);backdrop-filter:blur(16px);border-top:1px solid var(--line2);padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
   .mtb{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:none;color:var(--muted);padding:6px 2px;cursor:pointer;border-radius:10px;transition:color .2s,background .2s}
   .mtb span{font-size:1.15rem;line-height:1}
@@ -181,6 +182,20 @@ button:active,.nb:active,.anb:active,.mtb:active,.btn-p:active,.btn-ghost:active
 @keyframes badgeBounce{0%{transform:scale(.5) rotate(-8deg)}55%{transform:scale(1.3) rotate(4deg)}75%{transform:scale(.95)}100%{transform:scale(1) rotate(0)}}
 .dmc.celebrate{animation:celebratePulse 1.3s ease-out;border-radius:12px}
 .dmc.celebrate .gb{animation:badgeBounce .55s ease}
+
+/* ── 에러 상태 ── */
+.err-state{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:32px 20px;text-align:center;background:rgba(255,68,51,.04);border:1px dashed rgba(255,68,51,.25);border-radius:12px}
+.err-icon{font-size:1.6rem;opacity:.7}
+.err-msg{font-size:.8rem;color:var(--muted2);font-weight:600}
+.err-retry{background:rgba(59,110,255,.1);border:1px solid rgba(59,110,255,.3);color:var(--accent);font-size:.72rem;font-weight:700;padding:7px 16px;border-radius:100px;cursor:pointer;font-family:'Pretendard',sans-serif;transition:opacity .2s}
+.err-retry:hover{opacity:.75}
+
+/* ── 아코디언 (Home 상세 분석) ── */
+.accordion-toggle{display:flex;align-items:center;justify-content:space-between;width:100%;background:var(--bg2);border:1px solid var(--line2);border-radius:12px;padding:14px 18px;color:var(--text);font-size:.82rem;font-weight:700;font-family:'Pretendard',sans-serif;cursor:pointer;margin:18px 0 4px;transition:background .2s}
+.accordion-toggle:hover{background:var(--bg3)}
+.accordion-arrow{transition:transform .25s ease;color:var(--muted)}
+.accordion-toggle.open .accordion-arrow{transform:rotate(180deg)}
+.accordion-body{margin-top:16px}
 .page.active{display:block}
 .sec-tag{font-size:.65rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:7px}
 .sec-tag::before{content:'';width:18px;height:1px;background:var(--accent)}
@@ -345,7 +360,7 @@ input[type=range]{flex:1;accent-color:var(--accent)}
 .contact-link b{font-size:.76rem;font-weight:700}
 .contact-link small{font-size:.66rem;color:var(--muted)}
 .contact-icon-wrap{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-@media(max-width:640px){.contact-widget{bottom:76px;right:16px}.contact-card{width:calc(100vw - 32px);max-width:280px}}
+@media(max-width:640px){.contact-widget{right:16px}.contact-card{width:calc(100vw - 32px);max-width:280px}}
 .mo.show{display:flex}
 .mbox{background:var(--bg2);border:1px solid var(--line2);border-radius:16px;padding:30px;max-width:600px;width:90%;max-height:80vh;overflow-y:auto;position:relative}
 .mc-close{position:absolute;top:16px;right:16px;background:none;border:none;color:var(--muted);font-size:1rem;cursor:pointer;transition:color .2s}
@@ -609,13 +624,20 @@ input[type=range]{flex:1;accent-color:var(--accent)}
         <div class="hl-sub" id="hlTopJobScore"></div>
       </div>
     </div>
-    <div class="sec-tag" style="margin-top:4px">채용시장 추이</div>
-    <div class="full-card"><div class="ct">Daily Job Posting Trend</div><div class="cs">일별 신규 채용공고 등록 건수</div><svg viewBox="0 0 800 110" width="100%" id="trendSvg" class="skeleton" style="overflow:visible"></svg><div style="display:flex;justify-content:space-between;font-size:.55rem;color:var(--muted);margin-top:4px" id="trendLabels"></div></div>
     <div class="sec-tag">최근 등록된 공고</div>
     <div id="recentJobs" class="recent-jobs"></div>
-    <div class="chart-row">
-      <div class="cb"><div class="ct">Score Distribution</div><div class="cs">전체 공고 점수 분포</div><div class="hist-bars skeleton" id="histBars"></div><div class="hist-labels"><span>30</span><span>45</span><span>60</span><span>75</span><span>95</span></div></div>
-      <div class="cb"><div class="ct">Grade Distribution</div><div class="cs">등급별 공고 비율</div><div style="display:flex;gap:18px;align-items:center;margin-top:8px"><svg viewBox="0 0 140 140" width="120" height="120" id="gradePieSvg" class="skeleton"></svg><div class="grade-legend skeleton" id="gradeLegend" style="min-height:80px;flex:1"></div></div></div>
+
+    <button class="accordion-toggle" id="homeDetailToggle" onclick="toggleAccordion('homeDetail')">
+      <span>📊 상세 분석 보기 (등록 추이 · 점수분포 · 등급분포)</span>
+      <span class="accordion-arrow">▾</span>
+    </button>
+    <div class="accordion-body" id="homeDetail" style="display:none">
+      <div class="sec-tag" style="margin-top:4px">채용시장 추이</div>
+      <div class="full-card"><div class="ct">Daily Job Posting Trend</div><div class="cs">일별 신규 채용공고 등록 건수</div><svg viewBox="0 0 800 110" width="100%" id="trendSvg" class="skeleton" style="overflow:visible"></svg><div style="display:flex;justify-content:space-between;font-size:.55rem;color:var(--muted);margin-top:4px" id="trendLabels"></div></div>
+      <div class="chart-row">
+        <div class="cb"><div class="ct">Score Distribution</div><div class="cs">전체 공고 점수 분포</div><div class="hist-bars skeleton" id="histBars"></div><div class="hist-labels"><span>30</span><span>45</span><span>60</span><span>75</span><span>95</span></div></div>
+        <div class="cb"><div class="ct">Grade Distribution</div><div class="cs">등급별 공고 비율</div><div style="display:flex;gap:18px;align-items:center;margin-top:8px"><svg viewBox="0 0 140 140" width="120" height="120" id="gradePieSvg" class="skeleton"></svg><div class="grade-legend skeleton" id="gradeLegend" style="min-height:80px;flex:1"></div></div></div>
+      </div>
     </div>
   </div>
 
@@ -752,10 +774,14 @@ input[type=range]{flex:1;accent-color:var(--accent)}
       <div class="ff"><label>기업 소개</label><textarea id="d_su" rows="3" placeholder="회사 규모, 주요 사업, 조직 문화, 성장 가능성 등을 작성하세요."></textarea></div>
       <div class="ff"><label>직무 내용</label><textarea id="d_du" rows="4" placeholder="주요 업무, 필요 역량, 사용 도구, 협업 방식, 성과 기준 등을 구체적으로 작성하세요."></textarea></div>
       <div class="ff"><label>복지 및 혜택</label><textarea id="d_we" rows="3" placeholder="4대보험, 퇴직금, 식대, 교통비, 연차, 교육 지원, 상여금 등을 작성하세요."></textarea></div>
+      <div id="diagValidationMsg" style="display:none;text-align:center;color:var(--red);font-size:.78rem;font-weight:600;margin-top:12px;margin-bottom:-4px"></div>
       <div style="display:flex;justify-content:center;margin-top:10px"><button class="btn-diag" onclick="runDiag()">📊 진단하기</button></div>
     </div>
     <div id="diagResult" style="display:none;margin-top:26px">
-      <div class="sec-tag">진단 결과</div>
+      <div class="sec-tag" style="display:flex;align-items:center;justify-content:space-between">
+        <span>진단 결과</span>
+        <span id="diagUsageBadge" style="text-transform:none;letter-spacing:0;color:var(--muted);font-weight:600;font-size:.7rem"></span>
+      </div>
       <div class="dm" id="dm"></div>
       <div class="dr"><div class="cb"><div class="ct">Market Benchmark</div><div class="radar-legend"><span><i style="background:#3b6eff"></i>내 공고</span><span><i class="dash"></i>시장 평균</span></div><svg viewBox="0 0 480 420" width="100%" id="dRadar"></svg></div><div class="cb"><div class="ct">항목별 점수 비교</div><div id="dTable"></div></div></div>
       <div id="dAlerts"></div>
@@ -1096,6 +1122,16 @@ function setStatus(loading){
 }
 
 // ── API CALLS ──
+function showErrorState(containerId,retryFnName,label){
+  const el=document.getElementById(containerId);
+  if(!el)return;
+  el.classList.remove('skeleton');
+  el.innerHTML=`<div class="err-state">
+    <div class="err-icon">⚠️</div>
+    <div class="err-msg">${label||'일시적으로 데이터를 불러올 수 없어요'}</div>
+    <button class="err-retry" onclick="${retryFnName}">다시 시도</button>
+  </div>`;
+}
 async function apiFetch(path){
   const res = await fetch(API + path);
   if(!res.ok) throw new Error(`API Error ${res.status}`);
@@ -1327,7 +1363,7 @@ async function loadRecentJobs(){
         card.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();card.click();}};
       }
     }
-  }catch(e){console.error('recent jobs failed:',e);}
+  }catch(e){console.error('recent jobs failed:',e);showErrorState('recentJobs','loadRecentJobs()','최근 등록된 공고를 불러올 수 없어요');}
 }
 
 // ── 마퀴 티커: 실제 최근 등록 공고 + 고정 태그라인 조합 ──
@@ -1596,7 +1632,7 @@ async function initSearch(){
     const jobSel=document.getElementById('fjob');
     filters.careers.forEach(c=>{const o=document.createElement('option');o.value=o.textContent=c;careerSel.appendChild(o);});
     filters.jobs.forEach(j=>{const o=document.createElement('option');o.value=o.textContent=j;jobSel.appendChild(o);});
-  }catch(e){console.error('filters load failed:',e);}
+  }catch(e){console.error('filters load failed:',e);showToast('⚠️ 필터 목록을 불러오지 못했어요');}
   filterJobs();
 }
 
@@ -1722,6 +1758,20 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.getElement
 // ── DIAGNOSIS (로컬 스코어링) ──
 function runDiag(){
   const d={co:document.getElementById('d_co').value,ti:document.getElementById('d_ti').value,du:document.getElementById('d_du').value,su:document.getElementById('d_su').value,sa:document.getElementById('d_sa').value,we:document.getElementById('d_we').value,wt:document.getElementById('d_wt').value,ho:document.getElementById('d_ho').value,wh:document.getElementById('d_wh').value,ad:document.getElementById('d_ad').value,me:document.getElementById('d_me').value,do_:document.getElementById('d_do').value,ph:document.getElementById('d_ph').value};
+  const msgEl=document.getElementById('diagValidationMsg');
+  const filledCount=Object.values(d).filter(v=>v&&v.trim().length>0).length;
+  if(!d.ti.trim()){
+    msgEl.textContent='⚠️ 공고 제목을 입력해주세요.';
+    msgEl.style.display='block';
+    document.getElementById('d_ti').focus();
+    return;
+  }
+  if(filledCount<3){
+    msgEl.textContent='⚠️ 진단 정확도를 위해 최소 3개 이상의 항목을 입력해주세요. (직무내용·복지·급여 등)';
+    msgEl.style.display='block';
+    return;
+  }
+  msgEl.style.display='none';
   const ov=document.getElementById('lov');ov.classList.add('show');
   const lbf=document.getElementById('lbf');lbf.style.animation='none';lbf.offsetHeight;lbf.style.animation='bl 1.5s ease forwards';
   setTimeout(async ()=>{
@@ -1847,10 +1897,21 @@ function runDiag(){
       </div>`;
     document.getElementById('diagResult').style.display='block';
     document.getElementById('diagResult').scrollIntoView({behavior:'smooth',block:'start'});
+    let diagCount=parseInt(localStorage.getItem('joblens_diag_count')||'0',10)+1;
+    try{localStorage.setItem('joblens_diag_count',diagCount);}catch(e){}
+    const usageBadge=document.getElementById('diagUsageBadge');
+    if(usageBadge)usageBadge.textContent=diagCount===1?'🎯 첫 진단이에요!':`🎯 ${diagCount.toLocaleString()}번째 진단`;
   },1200);
 }
 
 function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function toggleAccordion(id){
+  const body=document.getElementById(id);
+  const btn=document.getElementById(id+'Toggle');
+  const isOpen=body.style.display!=='none';
+  body.style.display=isOpen?'none':'block';
+  if(btn)btn.classList.toggle('open',!isOpen);
+}
 function generateRewrite(label,d){
   const co=escHtml((d.co||'').trim()||'저희 회사'),ti=escHtml((d.ti||'').trim()||'담당자');
   switch(label){
@@ -1937,7 +1998,11 @@ async function initAISel(){
     trackCompanies(jobs);
     jobs.forEach((j,i)=>{const o=document.createElement('option');o.value=i;o.textContent=`${sh(j.CMPNY_NM,15)} - ${sh(j.JO_SJ,30)} (${j.종합점수}점)`;o.dataset.job=JSON.stringify(j);sel.appendChild(o);});
     topJobsCache=jobs;
-  }catch(e){console.error('ai sel load failed:',e);}
+  }catch(e){
+    console.error('ai sel load failed:',e);
+    showToast('⚠️ 공고 목록을 불러오지 못했어요. 탭을 다시 눌러보세요.');
+    const errOpt=document.createElement('option');errOpt.disabled=true;errOpt.textContent='⚠️ 불러오기 실패 — 다시 시도해주세요';sel.appendChild(errOpt);
+  }
 }
 
 function runAI(){
@@ -2131,7 +2196,7 @@ async function loadTop100(){
     document.getElementById('t100CoBars').innerHTML=Object.entries(c10).map(([l,v])=>`<div class="hbar-row"><div class="hbl">${sh(l,18)}</div><div class="hbt"><div class="hbf" data-mkt="1" style="width:0%;background:var(--green)" data-w="${(v/mc2*100).toFixed(1)}"></div></div><div class="hbv">${v}</div></div>`).join('');
     setTimeout(()=>document.querySelectorAll('[data-mkt]').forEach(el=>el.style.width=el.dataset.w+'%'),300);
     renderTop100Cards(jobs);
-  }catch(e){console.error('top100 load failed:',e);}
+  }catch(e){console.error('top100 load failed:',e);showErrorState('t100Cards','loadTop100()','TOP100 데이터를 불러올 수 없어요');}
 }
 
 function renderTop100Cards(jobs){
