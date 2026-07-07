@@ -19,6 +19,10 @@ sys.path.insert(0, _ROOT_DIR)
 from joblens_scoring import apply_joblens_scores
 
 API_KEY = os.environ.get("SEOUL_API_KEY", "514b4b685a6d696e39366469694276")
+OUTPUT_FILE = os.path.join(_ROOT_DIR, "JobLens_Scores.csv")           # ← scripts/ 아니라 최상위로
+KEYWORD_TRENDS_FILE = os.path.join(_ROOT_DIR, "keyword_trends.csv")   # ← 최상위로
+
+API_KEY = os.environ.get("SEOUL_API_KEY", "514b4b685a6d696e39366469694276")
 OUTPUT_FILE = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
     "JobLens_Scores.csv"
