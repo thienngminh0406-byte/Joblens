@@ -37,7 +37,7 @@ logger = logging.getLogger(__name__)
 API_KEY = "514b4b685a6d696e39366469694276"
 CACHE_TTL = 3600
 CSV_FALLBACK = os.path.join(BASE_DIR, "JobLens_Scores.csv")
-
+KEYWORD_TRENDS_FILE = os.path.join(BASE_DIR, "keyword_trends.csv")
 
 def make_session() -> requests.Session:
     session = requests.Session()
@@ -410,6 +410,36 @@ def api_filters():
         "careers": sorted(df["CAREER_CND_NM"].dropna().unique().tolist()),
         "grades": sorted(df["등급"].dropna().unique().tolist()),
     })
+
+@app.route("/api/keyword_trends")
+def api_keyword_trends():
+    if not os.path.exists(KEYWORD_TRENDS_FILE):
+        return jsonify({"days_collected": 0, "keywords": [], "top_snapshot": [], "data": []})
+
+    trends_df = pd.read_csv(KEYWORD_TRENDS_FILE, encoding="utf-8-sig")
+    if trends_df.empty:
+        return jsonify({"days_collected": 0, "keywords": [], "top_snapshot": [], "data": []})
+
+    trends_df["frequency_per_1000"] = (
+        trends_df["frequency"] / trends_df["total_postings"].replace(0, 1) * 1000
+    ).round(2)
+
+    dates = sorted(trends_df["date"].unique().tolist())
+    keywords = sorted(trends_df["keyword"].unique().tolist())
+
+    latest_date = dates[-1]
+    latest = trends_df[trends_df["date"] == latest_date].sort_values("frequency", ascending=False)
+    top_snapshot = latest[["keyword", "frequency", "frequency_per_1000"]].to_dict(orient="records")
+
+    resp = make_response(jsonify({
+        "days_collected": len(dates),
+        "date_range": {"from": dates[0], "to": dates[-1]},
+        "keywords": keywords,
+        "top_snapshot": top_snapshot,
+        "data": trends_df.to_dict(orient="records"),
+    }))
+    resp.headers["Cache-Control"] = "public, max-age=300"
+    return resp
 
 
 @app.route("/api/top100/stats")
