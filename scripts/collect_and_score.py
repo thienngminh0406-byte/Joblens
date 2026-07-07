@@ -13,8 +13,11 @@ import pandas as pd
 # 프로젝트 루트(JobLens) 경로 추가
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-sys.path.insert(0, PROJECT_ROOT)
-
+# 이렇게 교체:
+_THIS_DIR = os.path.dirname(os.path.abspath(__file__))   # scripts/ 폴더
+_ROOT_DIR = os.path.dirname(_THIS_DIR)                    # 저장소 최상위 폴더
+sys.path.insert(0, _THIS_DIR)
+sys.path.insert(0, _ROOT_DIR)
 from joblens_scoring import apply_joblens_scores
 
 API_KEY = os.environ.get("SEOUL_API_KEY", "514b4b685a6d696e39366469694276")
