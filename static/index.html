@@ -717,6 +717,13 @@ input[type=range]{flex:1;accent-color:var(--accent)}
       </div>
     </div>
 
+    <div class="sec-tag" style="margin-top:4px">요구역량 키워드 트렌드</div>
+    <div class="full-card reveal" id="kwTrendCard">
+      <div class="ct">공고 텍스트 기반 요구역량 트렌드</div>
+      <div class="cs" id="kwTrendMeta">데이터 불러오는 중...</div>
+      <div id="kwTrendBody" style="margin-top:16px"></div>
+    </div>
+
   </div>
 
   <!-- SEARCH -->
@@ -1101,7 +1108,7 @@ function showPage(name,btn){
   if(name==='search') filterJobs();
   if(name==='ai') initAISel();
   if(name==='top100') loadTop100();
-  if(name==='market') animMktBars();
+  if(name==='market'){animMktBars();loadKeywordTrends();}
 }
 function onPeriodChange(){
   loadStats();
@@ -1622,6 +1629,112 @@ function renderCorrMatrix(data){
 
 function animMktBars(){
   document.querySelectorAll('[data-mkt]').forEach(el=>{el.style.width=el.dataset.w+'%';});
+}
+
+// ── 요구역량 키워드 트렌드 ──
+let kwTrendLoaded=false;
+let kwTrendCache=null;
+const KW_LINE_COLORS=['#3b6eff','#00d68f','#ffcc00','#a78bfa','#ff4433','#a3e635','#4f7fff','#ff9f43'];
+
+async function loadKeywordTrends(){
+  if(kwTrendLoaded)return;
+  try{
+    const data=await apiFetch('/api/keyword_trends');
+    kwTrendLoaded=true;
+    kwTrendCache=data;
+    renderKeywordTrends(data);
+  }catch(e){
+    console.error('keyword trends failed:',e);
+    showErrorState('kwTrendBody','loadKeywordTrends()','키워드 트렌드 데이터를 불러올 수 없어요');
+  }
+}
+
+function renderKeywordTrends(data){
+  const metaEl=document.getElementById('kwTrendMeta');
+  const bodyEl=document.getElementById('kwTrendBody');
+  if(!data||!data.days_collected){
+    metaEl.textContent='오늘부터 데이터 수집을 시작했어요. 의미 있는 트렌드를 보려면 시간이 조금 필요합니다.';
+    bodyEl.innerHTML=`<div class="err-state" style="border-style:dashed;background:rgba(59,110,255,.04);border-color:rgba(59,110,255,.25)">
+      <div class="err-icon">📊</div>
+      <div class="err-msg">키워드 트렌드 수집을 막 시작했어요. 매일 자동으로 쌓이니 며칠 후 다시 확인해주세요!</div>
+    </div>`;
+    return;
+  }
+
+  const days=data.days_collected;
+  metaEl.textContent=days<7
+    ? `📊 수집 ${days}일째 (${data.date_range.from} ~ ${data.date_range.to}) — 의미 있는 추이를 보려면 최소 2주 정도 더 필요해요. 지금은 오늘자 스냅샷을 보여드려요.`
+    : `📊 수집 ${days}일째 (${data.date_range.from} ~ ${data.date_range.to}) 데이터 기준 트렌드입니다.`;
+
+  const top10=(data.top_snapshot||[]).slice(0,10);
+  const maxFreq=Math.max(...top10.map(k=>k.frequency),1);
+  const barHtml=`
+    <div class="ct" style="margin-bottom:8px">오늘의 인기 키워드 Top 10</div>
+    ${top10.map(k=>`<div class="hbar-row"><div class="hbl">${k.keyword}</div><div class="hbt"><div class="hbf" style="width:${(k.frequency/maxFreq*100).toFixed(1)}%;background:var(--accent)"></div></div><div class="hbv">${k.frequency}건</div></div>`).join('')}
+  `;
+
+  let trendHtml='';
+  if(days>=2){
+    const allDates=[...new Set((data.data||[]).map(r=>r.date))].sort();
+    const defaultKws=top10.slice(0,5).map(k=>k.keyword);
+    trendHtml=`
+      <div style="margin-top:26px;padding-top:20px;border-top:1px solid var(--line2)">
+        <div class="ct" style="margin-bottom:8px">키워드별 시간 추이 (1,000건당 등장 빈도)</div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start;margin-top:10px">
+          <select id="kwTrendSelect" multiple size="8" style="background:var(--bg2);border:1px solid var(--line2);border-radius:9px;color:var(--text);font-family:'Pretendard',sans-serif;font-size:.76rem;padding:8px;min-width:160px" onchange="drawKeywordTrendChart()">
+            ${data.keywords.map(k=>`<option value="${k}" ${defaultKws.includes(k)?'selected':''}>${k}</option>`).join('')}
+          </select>
+          <div style="flex:1;min-width:280px">
+            <svg viewBox="0 0 600 260" width="100%" id="kwTrendSvg" style="overflow:visible"></svg>
+            <div id="kwTrendLegend" style="display:flex;flex-wrap:wrap;gap:10px;margin-top:10px"></div>
+          </div>
+        </div>
+        <p style="font-size:.68rem;color:var(--muted);margin-top:10px">* Ctrl(Cmd)를 누른 채 클릭하면 여러 키워드를 선택할 수 있어요.</p>
+      </div>`;
+  }
+
+  bodyEl.innerHTML=barHtml+trendHtml;
+  if(days>=2)drawKeywordTrendChart();
+}
+
+function drawKeywordTrendChart(){
+  const data=kwTrendCache;
+  if(!data)return;
+  const sel=document.getElementById('kwTrendSelect');
+  const svg=document.getElementById('kwTrendSvg');
+  const legendEl=document.getElementById('kwTrendLegend');
+  if(!sel||!svg)return;
+
+  const selected=[...sel.selectedOptions].map(o=>o.value).slice(0,8);
+  const allDates=[...new Set(data.data.map(r=>r.date))].sort();
+  if(!selected.length||allDates.length<2){svg.innerHTML='';legendEl.innerHTML='';return;}
+
+  const W=600,H=260,padL=40,padR=10,padT=16,padB=28;
+  const chartW=W-padL-padR,chartH=H-padT-padB;
+
+  const series=selected.map(kw=>allDates.map(d=>{
+    const row=data.data.find(r=>r.date===d&&r.keyword===kw);
+    return row?row.frequency_per_1000:0;
+  }));
+  const maxV=Math.max(...series.flat(),1);
+
+  const x=i=>padL+(allDates.length>1?i/(allDates.length-1)*chartW:chartW/2);
+  const y=v=>padT+chartH-(v/maxV*chartH);
+
+  let s=`<line x1="${padL}" y1="${padT+chartH}" x2="${W-padR}" y2="${padT+chartH}" stroke="rgba(var(--fg-rgb),.15)"/>`;
+  s+=`<text x="${padL}" y="${padT+chartH+18}" font-size="9" fill="var(--muted)" font-family="Pretendard,sans-serif">${allDates[0]}</text>`;
+  s+=`<text x="${W-padR}" y="${padT+chartH+18}" font-size="9" fill="var(--muted)" font-family="Pretendard,sans-serif" text-anchor="end">${allDates[allDates.length-1]}</text>`;
+  s+=`<text x="${padL-6}" y="${padT+4}" font-size="9" fill="var(--muted)" font-family="Pretendard,sans-serif" text-anchor="end">${maxV.toFixed(0)}</text>`;
+
+  series.forEach((vals,si)=>{
+    const col=KW_LINE_COLORS[si%KW_LINE_COLORS.length];
+    const pts=vals.map((v,i)=>`${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
+    s+=`<polyline points="${pts}" fill="none" stroke="${col}" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>`;
+    vals.forEach((v,i)=>{s+=`<circle cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="2.6" fill="${col}"/>`;});
+  });
+  svg.innerHTML=s;
+
+  legendEl.innerHTML=selected.map((kw,i)=>`<span style="display:flex;align-items:center;gap:5px;font-size:.7rem;color:var(--muted2)"><i style="width:11px;height:3px;background:${KW_LINE_COLORS[i%KW_LINE_COLORS.length]};display:inline-block;border-radius:2px"></i>${kw}</span>`).join('');
 }
 
 // ── SEARCH ──
