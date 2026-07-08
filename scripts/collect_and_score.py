@@ -2,7 +2,7 @@
 """
 GitHub Actions에서 실행되는 데이터 수집 + 스코어링 스크립트
 결과를 JobLens_Scores.csv로 저장합니다.
-추가: 요구역량 키워드 빈도를 keyword_trends.csv에 날짜별로 누적 저장합니다.
+추가: 요구역량/근무조건 키워드 빈도를 keyword_trends.csv에 날짜별로 누적 저장합니다.
 """
 import os
 import sys
@@ -10,6 +10,7 @@ import time
 import requests
 import pandas as pd
 
+# joblens_scoring.py 경로 추가 (scripts/ 폴더든 저장소 최상위든 둘 다 찾도록)
 _THIS_DIR = os.path.dirname(os.path.abspath(__file__))   # scripts/ 폴더
 _ROOT_DIR = os.path.dirname(_THIS_DIR)                    # 저장소 최상위 폴더
 sys.path.insert(0, _THIS_DIR)
@@ -17,8 +18,9 @@ sys.path.insert(0, _ROOT_DIR)
 from joblens_scoring import apply_joblens_scores
 
 API_KEY = os.environ.get("SEOUL_API_KEY", "514b4b685a6d696e39366469694276")
-OUTPUT_FILE = os.path.join(_ROOT_DIR, "JobLens_Scores.csv")           # ← scripts/ 아니라 최상위로
-KEYWORD_TRENDS_FILE = os.path.join(_ROOT_DIR, "keyword_trends.csv")   # ← 최상위로
+OUTPUT_FILE = os.path.join(_ROOT_DIR, "JobLens_Scores.csv")
+# ── 키워드 트렌드 누적 파일 (매일 append, 절대 덮어쓰지 않음) ──
+KEYWORD_TRENDS_FILE = os.path.join(_ROOT_DIR, "keyword_trends.csv")
 
 KEEP_COLS = [
     "JO_REQST_NO", "CMPNY_NM", "JO_SJ", "JOBCODE_NM", "CAREER_CND_NM",
@@ -29,24 +31,32 @@ KEEP_COLS = [
     "RET_GRANTS_NM", "JO_FEINSR_SBSCRB_NM", "JO_REG_DT", "WELFARE_CN",
 ]
 
-# ── 추적할 요구역량/트렌드 키워드 목록 ──
-# 형태소 분석기(konlpy 등) 없이 단순 포함 여부로 세기 때문에,
-# 너무 짧거나 흔한 단어(예: "AI"만 단독으로 쓰면 다른 단어 안에 우연히 포함될 수 있음)는
-# 오탐을 줄이기 위해 문맥이 있는 형태로 등록합니다.
-TREND_KEYWORDS = [
-    # AI / 신기술
-    "인공지능", "AI", "ChatGPT", "챗GPT", "생성형AI", "생성형 AI", "LLM",
-    "머신러닝", "딥러닝", "데이터분석", "데이터 분석", "빅데이터", "클라우드",
-    "Python", "파이썬", "React", "MLOps", "RAG", "프롬프트엔지니어링",
-    "RPA", "자동화",
-    # 근무 형태 / 워라밸
-    "재택근무", "하이브리드근무", "유연근무", "주4일", "주 4일",
-    "워라밸", "재택", "원격근무",
-    # 복지 / 보상
-    "복지포인트", "스톡옵션", "성과급", "인센티브",
-    # 채용 조건
-    "경력무관", "신입환영", "수습기간", "정규직전환", "MZ세대",
-]
+# ── 추적할 키워드: 카테고리별로 분리 ──
+# "기술/역량" = 직무 수행에 필요한 기술·툴·역량 키워드
+# "근무조건/복지" = 근무형태·보상·채용조건 관련 키워드
+# 형태소 분석기 없이 단순 포함 여부로 세되, 공백 유무 차이(예: "주4일" vs "주 4일")는
+# 매칭 전에 공백을 제거해서 하나로 합친다 (중복 집계 방지).
+KEYWORD_CATEGORIES = {
+    "기술/역량": [
+        "인공지능", "AI", "ChatGPT", "챗GPT", "생성형AI", "LLM",
+        "머신러닝", "딥러닝", "데이터분석", "빅데이터", "클라우드",
+        "Python", "파이썬", "React", "MLOps", "RAG", "프롬프트엔지니어링",
+        "RPA", "자동화",
+    ],
+    "근무조건/복지": [
+        "재택근무", "하이브리드근무", "유연근무", "주4일", "워라밸",
+        "재택", "원격근무", "복지포인트", "스톡옵션", "성과급", "인센티브",
+        "경력무관", "신입환영", "수습기간", "정규직전환", "MZ세대",
+    ],
+}
+# 평탄화된 전체 키워드 목록 + 키워드→카테고리 매핑
+TREND_KEYWORDS = [kw for kws in KEYWORD_CATEGORIES.values() for kw in kws]
+KEYWORD_TO_CATEGORY = {kw: cat for cat, kws in KEYWORD_CATEGORIES.items() for kw in kws}
+
+
+def _strip_spaces(s: str) -> str:
+    """비교용 정규화: 모든 공백(일반 공백 + 전각 공백) 제거."""
+    return str(s).replace(" ", "").replace("\u3000", "")
 
 
 def fetch_all_jobs():
@@ -83,9 +93,10 @@ def fetch_all_jobs():
 
 def update_keyword_trends(df: pd.DataFrame):
     """
-    오늘 날짜의 키워드별 등장 빈도를 계산해서 keyword_trends.csv에 누적 저장한다.
-    - 하루 2번(9시/12시) 실행돼도 같은 날짜 데이터는 덮어써서 중복이 쌓이지 않는다.
+    오늘 날짜의 카테고리별 키워드 등장 빈도를 계산해서 keyword_trends.csv에 누적 저장한다.
+    - 하루 여러 번 실행돼도 같은 날짜 데이터는 덮어써서 중복이 쌓이지 않는다.
     - 기존 날짜 데이터는 그대로 보존한다 (append 방식).
+    - "주4일"/"주 4일"처럼 공백만 다른 표기는 매칭 전 정규화해서 하나로 합산한다.
     """
     today_str = pd.Timestamp.today().strftime("%Y-%m-%d")
     total_postings = len(df)
@@ -94,15 +105,17 @@ def update_keyword_trends(df: pd.DataFrame):
         print("키워드 트렌드: 직무내용(DTY_CN) 데이터가 없어 건너뜁니다.")
         return
 
-    text_series = df["DTY_CN"].fillna("").astype(str)
+    # 공백 제거한 비교용 텍스트 컬럼 생성
+    text_norm = df["DTY_CN"].fillna("").astype(str).map(_strip_spaces)
 
     rows = []
     for kw in TREND_KEYWORDS:
-        # 대소문자 무시, 정규식 아님(순수 문자열 포함 여부)
-        count = int(text_series.str.contains(kw, case=False, regex=False, na=False).sum())
+        kw_norm = _strip_spaces(kw)
+        count = int(text_norm.str.contains(kw_norm, case=False, regex=False, na=False).sum())
         rows.append({
             "date": today_str,
             "keyword": kw,
+            "category": KEYWORD_TO_CATEGORY.get(kw, "기타"),
             "frequency": count,
             "total_postings": total_postings,
         })
