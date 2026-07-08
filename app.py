@@ -414,11 +414,11 @@ def api_filters():
 @app.route("/api/keyword_trends")
 def api_keyword_trends():
     if not os.path.exists(KEYWORD_TRENDS_FILE):
-        return jsonify({"days_collected": 0, "keywords": [], "top_snapshot": [], "data": []})
+        return jsonify({"days_collected": 0, "keywords": [], "top_by_category": {}, "data": []})
 
     trends_df = pd.read_csv(KEYWORD_TRENDS_FILE, encoding="utf-8-sig")
     if trends_df.empty:
-        return jsonify({"days_collected": 0, "keywords": [], "top_snapshot": [], "data": []})
+        return jsonify({"days_collected": 0, "keywords": [], "top_by_category": {}, "data": []})
 
     trends_df["frequency_per_1000"] = (
         trends_df["frequency"] / trends_df["total_postings"].replace(0, 1) * 1000
@@ -428,14 +428,28 @@ def api_keyword_trends():
     keywords = sorted(trends_df["keyword"].unique().tolist())
 
     latest_date = dates[-1]
-    latest = trends_df[trends_df["date"] == latest_date].sort_values("frequency", ascending=False)
-    top_snapshot = latest[["keyword", "frequency", "frequency_per_1000"]].to_dict(orient="records")
+    latest = trends_df[trends_df["date"] == latest_date]
+
+    # 카테고리별 Top 5
+    top_by_category = {}
+    if "category" in latest.columns:
+        for cat in sorted(latest["category"].dropna().unique().tolist()):
+            cat_df = latest[latest["category"] == cat].sort_values("frequency", ascending=False).head(5)
+            top_by_category[cat] = cat_df[["keyword", "frequency", "frequency_per_1000"]].to_dict(orient="records")
+
+    # 키워드 -> 카테고리 매핑 (프론트에서 select 그룹핑용)
+    keyword_category_map = {}
+    if "category" in trends_df.columns:
+        keyword_category_map = (
+            trends_df.drop_duplicates("keyword").set_index("keyword")["category"].to_dict()
+        )
 
     resp = make_response(jsonify({
         "days_collected": len(dates),
         "date_range": {"from": dates[0], "to": dates[-1]},
         "keywords": keywords,
-        "top_snapshot": top_snapshot,
+        "keyword_category_map": keyword_category_map,
+        "top_by_category": top_by_category,
         "data": trends_df.to_dict(orient="records"),
     }))
     resp.headers["Cache-Control"] = "public, max-age=300"
