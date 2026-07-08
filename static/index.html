@@ -1666,23 +1666,36 @@ function renderKeywordTrends(data){
     ? `📊 수집 ${days}일째 (${data.date_range.from} ~ ${data.date_range.to}) — 의미 있는 추이를 보려면 최소 2주 정도 더 필요해요. 지금은 오늘자 스냅샷을 보여드려요.`
     : `📊 수집 ${days}일째 (${data.date_range.from} ~ ${data.date_range.to}) 데이터 기준 트렌드입니다.`;
 
-  const top10=(data.top_snapshot||[]).slice(0,10);
-  const maxFreq=Math.max(...top10.map(k=>k.frequency),1);
-  const barHtml=`
-    <div class="ct" style="margin-bottom:8px">오늘의 인기 키워드 Top 10</div>
-    ${top10.map(k=>`<div class="hbar-row"><div class="hbl">${k.keyword}</div><div class="hbt"><div class="hbf" style="width:${(k.frequency/maxFreq*100).toFixed(1)}%;background:var(--accent)"></div></div><div class="hbv">${k.frequency}건</div></div>`).join('')}
-  `;
+  const byCat=data.top_by_category||{};
+  const catOrder=['기술/역량','근무조건/복지'];
+  const catIcon={'기술/역량':'🛠','근무조건/복지':'📋'};
+  const allTopKws=[];
+  const barHtml=catOrder.filter(c=>byCat[c]&&byCat[c].length).map(cat=>{
+    const items=byCat[cat];
+    const maxFreq=Math.max(...items.map(k=>k.frequency),1);
+    items.forEach(k=>allTopKws.push(k.keyword));
+    return `<div style="margin-bottom:22px">
+      <div class="ct" style="margin-bottom:8px">${catIcon[cat]||''} ${cat} 키워드 Top 5</div>
+      ${items.map(k=>`<div class="hbar-row"><div class="hbl">${k.keyword}</div><div class="hbt"><div class="hbf" style="width:${(k.frequency/maxFreq*100).toFixed(1)}%;background:var(--accent)"></div></div><div class="hbv">${k.frequency}건</div></div>`).join('')}
+    </div>`;
+  }).join('');
 
   let trendHtml='';
   if(days>=2){
     const allDates=[...new Set((data.data||[]).map(r=>r.date))].sort();
-    const defaultKws=top10.slice(0,5).map(k=>k.keyword);
+    const defaultKws=allTopKws.slice(0,5);
+    const catMap=data.keyword_category_map||{};
+    const kwsByCat={};
+    data.keywords.forEach(k=>{const c=catMap[k]||'기타';(kwsByCat[c]=kwsByCat[c]||[]).push(k);});
+    const optionsHtml=Object.keys(kwsByCat).map(cat=>
+      `<optgroup label="${cat}">${kwsByCat[cat].map(k=>`<option value="${k}" ${defaultKws.includes(k)?'selected':''}>${k}</option>`).join('')}</optgroup>`
+    ).join('');
     trendHtml=`
       <div style="margin-top:26px;padding-top:20px;border-top:1px solid var(--line2)">
         <div class="ct" style="margin-bottom:8px">키워드별 시간 추이 (1,000건당 등장 빈도)</div>
         <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start;margin-top:10px">
-          <select id="kwTrendSelect" multiple size="8" style="background:var(--bg2);border:1px solid var(--line2);border-radius:9px;color:var(--text);font-family:'Pretendard',sans-serif;font-size:.76rem;padding:8px;min-width:160px" onchange="drawKeywordTrendChart()">
-            ${data.keywords.map(k=>`<option value="${k}" ${defaultKws.includes(k)?'selected':''}>${k}</option>`).join('')}
+          <select id="kwTrendSelect" multiple size="10" style="background:var(--bg2);border:1px solid var(--line2);border-radius:9px;color:var(--text);font-family:'Pretendard',sans-serif;font-size:.76rem;padding:8px;min-width:180px" onchange="drawKeywordTrendChart()">
+            ${optionsHtml}
           </select>
           <div style="flex:1;min-width:280px">
             <svg viewBox="0 0 600 260" width="100%" id="kwTrendSvg" style="overflow:visible"></svg>
