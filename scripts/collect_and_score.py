@@ -10,8 +10,6 @@ import time
 import requests
 import pandas as pd
 
-# joblens_scoring.py 경로 추가
-# 이렇게 교체:
 _THIS_DIR = os.path.dirname(os.path.abspath(__file__))   # scripts/ 폴더
 _ROOT_DIR = os.path.dirname(_THIS_DIR)                    # 저장소 최상위 폴더
 sys.path.insert(0, _THIS_DIR)
@@ -21,17 +19,6 @@ from joblens_scoring import apply_joblens_scores
 API_KEY = os.environ.get("SEOUL_API_KEY", "514b4b685a6d696e39366469694276")
 OUTPUT_FILE = os.path.join(_ROOT_DIR, "JobLens_Scores.csv")           # ← scripts/ 아니라 최상위로
 KEYWORD_TRENDS_FILE = os.path.join(_ROOT_DIR, "keyword_trends.csv")   # ← 최상위로
-
-API_KEY = os.environ.get("SEOUL_API_KEY", "514b4b685a6d696e39366469694276")
-OUTPUT_FILE = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)),
-    "JobLens_Scores.csv"
-)
-# ── 키워드 트렌드 누적 파일 (매일 append, 절대 덮어쓰지 않음) ──
-KEYWORD_TRENDS_FILE = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)),
-    "keyword_trends.csv"
-)
 
 KEEP_COLS = [
     "JO_REQST_NO", "CMPNY_NM", "JO_SJ", "JOBCODE_NM", "CAREER_CND_NM",
