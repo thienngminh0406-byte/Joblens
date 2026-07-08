@@ -10,23 +10,14 @@ import time
 import requests
 import pandas as pd
 
-# 프로젝트 루트(JobLens) 경로 추가
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# 프로젝트 루트 경로 추가 (scripts/ 상위 폴더)
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ROOT_DIR)
 
-# 기존:
-sys.path.insert(
-    0,
-    os.path.dirname(os.path.abspath(__file__))
-)
 from joblens_scoring import apply_joblens_scores
 
 API_KEY = os.environ.get("SEOUL_API_KEY", "514b4b685a6d696e39366469694276")
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-OUTPUT_FILE = os.path.join(
-    PROJECT_ROOT,
-    "JobLens_Scores.csv"
-)
+OUTPUT_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "JobLens_Scores.csv")
 
 KEEP_COLS = [
     "JO_REQST_NO", "CMPNY_NM", "JO_SJ", "JOBCODE_NM", "CAREER_CND_NM",
