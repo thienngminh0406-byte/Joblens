@@ -652,6 +652,13 @@ input[type=range]{flex:1;accent-color:var(--accent)}
     </div>
     <div class="sec-tag">신규 채용공고 추이</div>
     <div class="full-card reveal"><div class="ct">Daily Job Posting Trend</div><div class="cs">일별 신규 공고 등록 수</div><svg viewBox="0 0 800 110" width="100%" id="trendSvg2" class="skeleton" style="overflow:visible"></svg></div>
+
+    <div class="sec-tag" style="margin-top:4px">등록 패턴 분해 & 변화 시점</div>
+    <div class="full-card reveal" id="stlCard">
+      <div class="ct">일별 등록 추이 분해 (추세 · 요일별 패턴 · 잔차)</div>
+      <div class="cs" id="stlMeta">데이터 불러오는 중...</div>
+      <div id="stlBody" style="margin-top:16px"></div>
+    </div>
     <div class="chart-row reveal">
       <div class="cb"><div class="ct">Grade Distribution</div><div class="cs">등급별 공고 비율</div><div style="display:flex;gap:18px;align-items:center;margin-top:8px"><svg viewBox="0 0 140 140" width="120" height="120" id="gradePieSvg2" class="skeleton"></svg><div class="grade-legend skeleton" id="gradeLegend2" style="min-height:80px;flex:1"></div></div></div>
       <div class="cb"><div class="ct">Score Distribution</div><div class="cs">점수 분포</div><div class="hist-bars skeleton" id="histBars2"></div><div class="hist-labels"><span>30</span><span>45</span><span>60</span><span>75</span><span>95</span></div></div>
@@ -1399,6 +1406,156 @@ function drawTrendSVG(svgId, labelsId, trend){
   }
 }
 
+// ── 일별 등록 패턴 분해 (추세/요일별 계절성/잔차) + 경량 변곡점 탐지 ──
+// 서울 공공데이터 특성상 마감 공고가 삭제되어 보통 30~90일치 데이터만 존재하므로,
+// 연간 계절성 대신 "요일별 패턴"으로 스코프를 맞췄다.
+function movingAverage(vals,window){
+  const n=vals.length,half=Math.floor(window/2),out=new Array(n);
+  for(let i=0;i<n;i++){
+    const s=Math.max(0,i-half),e=Math.min(n,i+half+1);
+    const slice=vals.slice(s,e);
+    out[i]=slice.reduce((a,b)=>a+b,0)/slice.length;
+  }
+  return out;
+}
+function sseOf(vals){
+  if(!vals.length)return 0;
+  const m=vals.reduce((a,b)=>a+b,0)/vals.length;
+  return vals.reduce((s,v)=>s+(v-m)*(v-m),0);
+}
+function bestSplit(vals,minSeg){
+  const total=sseOf(vals);
+  let bestIdx=-1,bestGain=0;
+  for(let i=minSeg;i<vals.length-minSeg;i++){
+    const gain=total-sseOf(vals.slice(0,i))-sseOf(vals.slice(i));
+    if(gain>bestGain){bestGain=gain;bestIdx=i;}
+  }
+  return{idx:bestIdx,gain:bestGain,total};
+}
+function detectChangePoints(vals,maxPoints=3,minSeg=5,minGainRatio=0.12){
+  let segments=[[0,vals.length]];
+  const cps=[];
+  while(cps.length<maxPoints){
+    let best=null,bestSegPos=-1;
+    segments.forEach(([s,e],pos)=>{
+      if(e-s<minSeg*2)return;
+      const{idx,gain,total}=bestSplit(vals.slice(s,e),minSeg);
+      if(idx<0)return;
+      const ratio=total>0?gain/total:0;
+      if(ratio>minGainRatio&&(!best||gain>best.gain)){best={s,e,absIdx:s+idx,gain};bestSegPos=pos;}
+    });
+    if(!best)break;
+    cps.push(best.absIdx);
+    segments.splice(bestSegPos,1,[best.s,best.absIdx],[best.absIdx,best.e]);
+  }
+  return cps.sort((a,b)=>a-b);
+}
+function decomposeSeries(trend){
+  const dates=trend.map(t=>t.date),observed=trend.map(t=>t.count);
+  const n=observed.length;
+  const trendComp=movingAverage(observed,7);
+  const detrended=observed.map((v,i)=>v-trendComp[i]);
+  const dowSums=new Array(7).fill(0),dowCounts=new Array(7).fill(0);
+  dates.forEach((d,i)=>{const dow=new Date(d+'T00:00:00').getDay();dowSums[dow]+=detrended[i];dowCounts[dow]++;});
+  const dowAvg=dowSums.map((s,i)=>dowCounts[i]?s/dowCounts[i]:0);
+  const seasonal=dates.map(d=>dowAvg[new Date(d+'T00:00:00').getDay()]);
+  const residual=observed.map((v,i)=>v-trendComp[i]-seasonal[i]);
+  return{dates,observed,trend:trendComp,seasonal,residual,dowAvg,n};
+}
+function miniLineSvg(id,series,opts={}){
+  const W=760,H=90,padT=8,padB=8;
+  const vals=series.flat?series.flat():series;
+  const allVals=Array.isArray(series[0])?series.flat():series;
+  const mx=Math.max(...allVals),mn=Math.min(...allVals);
+  const range=(mx-mn)||1;
+  const x=i=>i/(series.length-1||1)*W;
+  const y=v=>padT+(1-(v-mn)/range)*(H-padT-padB);
+  let s='';
+  if(opts.zeroLine){
+    const zy=y(0);
+    s+=`<line x1="0" y1="${zy.toFixed(1)}" x2="${W}" y2="${zy.toFixed(1)}" stroke="rgba(var(--fg-rgb),.2)" stroke-dasharray="3,3"/>`;
+  }
+  const pts=series.map((v,i)=>`${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
+  s+=`<polyline points="${pts}" fill="none" stroke="${opts.color||'var(--accent)'}" stroke-width="2"/>`;
+  if(opts.changePoints){
+    opts.changePoints.forEach(cpIdx=>{
+      const cx=x(cpIdx).toFixed(1);
+      s+=`<line x1="${cx}" y1="0" x2="${cx}" y2="${H}" stroke="var(--red)" stroke-width="1.4" stroke-dasharray="4,3"/>`;
+    });
+  }
+  return`<svg viewBox="0 0 ${W} ${H}" width="100%" style="overflow:visible;display:block">${s}</svg>`;
+}
+function miniOverlaySvg(series1,color1,series2,color2){
+  const W=760,H=90,padT=8,padB=8;
+  const all=[...series1,...series2];
+  const mx=Math.max(...all),mn=Math.min(...all),range=(mx-mn)||1;
+  const n=Math.max(series1.length,series2.length);
+  const x=i=>i/(n-1||1)*W;
+  const y=v=>padT+(1-(v-mn)/range)*(H-padT-padB);
+  const line=(s,c,w)=>`<polyline points="${s.map((v,i)=>`${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ')}" fill="none" stroke="${c}" stroke-width="${w}"/>`;
+  return`<svg viewBox="0 0 ${W} ${H}" width="100%" style="overflow:visible;display:block">${line(series1,color1,1.4)}${line(series2,color2,2.4)}</svg>`;
+}
+function renderSeasonalDecomp(trend){
+  const meta=document.getElementById('stlMeta');
+  const body=document.getElementById('stlBody');
+  if(!trend||trend.length<14){
+    meta.textContent='요일별 패턴을 분석하려면 최소 2주 이상의 데이터가 필요해요. 조금만 더 기다려주세요.';
+    body.innerHTML=`<div class="err-state" style="border-style:dashed;background:rgba(59,110,255,.04);border-color:rgba(59,110,255,.25)">
+      <div class="err-icon">📈</div>
+      <div class="err-msg">데이터가 더 쌓이면 여기에 요일별 등록 패턴과 변화 시점이 표시됩니다.</div>
+    </div>`;
+    return;
+  }
+
+  const{dates,observed,trend:trendComp,seasonal,residual,dowAvg}=decomposeSeries(trend);
+  const changePoints=detectChangePoints(observed,3,5,0.12);
+
+  const DOW_LABELS=['일','월','화','수','목','금','토'];
+  const maxDow=Math.max(...dowAvg.map(Math.abs),1);
+  const bestDow=dowAvg.indexOf(Math.max(...dowAvg));
+  const worstDow=dowAvg.indexOf(Math.min(...dowAvg));
+
+  const cpText=changePoints.length
+    ? changePoints.map(idx=>{
+        const before=observed.slice(Math.max(0,idx-7),idx);
+        const after=observed.slice(idx,idx+7);
+        const beforeAvg=before.length?(before.reduce((a,b)=>a+b,0)/before.length).toFixed(1):'-';
+        const afterAvg=after.length?(after.reduce((a,b)=>a+b,0)/after.length).toFixed(1):'-';
+        return`<b style="color:var(--red)">${dates[idx]}</b> 전후로 평균 등록량이 ${beforeAvg}건 → ${afterAvg}건으로 변화`;
+      }).join('<br>')
+    : '이 기간 동안 통계적으로 뚜렷한 변화 시점은 감지되지 않았어요 (등락은 있지만 구조적 변화로 보긴 어려워요).';
+
+  meta.textContent=`최근 ${trend.length}일 데이터 기준 분해 결과입니다 (${dates[0]} ~ ${dates[dates.length-1]}).`;
+
+  body.innerHTML=`
+    <div style="margin-bottom:20px">
+      <div class="ct" style="margin-bottom:6px">① 원본 + 추세 (7일 이동평균)</div>
+      ${miniOverlaySvg(observed,'rgba(var(--fg-rgb),.35)',trendComp,'var(--accent)')}
+      <div style="display:flex;gap:14px;margin-top:6px"><span style="font-size:.68rem;color:var(--muted2)"><i style="display:inline-block;width:10px;height:2px;background:rgba(var(--fg-rgb),.35);margin-right:4px"></i>원본</span><span style="font-size:.68rem;color:var(--muted2)"><i style="display:inline-block;width:10px;height:2px;background:var(--accent);margin-right:4px"></i>추세(7일 이동평균)</span></div>
+    </div>
+    <div style="margin-bottom:20px">
+      <div class="ct" style="margin-bottom:6px">② 요일별 패턴 (전체 평균 대비 편차)</div>
+      <div style="display:flex;gap:6px;align-items:flex-end;height:80px">
+        ${dowAvg.map((v,i)=>{
+          const h=Math.abs(v)/maxDow*60+4;
+          const col=v>=0?'var(--green)':'var(--red)';
+          return`<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%">
+            <div style="width:100%;height:${h.toFixed(0)}px;background:${col};border-radius:3px 3px 0 0"></div>
+            <div style="font-size:.65rem;color:var(--muted);margin-top:4px">${DOW_LABELS[i]}</div>
+          </div>`;
+        }).join('')}
+      </div>
+      <p style="font-size:.76rem;color:var(--muted2);margin-top:10px">📌 평균적으로 <b style="color:var(--text)">${DOW_LABELS[bestDow]}요일</b>에 등록이 가장 많고(+${dowAvg[bestDow].toFixed(1)}건), <b style="color:var(--text)">${DOW_LABELS[worstDow]}요일</b>에 가장 적어요(${dowAvg[worstDow].toFixed(1)}건).</p>
+    </div>
+    <div>
+      <div class="ct" style="margin-bottom:6px">③ 잔차 + 변화 시점 감지</div>
+      ${miniLineSvg('stlResidual',residual,{color:'var(--purple)',zeroLine:true,changePoints})}
+      <p style="font-size:.76rem;color:var(--muted2);margin-top:10px;line-height:1.7">📌 ${cpText}</p>
+    </div>
+    <p style="font-size:.66rem;color:var(--muted);margin-top:14px">* 서울시 공공데이터는 마감된 공고가 삭제되어 최근 ${trend.length}일치 데이터만 존재합니다. 연간 계절성 대신 요일별 패턴과 최근 변화 시점을 분석했습니다.</p>
+  `;
+}
+
 // ── MARKET ──
 async function renderMarket(data){
   const top10=data.job_top10||{},mc=Math.max(...Object.values(top10),1);
@@ -1406,6 +1563,7 @@ async function renderMarket(data){
   document.getElementById('jobTopBars').innerHTML=Object.entries(top10).map(([l,v])=>`<div class="hbar-row"><div class="hbl">${l}</div><div class="hbt"><div class="hbf" data-mkt="1" style="width:0%" data-w="${(v/mc*100).toFixed(1)}"></div></div><div class="hbv">${v.toLocaleString()}</div></div>`).join('');
   drawPie('careerPieSvg','careerLegend',data.career_dist||{},{무관:'#3b6eff',경력:'#00d68f',신입:'#ffcc00'});
   drawTrendSVG('trendSvg2',null,data.trend||[]);
+  renderSeasonalDecomp(data.trend||[]);
   drawPie('gradePieSvg2','gradeLegend2',data.grade_dist||{},GC);
   const hist=data.hist||{};
   const hvals=Object.values(hist),hmx=Math.max(...hvals,1);
