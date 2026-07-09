@@ -189,6 +189,9 @@ button:active,.nb:active,.anb:active,.mtb:active,.btn-p:active,.btn-ghost:active
 .err-msg{font-size:.8rem;color:var(--muted2);font-weight:600}
 .err-retry{background:rgba(59,110,255,.1);border:1px solid rgba(59,110,255,.3);color:var(--accent);font-size:.72rem;font-weight:700;padding:7px 16px;border-radius:100px;cursor:pointer;font-family:'Pretendard',sans-serif;transition:opacity .2s}
 .err-retry:hover{opacity:.75}
+.kw-chip{background:var(--bg2);border:1px solid var(--line2);color:var(--muted2);font-size:.72rem;font-weight:600;padding:6px 13px;border-radius:100px;cursor:pointer;font-family:'Pretendard',sans-serif;transition:background .15s,border-color .15s,color .15s}
+.kw-chip:hover{border-color:var(--accent)}
+.kw-chip.active{background:rgba(59,110,255,.16);border-color:var(--accent);color:var(--accent)}
 
 /* ── 아코디언 (Home 상세 분석) ── */
 .accordion-toggle{display:flex;align-items:center;justify-content:space-between;width:100%;background:var(--bg2);border:1px solid var(--line2);border-radius:12px;padding:14px 18px;color:var(--text);font-size:.82rem;font-weight:700;font-family:'Pretendard',sans-serif;cursor:pointer;margin:18px 0 4px;transition:background .2s}
@@ -1909,22 +1912,22 @@ function renderKeywordTrends(data){
     const catMap=data.keyword_category_map||{};
     const kwsByCat={};
     data.keywords.forEach(k=>{const c=catMap[k]||'기타';(kwsByCat[c]=kwsByCat[c]||[]).push(k);});
-    const optionsHtml=Object.keys(kwsByCat).map(cat=>
-      `<optgroup label="${cat}">${kwsByCat[cat].map(k=>`<option value="${k}" ${defaultKws.includes(k)?'selected':''}>${k}</option>`).join('')}</optgroup>`
-    ).join('');
+    const chipGroupsHtml=Object.keys(kwsByCat).map(cat=>`
+      <div style="margin-bottom:14px">
+        <div style="font-size:.66rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:7px">${catIcon[cat]||''} ${cat}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">
+          ${kwsByCat[cat].map(k=>`<button type="button" class="kw-chip${defaultKws.includes(k)?' active':''}" data-kw="${k}" onclick="toggleKwChip(this)">${k}</button>`).join('')}
+        </div>
+      </div>`).join('');
     trendHtml=`
       <div style="margin-top:26px;padding-top:20px;border-top:1px solid var(--line2)">
-        <div class="ct" style="margin-bottom:8px">키워드별 시간 추이 (1,000건당 등장 빈도)</div>
-        <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start;margin-top:10px">
-          <select id="kwTrendSelect" multiple size="10" style="background:var(--bg2);border:1px solid var(--line2);border-radius:9px;color:var(--text);font-family:'Pretendard',sans-serif;font-size:.76rem;padding:8px;min-width:180px" onchange="drawKeywordTrendChart()">
-            ${optionsHtml}
-          </select>
-          <div style="flex:1;min-width:280px">
-            <svg viewBox="0 0 600 260" width="100%" id="kwTrendSvg" style="overflow:visible"></svg>
-            <div id="kwTrendLegend" style="display:flex;flex-wrap:wrap;gap:10px;margin-top:10px"></div>
-          </div>
+        <div class="ct" style="margin-bottom:4px">키워드별 시간 추이 (1,000건당 등장 빈도)</div>
+        <div class="cs" style="margin-bottom:14px">키워드를 클릭해서 선택/해제하세요 (최대 6개)</div>
+        <div id="kwChipPicker">${chipGroupsHtml}</div>
+        <div style="margin-top:16px">
+          <div id="kwTrendSvgWrap"><svg viewBox="0 0 600 220" width="100%" id="kwTrendSvg" style="overflow:visible;display:block"></svg></div>
+          <div id="kwTrendLegend" style="display:flex;flex-wrap:wrap;gap:12px;margin-top:12px"></div>
         </div>
-        <p style="font-size:.68rem;color:var(--muted);margin-top:10px">* Ctrl(Cmd)를 누른 채 클릭하면 여러 키워드를 선택할 수 있어요.</p>
       </div>`;
   }
 
@@ -1932,44 +1935,79 @@ function renderKeywordTrends(data){
   if(days>=2)drawKeywordTrendChart();
 }
 
+function toggleKwChip(el){
+  const active=[...document.querySelectorAll('.kw-chip.active')];
+  if(!el.classList.contains('active')&&active.length>=6){
+    showToast('⚠️ 키워드는 최대 6개까지 선택할 수 있어요');
+    return;
+  }
+  el.classList.toggle('active');
+  drawKeywordTrendChart();
+}
+
 function drawKeywordTrendChart(){
   const data=kwTrendCache;
-  if(!data)return;
-  const sel=document.getElementById('kwTrendSelect');
   const svg=document.getElementById('kwTrendSvg');
   const legendEl=document.getElementById('kwTrendLegend');
-  if(!sel||!svg)return;
+  if(!data||!svg)return;
 
-  const selected=[...sel.selectedOptions].map(o=>o.value).slice(0,8);
+  const selected=[...document.querySelectorAll('.kw-chip.active')].map(el=>el.dataset.kw).slice(0,6);
   const allDates=[...new Set(data.data.map(r=>r.date))].sort();
-  if(!selected.length||allDates.length<2){svg.innerHTML='';legendEl.innerHTML='';return;}
+  if(!selected.length){
+    svg.innerHTML=`<text x="300" y="110" text-anchor="middle" font-size="12" fill="var(--muted)" font-family="Pretendard,sans-serif">키워드를 선택하면 여기에 추이가 표시돼요</text>`;
+    legendEl.innerHTML='';
+    return;
+  }
 
-  const W=600,H=260,padL=40,padR=10,padT=16,padB=28;
+  const W=600,H=220,padL=42,padR=14,padT=18,padB=32;
   const chartW=W-padL-padR,chartH=H-padT-padB;
 
   const series=selected.map(kw=>allDates.map(d=>{
     const row=data.data.find(r=>r.date===d&&r.keyword===kw);
     return row?row.frequency_per_1000:0;
   }));
-  const maxV=Math.max(...series.flat(),1);
+  const maxV=Math.max(...series.flat(),1)*1.15;
 
   const x=i=>padL+(allDates.length>1?i/(allDates.length-1)*chartW:chartW/2);
   const y=v=>padT+chartH-(v/maxV*chartH);
 
-  let s=`<line x1="${padL}" y1="${padT+chartH}" x2="${W-padR}" y2="${padT+chartH}" stroke="rgba(var(--fg-rgb),.15)"/>`;
-  s+=`<text x="${padL}" y="${padT+chartH+18}" font-size="9" fill="var(--muted)" font-family="Pretendard,sans-serif">${allDates[0]}</text>`;
-  s+=`<text x="${W-padR}" y="${padT+chartH+18}" font-size="9" fill="var(--muted)" font-family="Pretendard,sans-serif" text-anchor="end">${allDates[allDates.length-1]}</text>`;
-  s+=`<text x="${padL-6}" y="${padT+4}" font-size="9" fill="var(--muted)" font-family="Pretendard,sans-serif" text-anchor="end">${maxV.toFixed(0)}</text>`;
+  let s='';
+  // 배경 그리드 (가로선 4단)
+  for(let g=0;g<=3;g++){
+    const gy=padT+chartH-(g/3*chartH);
+    const gv=(maxV*g/3);
+    s+=`<line x1="${padL}" y1="${gy.toFixed(1)}" x2="${W-padR}" y2="${gy.toFixed(1)}" stroke="rgba(var(--fg-rgb),.07)"/>`;
+    s+=`<text x="${padL-8}" y="${(gy+3).toFixed(1)}" font-size="9" fill="var(--muted)" font-family="Pretendard,sans-serif" text-anchor="end">${gv.toFixed(0)}</text>`;
+  }
+  // x축 날짜 라벨: 데이터가 적으면(≤8일) 전부, 많으면 균등하게 5개
+  const labelIdxs=allDates.length<=8
+    ? allDates.map((_,i)=>i)
+    : Array.from({length:5},(_,k)=>Math.round(k*(allDates.length-1)/4));
+  [...new Set(labelIdxs)].forEach(i=>{
+    s+=`<text x="${x(i).toFixed(1)}" y="${H-8}" font-size="9" fill="var(--muted)" font-family="Pretendard,sans-serif" text-anchor="middle">${allDates[i].slice(5)}</text>`;
+  });
 
   series.forEach((vals,si)=>{
     const col=KW_LINE_COLORS[si%KW_LINE_COLORS.length];
+    if(allDates.length===1){
+      // 데이터가 하루치뿐일 땐 선 대신 강조된 점 하나로 표시
+      s+=`<circle cx="${x(0).toFixed(1)}" cy="${y(vals[0]).toFixed(1)}" r="6" fill="${col}" fill-opacity=".25"/>`;
+      s+=`<circle cx="${x(0).toFixed(1)}" cy="${y(vals[0]).toFixed(1)}" r="4" fill="${col}" stroke="var(--bg2)" stroke-width="2"/>`;
+      s+=`<text x="${x(0).toFixed(1)}" y="${(y(vals[0])-12).toFixed(1)}" font-size="10" fill="${col}" font-family="Pretendard,sans-serif" text-anchor="middle" font-weight="700">${vals[0].toFixed(1)}</text>`;
+      return;
+    }
     const pts=vals.map((v,i)=>`${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
-    s+=`<polyline points="${pts}" fill="none" stroke="${col}" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>`;
-    vals.forEach((v,i)=>{s+=`<circle cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="2.6" fill="${col}"/>`;});
+    const areaPts=`${x(0).toFixed(1)},${y(0).toFixed(1)} ${pts} ${x(vals.length-1).toFixed(1)},${y(0).toFixed(1)}`;
+    s+=`<polygon points="${areaPts}" fill="${col}" fill-opacity=".08"/>`;
+    s+=`<polyline points="${pts}" fill="none" stroke="${col}" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>`;
+    vals.forEach((v,i)=>{s+=`<circle cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="3.6" fill="${col}" stroke="var(--bg2)" stroke-width="1.6"/>`;});
   });
   svg.innerHTML=s;
 
-  legendEl.innerHTML=selected.map((kw,i)=>`<span style="display:flex;align-items:center;gap:5px;font-size:.7rem;color:var(--muted2)"><i style="width:11px;height:3px;background:${KW_LINE_COLORS[i%KW_LINE_COLORS.length]};display:inline-block;border-radius:2px"></i>${kw}</span>`).join('');
+  legendEl.innerHTML=selected.map((kw,i)=>`<span style="display:flex;align-items:center;gap:5px;font-size:.72rem;color:var(--muted2);font-weight:600"><i style="width:11px;height:3px;background:${KW_LINE_COLORS[i%KW_LINE_COLORS.length]};display:inline-block;border-radius:2px"></i>${kw}</span>`).join('');
+  if(allDates.length<=2){
+    legendEl.innerHTML+=`<span style="font-size:.68rem;color:var(--muted);width:100%;margin-top:4px">📌 데이터가 더 쌓이면 점들이 이어져 진짜 추이 곡선으로 바뀌어요.</span>`;
+  }
 }
 
 // ── SEARCH ──
