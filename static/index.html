@@ -428,6 +428,7 @@ input[type=range]{flex:1;accent-color:var(--accent)}
   <button class="mtb" id="mtb-market" onclick="goApp('market',this)"><span>📊</span><small>Market</small></button>
   <button class="mtb" id="mtb-search" onclick="goApp('search',this)"><span>🔍</span><small>Search</small></button>
   <button class="mtb" id="mtb-diagnosis" onclick="goApp('diagnosis',this)"><span>📝</span><small>Diagnosis</small></button>
+  <button class="mtb" id="mtb-career" onclick="goApp('career',this)"><span>🎯</span><small>Career</small></button>
   <button class="mtb" id="mtb-top100" onclick="goApp('top100',this)"><span>🏆</span><small>Top100</small></button>
 </nav>
 
@@ -470,6 +471,7 @@ input[type=range]{flex:1;accent-color:var(--accent)}
     <button class="nb" onclick="goApp('market',this)">Market</button>
     <button class="nb" onclick="goApp('search',this)">Search</button>
     <button class="nb" onclick="goApp('diagnosis',this)">Diagnosis</button>
+    <button class="nb" onclick="goApp('career',this)">Career</button>
     <button class="nb" onclick="goApp('ai',this)">AI</button>
     <button class="nb" onclick="goApp('top100',this)">Top100</button>
     <button class="nb" onclick="goApp('about',this)">About</button>
@@ -591,6 +593,7 @@ input[type=range]{flex:1;accent-color:var(--accent)}
     <button class="anb" id="anb-market" onclick="showPage('market',this)">📊 Market</button>
     <button class="anb" id="anb-search" onclick="showPage('search',this)">🔍 Job Search</button>
     <button class="anb" id="anb-diagnosis" onclick="showPage('diagnosis',this)">📝 Diagnosis</button>
+    <button class="anb" id="anb-career" onclick="showPage('career',this)">🎯 Career Advisor</button>
     <button class="anb" id="anb-ai" onclick="showPage('ai',this)">🧠 AI Diagnosis</button>
     <button class="anb" id="anb-top100" onclick="showPage('top100',this)">🏆 Top100</button>
     <button class="anb" id="anb-about" onclick="showPage('about',this)">ℹ️ About</button>
@@ -801,6 +804,57 @@ input[type=range]{flex:1;accent-color:var(--accent)}
       <div id="dAlerts"></div>
       <div id="dRewrite"></div>
       <div id="dSummary"></div>
+    </div>
+  </div>
+
+  <!-- CAREER ADVISOR -->
+  <div class="page" id="page-career">
+    <div class="sec-tag">Career Advisor</div>
+    <h1 class="pg-title">🎯 Career <em>Advisor</em></h1>
+    <p class="pg-sub">내 스펙을 입력하면, 실제 채용 데이터를 기반으로 요구조건과 가장 잘 맞는 공고를 찾아드려요.</p>
+
+    <div class="full-card" style="margin-top:20px">
+      <div class="ct">내 정보 입력</div>
+      <div class="cs">구직자용 매칭 진단 — 공고 요구조건과의 일치도를 계산합니다 (합격 확률이 아닙니다)</div>
+      <div class="fg" style="margin-top:18px">
+        <div class="fb"><div class="fbt">기본 조건</div>
+          <div class="ff"><label>희망 직무</label><select id="ca_job"><option value="">직무를 선택하세요</option></select></div>
+          <div class="ff"><label>학력</label>
+            <select id="ca_edu">
+              <option value="">선택 안 함 (학력무관으로 간주)</option>
+              <option value="고졸">고졸</option>
+              <option value="전문대졸">전문대졸</option>
+              <option value="대졸">대졸</option>
+              <option value="대학원졸">대학원졸 이상</option>
+            </select>
+          </div>
+          <div class="ff"><label>경력</label>
+            <select id="ca_career">
+              <option value="0">신입 (경력 없음)</option>
+              <option value="2">경력 1~3년</option>
+              <option value="5">경력 4~7년</option>
+              <option value="9">경력 8년 이상</option>
+            </select>
+          </div>
+        </div>
+        <div class="fb"><div class="fbt">보유 역량 · 경험</div>
+          <div class="ff"><label>보유 역량 · 프로젝트/경험 (자유롭게 적어주세요)</label>
+            <textarea id="ca_skills" rows="7" placeholder="예: Excel 활용 데이터 정리 경험, SQL 기초, 인사 프로젝트 참여, 영어 회화 가능..."></textarea>
+          </div>
+        </div>
+      </div>
+      <div id="caValidationMsg" style="display:none;text-align:center;color:var(--red);font-size:.78rem;font-weight:600;margin-top:12px"></div>
+      <div style="display:flex;justify-content:center;margin-top:14px"><button class="btn-diag" id="caSubmitBtn" onclick="runCareerMatch(this)">🎯 나에게 맞는 공고 찾기</button></div>
+    </div>
+
+    <div id="careerResult" style="display:none;margin-top:26px">
+      <div class="sec-tag">추천 결과</div>
+      <div id="caCards"></div>
+      <div class="full-card reveal" style="margin-top:18px">
+        <div class="ct">💡 이런 역량을 준비하면 매칭도가 더 올라가요</div>
+        <div class="cs">추천된 공고들의 실제 직무내용에서 자주 등장하지만, 입력하신 내용엔 없던 키워드예요</div>
+        <div id="caSkillGap" style="margin-top:14px"></div>
+      </div>
     </div>
   </div>
 
@@ -1116,6 +1170,7 @@ function showPage(name,btn){
   if(name==='ai') initAISel();
   if(name==='top100') loadTop100();
   if(name==='market'){animMktBars();loadKeywordTrends();}
+  if(name==='career') initCareerAdvisor();
 }
 function onPeriodChange(){
   loadStats();
@@ -2271,6 +2326,163 @@ function initLivePreview(){
     const el=document.getElementById(id);
     if(el)el.addEventListener('input',updateLivePreview);
   });
+}
+
+// ── CAREER ADVISOR (구직자용 매칭 진단) ──
+let caJobsLoaded=false;
+let caMatchedJobs=[];
+
+async function initCareerAdvisor(){
+  if(caJobsLoaded)return;
+  try{
+    const filters=await apiFetch('/api/filters');
+    const sel=document.getElementById('ca_job');
+    (filters.jobs||[]).forEach(j=>{const o=document.createElement('option');o.value=o.textContent=j;sel.appendChild(o);});
+    caJobsLoaded=true;
+  }catch(e){
+    console.error('career advisor job list failed:',e);
+    showToast('⚠️ 직무 목록을 불러오지 못했어요');
+  }
+}
+
+function parseCareerYears(text){
+  if(!text)return -1;
+  if(/무관/.test(text))return -1;
+  const m=text.match(/(\d+)\s*년/);
+  if(m)return parseInt(m[1],10);
+  if(/신입/.test(text))return 0;
+  return -1;
+}
+const CA_EDU_ORDER={'고졸':1,'전문대졸':2,'대졸':3,'대학원졸':4};
+function parseEduLevel(text){
+  if(!text)return -1;
+  if(/무관/.test(text))return -1;
+  const found=Object.keys(CA_EDU_ORDER).filter(k=>text.includes(k));
+  if(!found.length)return -1;
+  return Math.min(...found.map(k=>CA_EDU_ORDER[k]));
+}
+function caCareerScore(userYears,jobText){
+  const req=parseCareerYears(jobText);
+  if(req===-1)return 100;
+  if(userYears>=req)return 100;
+  if(req===0)return 90;
+  const ratio=Math.max(0,userYears/req);
+  return Math.round(30+ratio*70);
+}
+function caEduScore(userLevel,jobText){
+  const req=parseEduLevel(jobText);
+  if(req===-1)return 100;
+  if(!userLevel)return 50;
+  const uLevel=CA_EDU_ORDER[userLevel]||0;
+  if(uLevel>=req)return 100;
+  return Math.max(20,100-(req-uLevel)*30);
+}
+function caExtractTokens(text){
+  return[...new Set((text.match(/[A-Za-z가-힣0-9+#.]{2,}/g)||[]).map(t=>t.toLowerCase()))];
+}
+function caSkillScore(userTokens,jobText){
+  if(!userTokens.length)return 30;
+  const jt=jobText.toLowerCase();
+  const hits=userTokens.filter(t=>jt.includes(t));
+  return Math.round(hits.length/userTokens.length*100);
+}
+function caReasonText(j){
+  const r=[];
+  r.push(j._career>=90?'경력 조건 충족':j._career>=60?'경력 조건 일부 충족':'경력 조건 다소 부족');
+  r.push(j._edu>=90?'학력 조건 충족':j._edu>=60?'학력 조건 대체로 충족':'학력 조건 다소 부족');
+  r.push(j._skill>=50?'보유 역량과 직무 내용이 상당 부분 일치':j._skill>=20?'보유 역량 일부 일치':'직무 내용과 일치하는 역량 키워드가 적음');
+  return r.join(' · ');
+}
+
+async function runCareerMatch(btn){
+  const job=document.getElementById('ca_job').value;
+  const edu=document.getElementById('ca_edu').value;
+  const careerYears=parseInt(document.getElementById('ca_career').value,10);
+  const skillsText=document.getElementById('ca_skills').value.trim();
+  const msgEl=document.getElementById('caValidationMsg');
+
+  if(!job){
+    msgEl.textContent='⚠️ 희망 직무를 선택해주세요.';
+    msgEl.style.display='block';
+    return;
+  }
+  msgEl.style.display='none';
+
+  const origText=btn?btn.textContent:'';
+  if(btn){btn.disabled=true;btn.textContent='🔍 매칭 중...';}
+
+  try{
+    const data=await apiFetch(`/api/jobs?job=${encodeURIComponent(job)}&per=100&page=1`);
+    const jobs=data.jobs||[];
+    document.getElementById('careerResult').style.display='block';
+
+    if(!jobs.length){
+      document.getElementById('caCards').innerHTML=`<div class="err-state" style="border-style:dashed;background:rgba(59,110,255,.04);border-color:rgba(59,110,255,.25)"><div class="err-icon">🔍</div><div class="err-msg">"${job}" 직무의 현재 등록된 공고가 없어요. 다른 직무로 시도해보세요.</div></div>`;
+      document.getElementById('caSkillGap').innerHTML='';
+      return;
+    }
+
+    const userTokens=caExtractTokens(skillsText);
+    const scored=jobs.map(j=>{
+      const cScore=caCareerScore(careerYears,j.CAREER_CND_NM||'');
+      const eScore=caEduScore(edu,j.ACDMCR_NM||'');
+      const sScore=caSkillScore(userTokens,j.DTY_CN||'');
+      const total=Math.round(cScore*0.3+eScore*0.25+sScore*0.45);
+      return{...j,_match:total,_career:cScore,_edu:eScore,_skill:sScore};
+    }).sort((a,b)=>b._match-a._match);
+
+    const top=scored.slice(0,5);
+    caMatchedJobs=top;
+    document.getElementById('caCards').innerHTML=top.map((j,i)=>{
+      const matchColor=j._match>=75?'var(--green)':j._match>=50?'var(--yellow)':'var(--red)';
+      return`<div class="full-card reveal" style="margin-bottom:14px;cursor:pointer" role="button" tabindex="0" onclick="openJobModal(caMatchedJobs[${i}])" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap">
+          <div>
+            <div style="font-size:.68rem;color:var(--muted);font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px">#${i+1} 추천</div>
+            <div style="font-size:1.05rem;font-weight:800;color:var(--text)">${j.CMPNY_NM||''}</div>
+            <div style="font-size:.82rem;color:var(--muted2);margin-top:2px">${sh(j.JO_SJ,40)}</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:1.6rem;font-weight:800;color:${matchColor}">${j._match}%</div>
+            <div style="font-size:.65rem;color:var(--muted)">요구조건 매칭도</div>
+            <span class="gb g-${j.등급}" style="margin-top:4px;display:inline-block">${j.등급}</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:14px;margin-top:14px;flex-wrap:wrap">
+          <div style="flex:1;min-width:100px"><div style="font-size:.65rem;color:var(--muted)">경력 매칭</div><div class="mbt" style="margin-top:4px"><div class="mbf" style="width:${j._career}%;background:var(--accent)"></div></div></div>
+          <div style="flex:1;min-width:100px"><div style="font-size:.65rem;color:var(--muted)">학력 매칭</div><div class="mbt" style="margin-top:4px"><div class="mbf" style="width:${j._edu}%;background:var(--purple)"></div></div></div>
+          <div style="flex:1;min-width:100px"><div style="font-size:.65rem;color:var(--muted)">역량 매칭</div><div class="mbt" style="margin-top:4px"><div class="mbf" style="width:${j._skill}%;background:var(--green)"></div></div></div>
+        </div>
+        <p style="font-size:.78rem;color:var(--muted2);margin-top:12px;line-height:1.6">💬 그 이유는: ${caReasonText(j)}</p>
+      </div>`;
+    }).join('');
+
+    // 스킬 갭 추천: 매칭 상위 30개 공고의 직무내용에서 영문 키워드(툴/기술명) 빈도 집계, 사용자가 이미 언급한 건 제외
+    const pool=scored.slice(0,30);
+    const freq={};
+    pool.forEach(j=>{
+      const tokens=[...new Set((j.DTY_CN||'').match(/[A-Za-z][A-Za-z0-9+#.]{1,20}/g)||[])];
+      tokens.forEach(t=>{
+        if(t.length<2)return;
+        if(userTokens.includes(t.toLowerCase()))return;
+        freq[t]=(freq[t]||0)+1;
+      });
+    });
+    const sortedGap=Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,8);
+    const gapEl=document.getElementById('caSkillGap');
+    gapEl.innerHTML=sortedGap.length
+      ? `<div style="display:flex;flex-wrap:wrap;gap:10px">${sortedGap.map(([kw,cnt])=>`<div style="background:rgba(59,110,255,.08);border:1px solid rgba(59,110,255,.25);border-radius:100px;padding:8px 16px;font-size:.82rem;color:var(--accent);font-weight:700">${kw} <span style="color:var(--muted);font-weight:600;font-size:.7rem">(${cnt}건 공고 언급)</span></div>`).join('')}</div>
+         <p style="font-size:.66rem;color:var(--muted);margin-top:12px">* 영문 툴/기술명 위주로 추출돼요 (예: Excel, SQL, SAP). 한글 키워드는 아직 포함되지 않아요.</p>`
+      : `<p style="font-size:.8rem;color:var(--muted)">추천할 만한 추가 키워드를 찾지 못했어요 — 이미 관련 역량을 잘 언급하고 계신 것 같아요!</p>`;
+
+    document.getElementById('careerResult').scrollIntoView({behavior:'smooth',block:'start'});
+  }catch(e){
+    console.error('career match failed:',e);
+    document.getElementById('careerResult').style.display='block';
+    showErrorState('caCards','runCareerMatch(document.getElementById(\'caSubmitBtn\'))','매칭을 계산하는 중 문제가 발생했어요');
+  }finally{
+    if(btn){btn.disabled=false;btn.textContent=origText;}
+  }
 }
 
 // ── AI DIAGNOSIS ──
