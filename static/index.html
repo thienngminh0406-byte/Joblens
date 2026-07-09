@@ -1148,6 +1148,15 @@ window.addEventListener('scroll',()=>{
 });
 const revIO=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');revIO.unobserve(e.target);}}),{threshold:.08});
 document.querySelectorAll('.reveal').forEach(el=>revIO.observe(el));
+// 동적으로 추가되는 .reveal 요소도 자동으로 감지해서 관찰 대상에 넣는다
+// (innerHTML로 나중에 삽입된 카드가 opacity:0 상태로 영원히 안 보이는 버그 방지)
+new MutationObserver(muts=>{
+  muts.forEach(m=>m.addedNodes.forEach(node=>{
+    if(node.nodeType!==1)return;
+    if(node.classList&&node.classList.contains('reveal'))revIO.observe(node);
+    node.querySelectorAll&&node.querySelectorAll('.reveal').forEach(el=>revIO.observe(el));
+  }));
+}).observe(document.body,{childList:true,subtree:true});
 setTimeout(()=>{document.querySelectorAll('.hbf2').forEach(el=>{el.style.width=el.dataset.w+'%'});},700);
 
 // ── STORY ──
@@ -2435,7 +2444,7 @@ async function runCareerMatch(btn){
     caMatchedJobs=top;
     document.getElementById('caCards').innerHTML=top.map((j,i)=>{
       const matchColor=j._match>=75?'var(--green)':j._match>=50?'var(--yellow)':'var(--red)';
-      return`<div class="full-card reveal" style="margin-bottom:14px;cursor:pointer" role="button" tabindex="0" onclick="openJobModal(caMatchedJobs[${i}])" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}">
+      return`<div class="full-card" style="margin-bottom:14px;cursor:pointer" role="button" tabindex="0" onclick="openJobModal(caMatchedJobs[${i}])" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap">
           <div>
             <div style="font-size:.68rem;color:var(--muted);font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px">#${i+1} 추천</div>
