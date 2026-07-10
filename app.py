@@ -385,8 +385,8 @@ def api_jobs():
 
     if keyword:
         mask = (
-            df["CMPNY_NM"].astype(str).str.lower().str.contains(keyword, na=False) |
-            df["JO_SJ"].astype(str).str.lower().str.contains(keyword, na=False)
+            df["CMPNY_NM"].astype(str).str.lower().str.contains(keyword, na=False, regex=False) |
+            df["JO_SJ"].astype(str).str.lower().str.contains(keyword, na=False, regex=False)
         )
         df = df[mask]
     if grade:
