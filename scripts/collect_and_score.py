@@ -16,11 +16,13 @@ _ROOT_DIR = os.path.dirname(_THIS_DIR)                    # 저장소 최상위 
 sys.path.insert(0, _THIS_DIR)
 sys.path.insert(0, _ROOT_DIR)
 from joblens_scoring import apply_joblens_scores
+from pension_salary import update_pension_cache
 
 API_KEY = os.environ.get("SEOUL_API_KEY", "514b4b685a6d696e39366469694276")
 OUTPUT_FILE = os.path.join(_ROOT_DIR, "JobLens_Scores.csv")
 # ── 키워드 트렌드 누적 파일 (매일 append, 절대 덮어쓰지 않음) ──
 KEYWORD_TRENDS_FILE = os.path.join(_ROOT_DIR, "keyword_trends.csv")
+PENSION_CACHE_FILE = os.path.join(_ROOT_DIR, "pension_salary_cache.csv")
 
 KEEP_COLS = [
     "JO_REQST_NO", "CMPNY_NM", "JO_SJ", "JOBCODE_NM", "CAREER_CND_NM",
@@ -161,6 +163,12 @@ def main():
 
     # ── 키워드 트렌드 누적 저장 (CSV 저장 전, 필터링된 df 기준) ──
     update_keyword_trends(df)
+
+    # ── 국민연금 급여 데이터 매칭 (신규/재조회 대상만, 호출 한도 보호) ──
+    try:
+        update_pension_cache(df, PENSION_CACHE_FILE)
+    except Exception as e:
+        print(f"연금 급여 매칭 중 오류 (건너뜀): {e}")
 
     # CSV 저장 (기존 로직 그대로, 매번 덮어씀 — 현재 스냅샷용)
     df.to_csv(OUTPUT_FILE, index=False, encoding="utf-8-sig")
