@@ -2080,6 +2080,12 @@ function openJobModal(j){
     <div class="mo-title" style="padding-right:28px">${j.JO_SJ||'공고명 없음'}</div>
     <button id="moBookmarkBtn" onclick="toggleBookmark(currentModalJob)" aria-label="찜하기" style="position:absolute;top:14px;right:44px;background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--yellow)">${isBookmarked(j)?'⭐':'☆'}</button>
     <div class="mo-company">${j.CMPNY_NM||''} &nbsp;·&nbsp; <span class="gb g-${j.등급}">${j.등급}</span> &nbsp;·&nbsp; <b style="color:var(--accent)">${j.종합점수}점</b></div>
+    ${(j.연금매칭===true||j.연금매칭==='True'||j.연금매칭==='true')&&j.연금평균연봉?`
+    <div style="background:rgba(0,214,143,.08);border:1px solid rgba(0,214,143,.25);border-radius:10px;padding:12px 14px;margin:10px 0">
+      <div style="font-size:.72rem;font-weight:700;color:var(--green);margin-bottom:3px">💰 국민연금 데이터 기준 이 회사 평균 연봉</div>
+      <div style="font-size:1.1rem;font-weight:800;color:var(--text)">약 ${Math.round(j.연금평균연봉/10000).toLocaleString()}만원 <span style="font-size:.68rem;font-weight:600;color:var(--muted)">(가입자 ${Number(j.연금가입자수).toLocaleString()}명 기준 추정치)</span></div>
+      <div style="font-size:.66rem;color:var(--muted);margin-top:5px;line-height:1.5">* 국민연금 신고소득 기반 역산 추정값이며, 소득 상한(월 약 637만원) 때문에 고연봉일수록 실제보다 낮게 나올 수 있어요.</div>
+    </div>`:''}
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 4px">
       <a href="https://www.google.com/search?q=${searchQ}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;font-size:.72rem;font-weight:600;color:var(--accent);text-decoration:none;background:rgba(59,110,255,.1);border:1px solid rgba(59,110,255,.3);border-radius:8px;padding:6px 12px">🔍 구글 검색</a>
       <a href="https://www.saramin.co.kr/zf_user/search/recruit?searchType=search&searchword=${companyQ}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;font-size:.72rem;font-weight:600;color:#ff7a00;text-decoration:none;background:rgba(255,122,0,.1);border:1px solid rgba(255,122,0,.3);border-radius:8px;padding:6px 12px">🟠 사람인</a>
