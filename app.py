@@ -38,6 +38,7 @@ API_KEY = "514b4b685a6d696e39366469694276"
 CACHE_TTL = 3600
 CSV_FALLBACK = os.path.join(BASE_DIR, "JobLens_Scores.csv")
 KEYWORD_TRENDS_FILE = os.path.join(BASE_DIR, "keyword_trends.csv")
+PENSION_CACHE_FILE = os.path.join(BASE_DIR, "pension_salary_cache.csv")
 
 def make_session() -> requests.Session:
     session = requests.Session()
@@ -55,7 +56,33 @@ _cache = {
     "data_source": "none",
 }
 
+def attach_pension_salary(df: pd.DataFrame) -> pd.DataFrame:
+    """pension_salary_cache.csv를 회사명 기준으로 조인해서 급여 추정치를 붙인다."""
+    if not os.path.exists(PENSION_CACHE_FILE) or "CMPNY_NM" not in df.columns:
+        df["연금매칭"] = False
+        df["연금평균연봉"] = None
+        df["연금가입자수"] = None
+        return df
+    try:
+        cache = pd.read_csv(PENSION_CACHE_FILE, encoding="utf-8-sig")
+    except Exception as e:
+        logger.warning(f"연금 캐시 로드 실패: {e}")
+        df["연금매칭"] = False
+        df["연금평균연봉"] = None
+        df["연금가입자수"] = None
+        return df
 
+    cache = cache.rename(columns={
+        "company_name": "CMPNY_NM",
+        "matched": "연금매칭",
+        "avg_annual_salary": "연금평균연봉",
+        "subscribers": "연금가입자수",
+    })[["CMPNY_NM", "연금매칭", "연금평균연봉", "연금가입자수"]]
+
+    df = df.merge(cache, on="CMPNY_NM", how="left")
+    df["연금매칭"] = df["연금매칭"].fillna(False)
+    return df
+    
 def load_from_csv() -> pd.DataFrame:
     if not os.path.exists(CSV_FALLBACK):
         logger.warning(f"CSV 파일 없음: {CSV_FALLBACK}")
@@ -74,6 +101,7 @@ def load_from_csv() -> pd.DataFrame:
 
     valid_dates = df["JO_REG_DT"].notna().sum()
     logger.info(f"CSV 로드 완료: {len(df)}건 (등록일 유효: {valid_dates}건, 결측: {len(df) - valid_dates}건)")
+    df = attach_pension_salary(df)
     return df
 
 
@@ -225,7 +253,7 @@ def get_df(period: str = "all") -> pd.DataFrame:
         logger.info(f"[get_df] period={period} 적용 전 {len(df)}건, 유효 날짜 {valid_dates}건, cutoff={cutoff.date()}")
         df = df[df["JO_REG_DT"] >= cutoff]
         logger.info(f"[get_df] period={period} 적용 후 {len(df)}건")
-
+    df = attach_pension_salary(df)
     return df
 
 
@@ -239,7 +267,8 @@ def df_to_records(df: pd.DataFrame, limit: int = None) -> list:
         "JO_REG_DT", "JO_REQST_NO",
         "직무상세성점수", "기업소개점수", "급여품질점수",
         "복지점수", "근무조건점수", "출퇴근편의점수",
-        "종합점수", "등급",
+        "종합점수", "등급","직무상세성점수", "기업소개점수", "급여품질점수",
+        "연금매칭", "연금평균연봉", "연금가입자수",   # ← 이 줄 추가
     ]
     existing = [c for c in cols if c in df.columns]
     sub = df[existing].copy()
