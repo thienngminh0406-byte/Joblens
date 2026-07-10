@@ -17,7 +17,8 @@ PENSION_BASE_URL = f"https://api.odcloud.kr/api/15083277/v1/uddi:{PENSION_UUID}"
 
 # 한 번 실행(GitHub Actions 1회)당 최대 조회할 신규 회사 수.
 # 개발계정 일일 호출 한도(10,000) 보호 + 실행시간 관리를 위한 안전장치.
-MAX_LOOKUPS_PER_RUN = 300
+# 하루 2회 실행 기준 3000 × 2 = 6000/일 (한도의 60%) → 회사 16,594개 기준 약 3일이면 전체 완료.
+MAX_LOOKUPS_PER_RUN = 3000
 # 매칭 실패한 회사도 이 기간(일) 동안은 재조회하지 않음 (같은 실패를 매번 반복 조회하지 않도록)
 RECHECK_UNMATCHED_AFTER_DAYS = 30
 # 매칭 성공한 회사는 이 기간(일)마다 한 번씩만 갱신 (월간 데이터라 매일 다시 조회할 필요 없음)
