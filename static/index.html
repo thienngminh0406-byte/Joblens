@@ -236,6 +236,7 @@ button:active,.nb:active,.anb:active,.mtb:active,.btn-p:active,.btn-ghost:active
 .rj-ti{font-size:.74rem;color:var(--muted2)}
 .rj-right{display:flex;flex-direction:column;align-items:flex-end;gap:5px}
 .rj-star{background:none;border:none;font-size:1.1rem;cursor:pointer;color:var(--yellow);padding:4px;line-height:1;transition:transform .15s}
+.pension-badge{display:inline-block;font-size:.78em;margin-left:4px;cursor:help;vertical-align:middle}
 .rj-star:hover{transform:scale(1.2)}
 .radar-legend{display:flex;gap:16px;margin-top:6px;margin-bottom:-6px}
 .radar-legend span{display:flex;align-items:center;gap:6px;font-size:.72rem;font-weight:600;color:var(--muted2)}
@@ -1093,6 +1094,8 @@ function getBookmarks(){try{return JSON.parse(localStorage.getItem(BM_KEY)||'[]'
 function saveBookmarks(arr){try{localStorage.setItem(BM_KEY,JSON.stringify(arr))}catch(e){}}
 function jobKey(j){return j.JO_REQST_NO||((j.CMPNY_NM||'')+'|'+(j.JO_SJ||''));}
 function isBookmarked(j){return getBookmarks().some(b=>jobKey(b)===jobKey(j));}
+function hasPensionMatch(j){return j&&(j.연금매칭===true||j.연금매칭==='True'||j.연금매칭==='true');}
+function pensionBadge(j){return hasPensionMatch(j)?`<span class="pension-badge" title="국민연금 데이터로 실제 평균연봉 확인 가능">💰</span>`:'';}
 function toggleBookmark(j,e){
   if(e)e.stopPropagation();
   let arr=getBookmarks();
@@ -1136,7 +1139,7 @@ function renderBookmarksPage(){
   }
   el.innerHTML=list.map((j,i)=>`
     <div class="rj" role="button" tabindex="0" aria-label="${(j.CMPNY_NM||'')} ${(j.JO_SJ||'')} 상세보기" onclick="openJobModal(getBookmarks()[${i}])" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}">
-      <div><div class="rj-co">${j.CMPNY_NM||''}</div><div class="rj-ti">${sh(j.JO_SJ,52)}</div></div>
+      <div><div class="rj-co">${j.CMPNY_NM||''}${pensionBadge(j)}</div><div class="rj-ti">${sh(j.JO_SJ,52)}</div></div>
       <div class="rj-right">${bmBtn(j)}<div class="rj-sc">${j.종합점수||''}</div><span class="gb g-${j.등급}">${j.등급||''}</span></div>
     </div>`).join('');
 }
@@ -1422,7 +1425,7 @@ async function loadRecentJobs(){
     trackCompanies(jobs);
     document.getElementById('recentJobs').innerHTML=jobs.map((j,i)=>`
       <div class="rj" role="button" tabindex="0" aria-label="${(j.CMPNY_NM||'')} ${(j.JO_SJ||'')} 상세보기" onclick="openJobModal(recentJobsCache[${i}])" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}">
-        <div><div class="rj-co">${j.CMPNY_NM||''}</div><div class="rj-ti">${sh(j.JO_SJ,52)}</div></div>
+        <div><div class="rj-co">${j.CMPNY_NM||''}${pensionBadge(j)}</div><div class="rj-ti">${sh(j.JO_SJ,52)}</div></div>
         <div style="display:flex;align-items:center;gap:10px">
           <button class="rj-star" onclick="event.stopPropagation();toggleBookmark(recentJobsCache[${i}]);this.textContent=isBookmarked(recentJobsCache[${i}])?'⭐':'☆';" aria-label="찜하기">${isBookmarked(j)?'⭐':'☆'}</button>
           <div class="rj-right"><div class="rj-sc">${j.종합점수}</div><span class="gb g-${j.등급}">${j.등급}</span></div>
@@ -2049,7 +2052,7 @@ async function filterJobs(page){
     document.getElementById('sc').innerHTML=`검색 결과: <b>${data.total.toLocaleString()}</b>건`;
     document.getElementById('jtb').innerHTML=searchJobsCache.map((j,i)=>`
       <tr tabindex="0" aria-label="${(j.CMPNY_NM||'')} ${(j.JO_SJ||'')} 상세보기" onclick="openJobModal(searchJobsCache[${i}])" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}">
-        <td class="bold">${sh(j.CMPNY_NM,16)}</td><td class="bold">${sh(j.JO_SJ,26)}</td>
+        <td class="bold">${sh(j.CMPNY_NM,16)}${pensionBadge(j)}</td><td class="bold">${sh(j.JO_SJ,26)}</td>
         <td>${sh(j.JOBCODE_NM,14)}</td><td>${j.CAREER_CND_NM||''}</td>
         <td>${sh(j.EMPLYM_STLE_CMMN_MM,9)}</td><td>${sh(j.HOPE_WAGE,13)}</td>
         <td>${sh(j.WORK_PARAR_BASS_ADRES_CN,16)}</td><td>${sh(j.RCEPT_CLOS_NM,11)}</td>
@@ -2135,7 +2138,7 @@ function openBookmarksPanel(){
     : `<div class="mo-title">⭐ 찜한 공고 (${bookmarks.length})</div>
        <div style="display:flex;flex-direction:column;gap:10px;margin-top:14px">
        ${bookmarks.map((j,i)=>`<div class="rj" role="button" tabindex="0" aria-label="${(j.CMPNY_NM||'')} 상세보기" onclick="openJobModal(bookmarks[${i}])" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}">
-         <div><div class="rj-co">${j.CMPNY_NM||''}</div><div class="rj-ti">${sh(j.JO_SJ,44)}</div></div>
+         <div><div class="rj-co">${j.CMPNY_NM||''}${pensionBadge(j)}</div><div class="rj-ti">${sh(j.JO_SJ,44)}</div></div>
          <div class="rj-right"><div class="rj-sc">${j.종합점수}</div><span class="gb g-${j.등급}">${j.등급}</span></div>
        </div>`).join('')}
        </div>`;
@@ -2492,7 +2495,7 @@ async function runCareerMatch(btn){
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap">
           <div>
             <div style="font-size:.68rem;color:var(--muted);font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px">#${i+1} 추천</div>
-            <div style="font-size:1.05rem;font-weight:800;color:var(--text)">${j.CMPNY_NM||''}</div>
+            <div style="font-size:1.05rem;font-weight:800;color:var(--text)">${j.CMPNY_NM||''}${pensionBadge(j)}</div>
             <div style="font-size:.82rem;color:var(--muted2);margin-top:2px">${sh(j.JO_SJ,40)}</div>
           </div>
           <div style="text-align:right">
@@ -2760,7 +2763,7 @@ function renderTop100Cards(jobs){
       <div>
         <div class="t100-rank">#${i+1}</div>
         <div class="t100-title">${sh(j.JO_SJ,48)}</div>
-        <div class="t100-meta">🏢 ${j.CMPNY_NM||''} &nbsp;·&nbsp; 💼 ${sh(j.JOBCODE_NM,16)} &nbsp;·&nbsp; 경력 ${j.CAREER_CND_NM||''}</div>
+        <div class="t100-meta">🏢 ${j.CMPNY_NM||''}${pensionBadge(j)} &nbsp;·&nbsp; 💼 ${sh(j.JOBCODE_NM,16)} &nbsp;·&nbsp; 경력 ${j.CAREER_CND_NM||''}</div>
         <div class="t100-links" style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
           <a class="t100-link" href="https://www.google.com/search?q=${q1}" target="_blank" rel="noopener">🔍 구글 검색</a>
           <a class="t100-link" href="https://www.saramin.co.kr/zf_user/search/recruit?searchType=search&searchword=${q2}" target="_blank" rel="noopener">🟠 사람인</a>
