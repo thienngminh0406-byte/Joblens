@@ -53,7 +53,8 @@
 
 | Dashboard | Market Analysis |
 |---|---|
-| ![Dashboard](docs/screenshots/01-dashboard.png) | ![Market](docs/screenshots/02-market.png) |
+| ![Dashboard](<img width="1438" height="714" alt="01-home-hero" src="https://github.com/user-attachments/assets/9e35d0a8-68d8-4ad0-b73f-70d3ddcb3890" />
+) | ![Market](docs/screenshots/02-market.png) |
 
 | Posting Diagnosis | AI Diagnosis |
 |---|---|
