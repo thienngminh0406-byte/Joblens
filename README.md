@@ -13,7 +13,7 @@
 [![Render](https://img.shields.io/badge/Deploy-Render-46E3B7?logo=render&logoColor=white)](https://render.com/)
 [![License](https://img.shields.io/badge/License-MIT-lightgrey)](#license)
 
-[🔗 Live Demo](https://joblens-xwz9.onrender.com) · [📁 Repository](https://github.com/thienngminh0406-byte/Joblens)
+[🔗 Live Demo](https://joblens-test.onrender.com) · [📁 Repository](https://github.com/thienngminh0406-byte/Joblens)
 
 </div>
 
