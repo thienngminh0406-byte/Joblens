@@ -156,6 +156,24 @@ def main():
     df = df[close_date.isna() | (close_date >= today)].copy()
     print(f"마감 필터 후: {len(df)}건")
 
+    # 마감 공고 필터링
+    close_date = df["RCEPT_CLOS_NM"].astype(str).str.extract(r"(\d{4}-\d{2}-\d{2})")[0]
+    close_date_parsed = pd.to_datetime(close_date, errors="coerce")
+    today = pd.Timestamp.today().normalize()
+
+    # ── 디버그: 제외되는 데이터 확인 (원인 파악 후 삭제) ──
+    mask_keep = close_date_parsed.isna() | (close_date_parsed >= today)
+    excluded = df[~mask_keep]
+    print(f"[DEBUG] 제외된 공고 수: {len(excluded)}건")
+    print(f"[DEBUG] 제외된 공고 RCEPT_CLOS_NM 샘플 20개:")
+    print(excluded["RCEPT_CLOS_NM"].head(20).to_string())
+    print(f"[DEBUG] 마감일 분포 (상위 10개):")
+    print(close_date_parsed[~mask_keep].dt.date.value_counts().head(10).to_string())
+    # ── 디버그 끝 ──
+
+    df = df[mask_keep].copy()
+    print(f"마감 필터 후: {len(df)}건")
+
     # 스코어링
     print("스코어링 시작...")
     df = apply_joblens_scores(df)
