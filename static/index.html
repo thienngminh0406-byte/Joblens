@@ -492,10 +492,13 @@ input[type=range]{flex:1;accent-color:var(--accent)}
     <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" aria-label="테마 전환">🌙</button>
     <button class="nav-refresh" onclick="refreshData()">🔄 새로고침</button>
   </div>
-</nav>
+      </div>
+    </nav>
 
-<!-- LANDING -->
-<div id="landing">
+    <p id="dataFreshnessNote" class="hidden" style="text-align:center;font-size:13px;color:var(--muted);padding:8px 16px;margin:0;"></p>
+
+    <!-- LANDING -->
+    <div id="landing">
   <div class="l-grid"></div><div class="l-glow"></div>
   <div class="hero">
     <div class="hero-left">
@@ -1233,12 +1236,12 @@ async function loadStats(retryCount=0){
     if(statusRes.total > 0){
       document.getElementById('apiBanner').classList.add('hidden');
       const data = await apiFetch(`/api/stats?period=${period}`);
-      const finalData = (data.total > 0) ? data : await apiFetch('/api/stats?period=all');
-      statsCache = finalData;
-      renderHome(finalData);
-      await renderMarket(finalData);
-      updateHeroStats(finalData);
-      updateStoryStats(finalData);
+      statsCache = data;
+      renderHome(data);
+      await renderMarket(data);
+      updateHeroStats(data);
+      updateStoryStats(data);
+      showDataFreshnessNote(data, period);
       setStatus(false);
       if(statusRes.is_loading){
         setTimeout(()=>loadStats(0), 120000);
@@ -1246,6 +1249,18 @@ async function loadStats(retryCount=0){
       return;
     }
 
+function showDataFreshnessNote(data, period){
+  const note = document.getElementById('dataFreshnessNote');
+  if(!note) return;
+  if(data.total === 0 && period !== 'all' && data.last_updated){
+    const lastDate = data.last_updated.split(' ')[0];
+    note.textContent = `선택하신 기간에 신규 등록된 공고가 없습니다. (데이터 마지막 갱신: ${lastDate})`;
+    note.classList.remove('hidden');
+  } else {
+    note.classList.add('hidden');
+  }
+}
+    
     // 데이터가 아직 없으면 (CSV도 없는 경우만) 대기
     const waitSec = retryCount < 3 ? 8 : 15;
     const msg = retryCount === 0
