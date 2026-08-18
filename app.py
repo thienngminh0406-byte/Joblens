@@ -321,7 +321,13 @@ def api_stats():
     period = request.args.get("period", "all")
     df = get_df(period)
     if df.empty:
-        return jsonify({"error": "no data"}), 503
+        return jsonify({
+            "total": 0, "avg_score": 0, "recent7": 0,
+            "grade_dist": {}, "job_top10": {}, "career_dist": {},
+            "score_cols_avg": {}, "hist": {}, "trend": [],
+            "last_updated": _cache["last_updated"].strftime("%Y-%m-%d %H:%M") if _cache["last_updated"] else "",
+            "data_source": _cache["data_source"],
+        })
 
     today = pd.Timestamp.today()
     recent7 = int((df["JO_REG_DT"] >= today - pd.Timedelta(days=7)).sum()) if "JO_REG_DT" in df.columns else 0
