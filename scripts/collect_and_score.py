@@ -16,7 +16,7 @@ sys.path.insert(0, ROOT_DIR)
 
 from joblens_scoring import apply_joblens_scores
 
-API_KEY = os.environ.get("SEOUL_API_KEY", "514b4b685a6d696e39366469694276")
+API_KEY = os.environ.get("SEOUL_API_KEY", "7578426b6d6d696e383454526e6471")
 OUTPUT_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "JobLens_Scores.csv")
 
 KEEP_COLS = [
