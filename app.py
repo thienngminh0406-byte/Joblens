@@ -34,7 +34,7 @@ Compress(app)
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-API_KEY = "514b4b685a6d696e39366469694276"
+API_KEY = "7578426b6d6d696e383454526e6471"
 CACHE_TTL = 3600
 CSV_FALLBACK = os.path.join(BASE_DIR, "JobLens_Scores.csv")
 
