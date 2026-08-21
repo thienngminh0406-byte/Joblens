@@ -10,6 +10,10 @@ import time
 import requests
 import pandas as pd
 
+from sqlalchemy import create_engine, text
+
+DATABASE_URL = os.environ.get("DATABASE_URL")
+
 # joblens_scoring.py 경로 추가
 sys.path.insert(
     0,
