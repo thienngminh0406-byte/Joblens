@@ -17,28 +17,84 @@ sys.path.insert(
 )
 from joblens_scoring import apply_joblens_scores
 
-API_KEY = os.environ.get("SEOUL_API_KEY", "514b4b685a6d696e39366469694276")
+API_KEY = os.environ.get("SEOUL_API_KEY", "544e70416d6d696e32397761575144")
 OUTPUT_FILE = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
     "JobLens_Scores.csv"
 )
 
 KEEP_COLS = [
-    "JO_REQST_NO", "CMPNY_NM", "JO_SJ", "JOBCODE_NM", "CAREER_CND_NM",
-    "ACDMCR_NM", "EMPLYM_STLE_CMMN_MM", "HOPE_WAGE",
-    "WORK_PARAR_BASS_ADRES_CN", "SUBWAY_NM", "WORK_TIME_NM",
-    "HOLIDAY_NM", "WEEK_WORK_HR", "RCEPT_CLOS_NM", "RCEPT_MTH_NM",
-    "PRESENTN_PAPERS_NM", "MNGR_PHON_NO", "BSNS_SUMRY_CN", "DTY_CN",
-    "RET_GRANTS_NM", "JO_FEINSR_SBSCRB_NM", "JO_REG_DT", "WELFARE_CN",
+    "COMPANY", "TITLE", "CAREER", "REG_DT", "CLOSE_DT", "REGION",
+    "MIN_EDUBG", "MAX_EDUBG", "IND_TP_CD_NM", "CORP_ADDR", "JOBS_NM",
+    "JOB_CONT", "EMP_TP_NM", "COLLECT_PSNCNT", "SAL_TP_NM", "PF_COND",
+    "SEL_MTHD", "RCPT_MTHD", "SUBMIT_DOC", "WORK_REGION",
+    "WORKDAY_WORKHR_CONT", "FOUR_INS", "RETIREPAY", "ETC_WELFARE",
+    "CONTACT_TELNO",
 ]
+
+FIELD_MAP = {
+    "COMPANY": "CMPNY_NM",
+    "TITLE": "JO_SJ",
+    "CAREER": "CAREER_CND_NM",
+    "REG_DT": "JO_REG_DT",
+    "CLOSE_DT": "RCEPT_CLOS_NM",
+    "REGION": "SUBWAY_NM",              # 근무지역(구 단위) — 기존 지하철 필드와는 성격이 다르니 검토 필요
+    "MAX_EDUBG": "ACDMCR_NM",
+    "JOBS_NM": "JOBCODE_NM",
+    "JOB_CONT": "DTY_CN",
+    "EMP_TP_NM": "EMPLYM_STLE_CMMN_MM",
+    "SAL_TP_NM": "HOPE_WAGE",
+    "RCPT_MTHD": "RCEPT_MTH_NM",
+    "SUBMIT_DOC": "PRESENTN_PAPERS_NM",
+    "WORK_REGION": "WORK_PARAR_BASS_ADRES_CN",
+    "WORKDAY_WORKHR_CONT": "WORK_TIME_NM",
+    "RETIREPAY": "RET_GRANTS_NM",
+    "ETC_WELFARE": "WELFARE_CN",
+    "CONTACT_TELNO": "MNGR_PHON_NO",
+    "FOUR_INS": "JO_FEINSR_SBSCRB_NM",
+}
+
+API_KEY = os.environ.get("SEOUL_API_KEY", "544e70416d6d696e32397761575144")
+
+# 기존 KEEP_COLS를 신규 필드명으로 교체
+KEEP_COLS = [
+    "COMPANY", "TITLE", "CAREER", "REG_DT", "CLOSE_DT", "REGION",
+    "MIN_EDUBG", "MAX_EDUBG", "IND_TP_CD_NM", "CORP_ADDR", "JOBS_NM",
+    "JOB_CONT", "EMP_TP_NM", "COLLECT_PSNCNT", "SAL_TP_NM", "PF_COND",
+    "SEL_MTHD", "RCPT_MTHD", "SUBMIT_DOC", "WORK_REGION",
+    "WORKDAY_WORKHR_CONT", "FOUR_INS", "RETIREPAY", "ETC_WELFARE",
+    "CONTACT_TELNO",
+]
+
+# 기존 코드 전체 로직과 호환되도록, 수집 직후 컬럼명을 예전 이름으로 매핑
+FIELD_MAP = {
+    "COMPANY": "CMPNY_NM",
+    "TITLE": "JO_SJ",
+    "CAREER": "CAREER_CND_NM",
+    "REG_DT": "JO_REG_DT",
+    "CLOSE_DT": "RCEPT_CLOS_NM",
+    "REGION": "SUBWAY_NM",              # 근무지역(구 단위) — 기존 지하철 필드와는 성격이 다르니 검토 필요
+    "MAX_EDUBG": "ACDMCR_NM",
+    "JOBS_NM": "JOBCODE_NM",
+    "JOB_CONT": "DTY_CN",
+    "EMP_TP_NM": "EMPLYM_STLE_CMMN_MM",
+    "SAL_TP_NM": "HOPE_WAGE",
+    "RCPT_MTHD": "RCEPT_MTH_NM",
+    "SUBMIT_DOC": "PRESENTN_PAPERS_NM",
+    "WORK_REGION": "WORK_PARAR_BASS_ADRES_CN",
+    "WORKDAY_WORKHR_CONT": "WORK_TIME_NM",
+    "RETIREPAY": "RET_GRANTS_NM",
+    "ETC_WELFARE": "WELFARE_CN",
+    "CONTACT_TELNO": "MNGR_PHON_NO",
+    "FOUR_INS": "JO_FEINSR_SBSCRB_NM",
+}
 
 
 def fetch_all_jobs():
-    print("서울시 Open API 수집 시작...")
+    print("서울시 Open API 수집 시작 (recMntList)...")
     all_rows = []
     start = 1
-    BASE_URL = f"http://openapi.seoul.go.kr:8088/{API_KEY}/json/GetJobInfo"
-
+    BASE_URL = f"http://openapi.seoul.go.kr:8088/{API_KEY}/json/recMntList"
     while True:
         end = start + 999
         url = f"{BASE_URL}/{start}/{end}"
@@ -48,28 +104,26 @@ def fetch_all_jobs():
         except Exception as e:
             print(f"  오류 ({start}~{end}): {e}")
             break
-
-        if "GetJobInfo" not in data or "row" not in data.get("GetJobInfo", {}):
-            result = data.get("GetJobInfo", {}).get("RESULT", {})
+        if "recMntList" not in data or "row" not in data.get("recMntList", {}):
+            result = data.get("recMntList", {}).get("RESULT", {})
             print(f"  종료: {result.get('MESSAGE', '데이터 없음')}")
             break
-
-        rows = data["GetJobInfo"]["row"]
+        rows = data["recMntList"]["row"]
         if not rows:
             break
-
         filtered = [{k: r.get(k, "") for k in KEEP_COLS} for r in rows]
         all_rows.extend(filtered)
         print(f"  수집 누적: {len(all_rows)}건")
         start += 1000
-
         if start > 100_000:
             break
-
         time.sleep(0.3)
-
     print(f"총 {len(all_rows)}건 수집 완료")
-    return all_rows
+
+    # 필드명을 기존 스코어링/프론트 코드가 기대하는 이름으로 변환
+    df = pd.DataFrame(all_rows)
+    df = df.rename(columns=FIELD_MAP)
+    return df.to_dict(orient="records")
 
 
 def main():
@@ -79,11 +133,11 @@ def main():
         sys.exit(0)
 
     df = pd.DataFrame(rows)
-    df["JO_REG_DT"] = pd.to_datetime(df.get("JO_REG_DT", pd.Series(dtype=str)), errors="coerce")
+    df["JO_REG_DT"] = pd.to_datetime("20" + df.get("JO_REG_DT", pd.Series(dtype=str)).astype(str), format="%Y-%m-%d", errors="coerce")
 
     # 마감 공고 필터링
-    close_date = df["RCEPT_CLOS_NM"].astype(str).str.extract(r"(\d{4}-\d{2}-\d{2})")[0]
-    close_date = pd.to_datetime(close_date, errors="coerce")
+    close_date_raw = df["RCEPT_CLOS_NM"].astype(str).str.extract(r"(\d{2}-\d{2}-\d{2})")[0]
+    close_date = pd.to_datetime("20" + close_date_raw, format="%Y-%m-%d", errors="coerce")
     today = pd.Timestamp.today().normalize()
     df = df[close_date.isna() | (close_date >= today)].copy()
     print(f"마감 필터 후: {len(df)}건")
