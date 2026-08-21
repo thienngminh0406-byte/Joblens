@@ -18,26 +18,45 @@ sys.path.insert(0, _ROOT_DIR)
 from joblens_scoring import apply_joblens_scores
 from pension_salary import update_pension_cache
 
-API_KEY = os.environ.get("SEOUL_API_KEY", "514b4b685a6d696e39366469694276")
+API_KEY = os.environ.get("SEOUL_API_KEY", "544e70416d6d696e32397761575144")
 OUTPUT_FILE = os.path.join(_ROOT_DIR, "JobLens_Scores.csv")
 # ── 키워드 트렌드 누적 파일 (매일 append, 절대 덮어쓰지 않음) ──
 KEYWORD_TRENDS_FILE = os.path.join(_ROOT_DIR, "keyword_trends.csv")
 PENSION_CACHE_FILE = os.path.join(_ROOT_DIR, "pension_salary_cache.csv")
 
-KEEP_COLS = [
-    "JO_REQST_NO", "CMPNY_NM", "JO_SJ", "JOBCODE_NM", "CAREER_CND_NM",
-    "ACDMCR_NM", "EMPLYM_STLE_CMMN_MM", "HOPE_WAGE",
-    "WORK_PARAR_BASS_ADRES_CN", "SUBWAY_NM", "WORK_TIME_NM",
-    "HOLIDAY_NM", "WEEK_WORK_HR", "RCEPT_CLOS_NM", "RCEPT_MTH_NM",
-    "PRESENTN_PAPERS_NM", "MNGR_PHON_NO", "BSNS_SUMRY_CN", "DTY_CN",
-    "RET_GRANTS_NM", "JO_FEINSR_SBSCRB_NM", "JO_REG_DT", "WELFARE_CN",
+# ── 신규 API(recMntList) 필드 ──
+KEEP_COLS_NEW = [
+    "COMPANY", "TITLE", "CAREER", "REG_DT", "CLOSE_DT", "REGION",
+    "MIN_EDUBG", "MAX_EDUBG", "IND_TP_CD_NM", "CORP_ADDR", "JOBS_NM",
+    "JOB_CONT", "EMP_TP_NM", "COLLECT_PSNCNT", "SAL_TP_NM", "PF_COND",
+    "SEL_MTHD", "RCPT_MTHD", "SUBMIT_DOC", "WORK_REGION",
+    "WORKDAY_WORKHR_CONT", "FOUR_INS", "RETIREPAY", "ETC_WELFARE",
+    "CONTACT_TELNO",
 ]
 
+# 신규 필드명 → 기존 필드명 매핑 (joblens_scoring.py, app.py를 그대로 재사용하기 위함)
+FIELD_MAP = {
+    "COMPANY": "CMPNY_NM",
+    "TITLE": "JO_SJ",
+    "CAREER": "CAREER_CND_NM",
+    "REG_DT": "JO_REG_DT",
+    "CLOSE_DT": "RCEPT_CLOS_NM",
+    "MAX_EDUBG": "ACDMCR_NM",
+    "JOBS_NM": "JOBCODE_NM",
+    "JOB_CONT": "DTY_CN",
+    "EMP_TP_NM": "EMPLYM_STLE_CMMN_MM",
+    "SAL_TP_NM": "HOPE_WAGE",
+    "RCPT_MTHD": "RCEPT_MTH_NM",
+    "SUBMIT_DOC": "PRESENTN_PAPERS_NM",
+    "WORK_REGION": "WORK_PARAR_BASS_ADRES_CN",
+    "WORKDAY_WORKHR_CONT": "WORK_TIME_NM",
+    "RETIREPAY": "RET_GRANTS_NM",
+    "ETC_WELFARE": "WELFARE_CN",
+    "CONTACT_TELNO": "MNGR_PHON_NO",
+    "FOUR_INS": "JO_FEINSR_SBSCRB_NM",
+}
+
 # ── 추적할 키워드: 카테고리별로 분리 ──
-# "기술/역량" = 직무 수행에 필요한 기술·툴·역량 키워드
-# "근무조건/복지" = 근무형태·보상·채용조건 관련 키워드
-# 형태소 분석기 없이 단순 포함 여부로 세되, 공백 유무 차이(예: "주4일" vs "주 4일")는
-# 매칭 전에 공백을 제거해서 하나로 합친다 (중복 집계 방지).
 KEYWORD_CATEGORIES = {
     "기술/역량": [
         "인공지능", "AI", "ChatGPT", "챗GPT", "생성형AI", "LLM",
@@ -51,7 +70,6 @@ KEYWORD_CATEGORIES = {
         "경력무관", "신입환영", "수습기간", "정규직전환", "MZ세대",
     ],
 }
-# 평탄화된 전체 키워드 목록 + 키워드→카테고리 매핑
 TREND_KEYWORDS = [kw for kws in KEYWORD_CATEGORIES.values() for kw in kws]
 KEYWORD_TO_CATEGORY = {kw: cat for cat, kws in KEYWORD_CATEGORIES.items() for kw in kws}
 
@@ -61,11 +79,17 @@ def _strip_spaces(s: str) -> str:
     return str(s).replace(" ", "").replace("\u3000", "")
 
 
+def _parse_yy_date(series: pd.Series) -> pd.Series:
+    """'26-08-05' / '채용시까지 26-10-04' 같은 2자리 연도 문자열을 datetime으로 변환."""
+    raw = series.astype(str).str.extract(r"(\d{2}-\d{2}-\d{2})")[0]
+    return pd.to_datetime("20" + raw, format="%Y-%m-%d", errors="coerce")
+
+
 def fetch_all_jobs():
-    print("서울시 Open API 수집 시작...")
+    print("서울시 Open API 수집 시작 (recMntList)...")
     all_rows = []
     start = 1
-    BASE_URL = f"http://openapi.seoul.go.kr:8088/{API_KEY}/json/GetJobInfo"
+    BASE_URL = f"http://openapi.seoul.go.kr:8088/{API_KEY}/json/recMntList"
     while True:
         end = start + 999
         url = f"{BASE_URL}/{start}/{end}"
@@ -75,14 +99,14 @@ def fetch_all_jobs():
         except Exception as e:
             print(f"  오류 ({start}~{end}): {e}")
             break
-        if "GetJobInfo" not in data or "row" not in data.get("GetJobInfo", {}):
-            result = data.get("GetJobInfo", {}).get("RESULT", {})
+        if "recMntList" not in data or "row" not in data.get("recMntList", {}):
+            result = data.get("recMntList", {}).get("RESULT", {})
             print(f"  종료: {result.get('MESSAGE', '데이터 없음')}")
             break
-        rows = data["GetJobInfo"]["row"]
+        rows = data["recMntList"]["row"]
         if not rows:
             break
-        filtered = [{k: r.get(k, "") for k in KEEP_COLS} for r in rows]
+        filtered = [{k: r.get(k, "") for k in KEEP_COLS_NEW} for r in rows]
         all_rows.extend(filtered)
         print(f"  수집 누적: {len(all_rows)}건")
         start += 1000
@@ -107,7 +131,6 @@ def update_keyword_trends(df: pd.DataFrame):
         print("키워드 트렌드: 직무내용(DTY_CN) 데이터가 없어 건너뜁니다.")
         return
 
-    # 공백 제거한 비교용 텍스트 컬럼 생성
     text_norm = df["DTY_CN"].fillna("").astype(str).map(_strip_spaces)
 
     rows = []
@@ -126,7 +149,6 @@ def update_keyword_trends(df: pd.DataFrame):
 
     if os.path.exists(KEYWORD_TRENDS_FILE):
         old_df = pd.read_csv(KEYWORD_TRENDS_FILE, encoding="utf-8-sig")
-        # 오늘 날짜 데이터는 새로 계산한 값으로 교체 (같은 날 재실행 시 중복 방지)
         old_df = old_df[old_df["date"] != today_str]
         combined = pd.concat([old_df, new_df], ignore_index=True)
     else:
@@ -147,30 +169,14 @@ def main():
         sys.exit(0)
 
     df = pd.DataFrame(rows)
-    df["JO_REG_DT"] = pd.to_datetime(df.get("JO_REG_DT", pd.Series(dtype=str)), errors="coerce")
+    df = df.rename(columns=FIELD_MAP)
+
+    df["JO_REG_DT"] = _parse_yy_date(df.get("JO_REG_DT", pd.Series(dtype=str)))
 
     # 마감 공고 필터링
-    close_date = df["RCEPT_CLOS_NM"].astype(str).str.extract(r"(\d{4}-\d{2}-\d{2})")[0]
-    close_date = pd.to_datetime(close_date, errors="coerce")
+    close_date_parsed = _parse_yy_date(df["RCEPT_CLOS_NM"])
     today = pd.Timestamp.today().normalize()
-    df = df[close_date.isna() | (close_date >= today)].copy()
-    print(f"마감 필터 후: {len(df)}건")
-
-    # 마감 공고 필터링
-    close_date = df["RCEPT_CLOS_NM"].astype(str).str.extract(r"(\d{4}-\d{2}-\d{2})")[0]
-    close_date_parsed = pd.to_datetime(close_date, errors="coerce")
-    today = pd.Timestamp.today().normalize()
-
-    # ── 디버그: 제외되는 데이터 확인 (원인 파악 후 삭제) ──
     mask_keep = close_date_parsed.isna() | (close_date_parsed >= today)
-    excluded = df[~mask_keep]
-    print(f"[DEBUG] 제외된 공고 수: {len(excluded)}건")
-    print(f"[DEBUG] 제외된 공고 RCEPT_CLOS_NM 샘플 20개:")
-    print(excluded["RCEPT_CLOS_NM"].head(20).to_string())
-    print(f"[DEBUG] 마감일 분포 (상위 10개):")
-    print(close_date_parsed[~mask_keep].dt.date.value_counts().head(10).to_string())
-    # ── 디버그 끝 ──
-
     df = df[mask_keep].copy()
     print(f"마감 필터 후: {len(df)}건")
 
