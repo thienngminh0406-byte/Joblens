@@ -128,7 +128,30 @@ def fetch_all_jobs():
     df = pd.DataFrame(all_rows)
     df = df.rename(columns=FIELD_MAP)
     return df.to_dict(orient="records")
+    
+def save_to_db(df: pd.DataFrame):
+    engine = create_engine(DATABASE_URL)
+    db_df = df.copy()
+    db_df["collected_at"] = pd.Timestamp.today().normalize().date()
 
+    # DB 테이블에 없는 컬럼은 자동으로 제외 (예: JO_REQST_NO 등)
+    db_cols = [
+        "CMPNY_NM", "JO_SJ", "CAREER_CND_NM", "JO_REG_DT", "RCEPT_CLOS_NM",
+        "JOBCODE_NM", "DTY_CN", "EMPLYM_STLE_CMMN_MM", "HOPE_WAGE",
+        "WORK_PARAR_BASS_ADRES_CN", "WORK_TIME_NM", "RET_GRANTS_NM",
+        "WELFARE_CN", "MNGR_PHON_NO", "JO_FEINSR_SBSCRB_NM",
+        "직무상세성점수", "기업소개점수", "급여품질점수", "복지점수",
+        "근무조건점수", "출퇴근편의점수", "종합점수", "등급",
+        "연금매칭", "연금평균연봉", "연금가입자수", "collected_at",
+    ]
+    existing_cols = [c for c in db_cols if c in db_df.columns]
+    db_df = db_df[existing_cols]
+
+    with engine.begin() as conn:
+        conn.execute(text('TRUNCATE TABLE jobs'))
+        db_df.to_sql("jobs", conn, if_exists="append", index=False, method="multi", chunksize=500)
+
+    print(f"DB 저장 완료: {len(db_df)}건")
 
 def main():
     rows = fetch_all_jobs()
@@ -160,3 +183,18 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+    # CSV 저장 (기존 로직 그대로, 매번 덮어씀 — 현재 스냅샷용)
+    df.to_csv(OUTPUT_FILE, index=False, encoding="utf-8-sig")
+    print(f"저장 완료: {OUTPUT_FILE}")
+    print(f"평균 점수: {df['종합점수'].mean():.2f}")
+    print(f"등급 분포:\n{df['등급'].value_counts()}")
+
+    # ── DB 저장 (신규 — CSV와 병행, 안전장치) ──
+    if DATABASE_URL:
+        try:
+            save_to_db(df)
+        except Exception as e:
+            print(f"DB 저장 중 오류 (CSV는 정상 저장됨): {e}")
+    else:
+        print("DATABASE_URL 미설정 — DB 저장 건너뜀")
