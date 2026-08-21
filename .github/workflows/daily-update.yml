@@ -25,6 +25,7 @@ jobs:
       - name: 데이터 수집 및 스코어링
         env:
           SEOUL_API_KEY: ${{ secrets.SEOUL_API_KEY }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
           NPS_API_KEY: ${{ secrets.NPS_API_KEY }}
         run: |
           python scripts/collect_and_score.py
