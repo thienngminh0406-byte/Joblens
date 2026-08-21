@@ -173,7 +173,6 @@ def main():
 
     df = pd.DataFrame(rows)
     df = df.rename(columns=FIELD_MAP)
-
     df["JO_REG_DT"] = _parse_yy_date(df.get("JO_REG_DT", pd.Series(dtype=str)))
 
     # 마감 공고 필터링
@@ -202,6 +201,15 @@ def main():
     print(f"저장 완료: {OUTPUT_FILE}")
     print(f"평균 점수: {df['종합점수'].mean():.2f}")
     print(f"등급 분포:\n{df['등급'].value_counts()}")
+
+    # ── DB 저장 (신규 — CSV와 병행, 안전장치) ──
+    if DATABASE_URL:
+        try:
+            save_to_db(df)
+        except Exception as e:
+            print(f"DB 저장 중 오류 (CSV는 정상 저장됨): {e}")
+    else:
+        print("DATABASE_URL 미설정 — DB 저장 건너뜀")
 
 
 if __name__ == "__main__":
