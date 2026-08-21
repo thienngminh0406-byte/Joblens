@@ -164,6 +164,29 @@ def update_keyword_trends(df: pd.DataFrame):
     print(f"키워드 트렌드 저장 완료: {KEYWORD_TRENDS_FILE}")
     print(f"  누적 일수: {days_collected}일 / 총 {len(combined)}행")
 
+def save_to_db(df: pd.DataFrame):
+    engine = create_engine(DATABASE_URL)
+    db_df = df.copy()
+    db_df["collected_at"] = pd.Timestamp.today().normalize().date()
+
+    # DB 테이블에 없는 컬럼은 자동으로 제외 (예: JO_REQST_NO 등)
+    db_cols = [
+        "CMPNY_NM", "JO_SJ", "CAREER_CND_NM", "JO_REG_DT", "RCEPT_CLOS_NM",
+        "JOBCODE_NM", "DTY_CN", "EMPLYM_STLE_CMMN_MM", "HOPE_WAGE",
+        "WORK_PARAR_BASS_ADRES_CN", "WORK_TIME_NM", "RET_GRANTS_NM",
+        "WELFARE_CN", "MNGR_PHON_NO", "JO_FEINSR_SBSCRB_NM",
+        "직무상세성점수", "기업소개점수", "급여품질점수", "복지점수",
+        "근무조건점수", "출퇴근편의점수", "종합점수", "등급",
+        "연금매칭", "연금평균연봉", "연금가입자수", "collected_at",
+    ]
+    existing_cols = [c for c in db_cols if c in db_df.columns]
+    db_df = db_df[existing_cols]
+
+    with engine.begin() as conn:
+        conn.execute(text('TRUNCATE TABLE jobs'))
+        db_df.to_sql("jobs", conn, if_exists="append", index=False, method="multi", chunksize=500)
+
+    print(f"DB 저장 완료: {len(db_df)}건")
 
 def main():
     rows = fetch_all_jobs()
