@@ -9,6 +9,9 @@ import sys
 import time
 import requests
 import pandas as pd
+from sqlalchemy import create_engine, text
+
+DATABASE_URL = os.environ.get("DATABASE_URL")
 
 # joblens_scoring.py 경로 추가 (scripts/ 폴더든 저장소 최상위든 둘 다 찾도록)
 _THIS_DIR = os.path.dirname(os.path.abspath(__file__))   # scripts/ 폴더
