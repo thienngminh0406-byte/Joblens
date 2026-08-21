@@ -34,11 +34,46 @@ Compress(app)
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-API_KEY = "514b4b685a6d696e39366469694276"
+API_KEY = "544e70416d6d696e32397761575144"
 CACHE_TTL = 3600
 CSV_FALLBACK = os.path.join(BASE_DIR, "JobLens_Scores.csv")
 KEYWORD_TRENDS_FILE = os.path.join(BASE_DIR, "keyword_trends.csv")
 PENSION_CACHE_FILE = os.path.join(BASE_DIR, "pension_salary_cache.csv")
+
+KEEP_COLS_NEW = [
+    "COMPANY", "TITLE", "CAREER", "REG_DT", "CLOSE_DT", "REGION",
+    "MIN_EDUBG", "MAX_EDUBG", "IND_TP_CD_NM", "CORP_ADDR", "JOBS_NM",
+    "JOB_CONT", "EMP_TP_NM", "COLLECT_PSNCNT", "SAL_TP_NM", "PF_COND",
+    "SEL_MTHD", "RCPT_MTHD", "SUBMIT_DOC", "WORK_REGION",
+    "WORKDAY_WORKHR_CONT", "FOUR_INS", "RETIREPAY", "ETC_WELFARE",
+    "CONTACT_TELNO",
+]
+
+FIELD_MAP = {
+    "COMPANY": "CMPNY_NM",
+    "TITLE": "JO_SJ",
+    "CAREER": "CAREER_CND_NM",
+    "REG_DT": "JO_REG_DT",
+    "CLOSE_DT": "RCEPT_CLOS_NM",
+    "MAX_EDUBG": "ACDMCR_NM",
+    "JOBS_NM": "JOBCODE_NM",
+    "JOB_CONT": "DTY_CN",
+    "EMP_TP_NM": "EMPLYM_STLE_CMMN_MM",
+    "SAL_TP_NM": "HOPE_WAGE",
+    "RCPT_MTHD": "RCEPT_MTH_NM",
+    "SUBMIT_DOC": "PRESENTN_PAPERS_NM",
+    "WORK_REGION": "WORK_PARAR_BASS_ADRES_CN",
+    "WORKDAY_WORKHR_CONT": "WORK_TIME_NM",
+    "RETIREPAY": "RET_GRANTS_NM",
+    "ETC_WELFARE": "WELFARE_CN",
+    "CONTACT_TELNO": "MNGR_PHON_NO",
+    "FOUR_INS": "JO_FEINSR_SBSCRB_NM",
+}
+
+def _parse_yy_date(series: pd.Series) -> pd.Series:
+    """'26-08-05' 같은 2자리 연도 문자열을 datetime으로 변환."""
+    raw = series.astype(str).str.extract(r"(\d{2}-\d{2}-\d{2})")[0]
+    return pd.to_datetime("20" + raw, format="%Y-%m-%d", errors="coerce")
 
 def make_session() -> requests.Session:
     session = requests.Session()
@@ -89,13 +124,13 @@ def load_from_csv() -> pd.DataFrame:
         return pd.DataFrame()
     logger.info(f"CSV 폴백 로드: {CSV_FALLBACK}")
     df = pd.read_csv(CSV_FALLBACK, encoding="utf-8-sig")
-    df["JO_REG_DT"] = pd.to_datetime(df.get("JO_REG_DT", pd.Series(dtype=str)), errors="coerce")
+
+    df["JO_REG_DT"] = _parse_yy_date(df.get("JO_REG_DT", pd.Series(dtype=str)))
 
     if "종합점수" not in df.columns:
         df = apply_joblens_scores(df)
 
-    close_date = df["RCEPT_CLOS_NM"].astype(str).str.extract(r"(\d{4}-\d{2}-\d{2})")[0]
-    close_date = pd.to_datetime(close_date, errors="coerce")
+    close_date = _parse_yy_date(df["RCEPT_CLOS_NM"])
     today = pd.Timestamp.today().normalize()
     df = df[close_date.isna() | (close_date >= today)]
 
@@ -106,16 +141,7 @@ def load_from_csv() -> pd.DataFrame:
 
 
 def fetch_seoul_jobs() -> pd.DataFrame:
-    logger.info("서울 Open API 수집 시작")
-
-    KEEP_COLS = [
-        "JO_REQST_NO","CMPNY_NM","JO_SJ","JOBCODE_NM","CAREER_CND_NM",
-        "ACDMCR_NM","EMPLYM_STLE_CMMN_MM","HOPE_WAGE",
-        "WORK_PARAR_BASS_ADRES_CN","SUBWAY_NM","WORK_TIME_NM",
-        "HOLIDAY_NM","WEEK_WORK_HR","RCEPT_CLOS_NM","RCEPT_MTH_NM",
-        "PRESENTN_PAPERS_NM","MNGR_PHON_NO","BSNS_SUMRY_CN","DTY_CN",
-        "RET_GRANTS_NM","JO_FEINSR_SBSCRB_NM","JO_REG_DT","WELFARE_CN",
-    ]
+    logger.info("서울 Open API 수집 시작 (recMntList)")
 
     import socket, gc
     try:
@@ -128,7 +154,7 @@ def fetch_seoul_jobs() -> pd.DataFrame:
     all_rows = []
     start = 1
     session = make_session()
-    BASE_URL = f"http://openapi.seoul.go.kr:8088/{API_KEY}/json/GetJobInfo"
+    BASE_URL = f"http://openapi.seoul.go.kr:8088/{API_KEY}/json/recMntList"
 
     while True:
         end = start + 999
@@ -141,19 +167,19 @@ def fetch_seoul_jobs() -> pd.DataFrame:
             logger.error(f"API 요청 실패 ({start}~{end}): {e}")
             break
 
-        if "GetJobInfo" not in data or "row" not in data.get("GetJobInfo", {}):
-            result = data.get("GetJobInfo", {}).get("RESULT", {})
+        if "recMntList" not in data or "row" not in data.get("recMntList", {}):
+            result = data.get("recMntList", {}).get("RESULT", {})
             code = result.get("CODE", "")
             msg = result.get("MESSAGE", "")
             if code and code != "INFO-000":
                 logger.warning(f"API 응답 오류: {code} — {msg}")
             break
 
-        rows = data["GetJobInfo"]["row"]
+        rows = data["recMntList"]["row"]
         if not rows:
             break
 
-        filtered = [{k: r.get(k, "") for k in KEEP_COLS} for r in rows]
+        filtered = [{k: r.get(k, "") for k in KEEP_COLS_NEW} for r in rows]
         all_rows.extend(filtered)
         logger.info(f"  수집 누적: {len(all_rows)}건")
         start += 1000
@@ -173,9 +199,10 @@ def fetch_seoul_jobs() -> pd.DataFrame:
     del all_rows
     gc.collect()
 
-    df["JO_REG_DT"] = pd.to_datetime(df.get("JO_REG_DT", pd.Series(dtype=str)), errors="coerce")
-    close_date = df["RCEPT_CLOS_NM"].astype(str).str.extract(r"(\d{4}-\d{2}-\d{2})")[0]
-    close_date = pd.to_datetime(close_date, errors="coerce")
+    df = df.rename(columns=FIELD_MAP)
+
+    df["JO_REG_DT"] = _parse_yy_date(df["JO_REG_DT"])
+    close_date = _parse_yy_date(df["RCEPT_CLOS_NM"])
     today = pd.Timestamp.today().normalize()
     df = df[close_date.isna() | (close_date >= today)].copy()
     gc.collect()
@@ -187,7 +214,6 @@ def fetch_seoul_jobs() -> pd.DataFrame:
     valid_dates = df["JO_REG_DT"].notna().sum()
     logger.info(f"스코어링 완료: {len(df)}건 (등록일 유효: {valid_dates}건, 결측: {len(df) - valid_dates}건)")
     return df
-
 
 def refresh_cache(csv_first: bool = False):
     logger.info(f"refresh_cache 시작: csv_first={csv_first}")
