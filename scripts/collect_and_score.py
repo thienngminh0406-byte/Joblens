@@ -164,6 +164,36 @@ def update_keyword_trends(df: pd.DataFrame):
     print(f"키워드 트렌드 저장 완료: {KEYWORD_TRENDS_FILE}")
     print(f"  누적 일수: {days_collected}일 / 총 {len(combined)}행")
 
+def update_keyword_trends_db(df: pd.DataFrame):
+    """키워드 트렌드를 DB(keyword_trends 테이블)에도 저장한다."""
+    if not DATABASE_URL:
+        return
+    today_str = pd.Timestamp.today().strftime("%Y-%m-%d")
+    total_postings = len(df)
+    if total_postings == 0 or "DTY_CN" not in df.columns:
+        print("키워드 트렌드 DB: 직무내용(DTY_CN) 데이터가 없어 건너뜁니다.")
+        return
+
+    text_norm = df["DTY_CN"].fillna("").astype(str).map(_strip_spaces)
+    rows = []
+    for kw in TREND_KEYWORDS:
+        kw_norm = _strip_spaces(kw)
+        count = int(text_norm.str.contains(kw_norm, case=False, regex=False, na=False).sum())
+        rows.append({
+            "date": today_str,
+            "keyword": kw,
+            "category": KEYWORD_TO_CATEGORY.get(kw, "기타"),
+            "frequency": count,
+            "total_postings": total_postings,
+        })
+
+    engine = create_engine(DATABASE_URL)
+    trend_df = pd.DataFrame(rows)
+    with engine.begin() as conn:
+        conn.execute(text("DELETE FROM keyword_trends WHERE date = :today"), {"today": today_str})
+        trend_df.to_sql("keyword_trends", conn, if_exists="append", index=False, method="multi")
+    print(f"키워드 트렌드 DB 저장 완료: {len(trend_df)}행")
+    
 def save_to_db(df: pd.DataFrame):
     engine = create_engine(DATABASE_URL)
     db_df = df.copy()
@@ -212,7 +242,8 @@ def main():
 
     # ── 키워드 트렌드 누적 저장 (CSV 저장 전, 필터링된 df 기준) ──
     update_keyword_trends(df)
-
+    update_keyword_trends_db(df)
+    
     # ── 국민연금 급여 데이터 매칭 (신규/재조회 대상만, 호출 한도 보호) ──
     try:
         update_pension_cache(df, PENSION_CACHE_FILE)
