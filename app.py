@@ -248,12 +248,16 @@ def refresh_cache(csv_first: bool = False):
                     _cache["df"] = df_db
                     _cache["last_updated"] = datetime.now()
                     _cache["data_source"] = "db"
-                    _cache["is_loading"] = False
                     logger.info(f"캐시 저장 완료: total={len(_cache['df'])}, source=db")
-                    return
+                else:
+                    logger.warning("DB 결과 비어있음")
             except Exception as e:
-                logger.error(f"DB 로드 실패, CSV/API로 폴백: {e}")
+                logger.error(f"DB 로드 실패: {e}")
+            finally:
+                _cache["is_loading"] = False
+            return   # ← 핵심: DB 모드면 CSV/API 로직을 아예 안 탐
 
+        # ── 아래는 USE_DB=false일 때만 실행 (기존 로직 그대로) ──
         if csv_first and os.path.exists(CSV_FALLBACK):
             logger.info("CSV 즉시 로드 시작...")
             df_csv = load_from_csv()
