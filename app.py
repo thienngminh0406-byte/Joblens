@@ -510,31 +510,32 @@ def api_filters():
 
 @app.route("/api/keyword_trends")
 def api_keyword_trends():
-    if not os.path.exists(KEYWORD_TRENDS_FILE):
-        return jsonify({"days_collected": 0, "keywords": [], "top_by_category": {}, "data": []})
+    try:
+        engine = get_db_engine()
+        trends_df = pd.read_sql("SELECT * FROM keyword_trends ORDER BY date, keyword", engine)
+    except Exception as e:
+        logger.error(f"키워드 트렌드 DB 로드 실패: {e}")
+        trends_df = pd.DataFrame()
 
-    trends_df = pd.read_csv(KEYWORD_TRENDS_FILE, encoding="utf-8-sig")
     if trends_df.empty:
         return jsonify({"days_collected": 0, "keywords": [], "top_by_category": {}, "data": []})
 
+    trends_df["date"] = trends_df["date"].astype(str)
     trends_df["frequency_per_1000"] = (
         trends_df["frequency"] / trends_df["total_postings"].replace(0, 1) * 1000
     ).round(2)
 
     dates = sorted(trends_df["date"].unique().tolist())
     keywords = sorted(trends_df["keyword"].unique().tolist())
-
     latest_date = dates[-1]
     latest = trends_df[trends_df["date"] == latest_date]
 
-    # 카테고리별 Top 5
     top_by_category = {}
     if "category" in latest.columns:
         for cat in sorted(latest["category"].dropna().unique().tolist()):
             cat_df = latest[latest["category"] == cat].sort_values("frequency", ascending=False).head(5)
             top_by_category[cat] = cat_df[["keyword", "frequency", "frequency_per_1000"]].to_dict(orient="records")
 
-    # 키워드 -> 카테고리 매핑 (프론트에서 select 그룹핑용)
     keyword_category_map = {}
     if "category" in trends_df.columns:
         keyword_category_map = (
