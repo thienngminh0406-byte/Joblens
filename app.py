@@ -303,7 +303,6 @@ def get_df(period: str = "all") -> pd.DataFrame:
     if df is None or df.empty:
         return pd.DataFrame()
 
-    # DB 소스면 collected_at(수집일) 기준, 아니면 기존처럼 JO_REG_DT(등록일) 기준
     date_col = "collected_at" if ("collected_at" in df.columns and _cache["data_source"] == "db") else "JO_REG_DT"
 
     if period != "all" and date_col in df.columns:
@@ -314,7 +313,9 @@ def get_df(period: str = "all") -> pd.DataFrame:
         df = df[df[date_col] >= cutoff]
         logger.info(f"[get_df] period={period} 적용 후 {len(df)}건")
 
-    df = attach_pension_salary(df)
+    if _cache["data_source"] != "db":
+        df = attach_pension_salary(df)
+
     return df
 
 
