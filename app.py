@@ -40,7 +40,7 @@ CSV_FALLBACK = os.path.join(BASE_DIR, "JobLens_Scores.csv")
 KEYWORD_TRENDS_FILE = os.path.join(BASE_DIR, "keyword_trends.csv")
 PENSION_CACHE_FILE = os.path.join(BASE_DIR, "pension_salary_cache.csv")
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 
 USE_DB = os.environ.get("USE_DB", "false").lower() == "true"
 _db_engine = None
