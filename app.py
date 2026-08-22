@@ -40,6 +40,17 @@ CSV_FALLBACK = os.path.join(BASE_DIR, "JobLens_Scores.csv")
 KEYWORD_TRENDS_FILE = os.path.join(BASE_DIR, "keyword_trends.csv")
 PENSION_CACHE_FILE = os.path.join(BASE_DIR, "pension_salary_cache.csv")
 
+from sqlalchemy import create_engine
+
+USE_DB = os.environ.get("USE_DB", "false").lower() == "true"
+_db_engine = None
+
+def get_db_engine():
+    global _db_engine
+    if _db_engine is None:
+        _db_engine = create_engine(os.environ["DATABASE_URL"], pool_pre_ping=True)
+    return _db_engine
+
 KEEP_COLS_NEW = [
     "COMPANY", "TITLE", "CAREER", "REG_DT", "CLOSE_DT", "REGION",
     "MIN_EDUBG", "MAX_EDUBG", "IND_TP_CD_NM", "CORP_ADDR", "JOBS_NM",
@@ -139,6 +150,15 @@ def load_from_csv() -> pd.DataFrame:
     df = attach_pension_salary(df)
     return df
 
+def load_from_db() -> pd.DataFrame:
+    logger.info("DB 로드 시작")
+    engine = get_db_engine()
+    df = pd.read_sql("SELECT * FROM jobs", engine)
+    df["JO_REG_DT"] = pd.to_datetime(df.get("JO_REG_DT", pd.Series(dtype=str)), errors="coerce")
+    df["collected_at"] = pd.to_datetime(df.get("collected_at", pd.Series(dtype=str)), errors="coerce")
+    logger.info(f"DB 로드 완료: {len(df)}건")
+    df = attach_pension_salary(df)
+    return df
 
 def fetch_seoul_jobs() -> pd.DataFrame:
     logger.info("서울 Open API 수집 시작 (recMntList)")
@@ -216,12 +236,25 @@ def fetch_seoul_jobs() -> pd.DataFrame:
     return df
 
 def refresh_cache(csv_first: bool = False):
-    logger.info(f"refresh_cache 시작: csv_first={csv_first}")
+    logger.info(f"refresh_cache 시작: csv_first={csv_first}, USE_DB={USE_DB}")
 
     if _cache["is_loading"]:
         return
     _cache["is_loading"] = True
     try:
+        if USE_DB:
+            try:
+                df_db = load_from_db()
+                if not df_db.empty:
+                    _cache["df"] = df_db
+                    _cache["last_updated"] = datetime.now()
+                    _cache["data_source"] = "db"
+                    _cache["is_loading"] = False
+                    logger.info(f"캐시 저장 완료: total={len(_cache['df'])}, source=db")
+                    return
+            except Exception as e:
+                logger.error(f"DB 로드 실패, CSV/API로 폴백: {e}")
+
         if csv_first and os.path.exists(CSV_FALLBACK):
             logger.info("CSV 즉시 로드 시작...")
             df_csv = load_from_csv()
@@ -240,7 +273,6 @@ def refresh_cache(csv_first: bool = False):
     except Exception as e:
         logger.error(f"캐시 갱신 실패: {e}")
         _cache["is_loading"] = False
-
 
 def _refresh_from_api():
     try:
@@ -268,17 +300,17 @@ def get_df(period: str = "all") -> pd.DataFrame:
     if df is None or df.empty:
         return pd.DataFrame()
 
-    # ── 기간 필터 ──
-    # ⚠️ 이전 버전은 날짜가 없는 행(isna)을 무조건 포함시켜서
-    #    "최근 7일/30일" 필터를 걸어도 결과가 거의 안 바뀌는 버그가 있었음.
-    #    날짜 없는 행은 더 이상 무조건 통과시키지 않는다.
-    if period != "all" and "JO_REG_DT" in df.columns:
+    # DB 소스면 collected_at(수집일) 기준, 아니면 기존처럼 JO_REG_DT(등록일) 기준
+    date_col = "collected_at" if ("collected_at" in df.columns and _cache["data_source"] == "db") else "JO_REG_DT"
+
+    if period != "all" and date_col in df.columns:
         days = int(period)
         cutoff = pd.Timestamp.today() - pd.Timedelta(days=days)
-        valid_dates = df["JO_REG_DT"].notna().sum()
-        logger.info(f"[get_df] period={period} 적용 전 {len(df)}건, 유효 날짜 {valid_dates}건, cutoff={cutoff.date()}")
-        df = df[df["JO_REG_DT"] >= cutoff]
+        valid_dates = df[date_col].notna().sum()
+        logger.info(f"[get_df] period={period} 기준컬럼={date_col} 적용 전 {len(df)}건, 유효날짜 {valid_dates}건, cutoff={cutoff.date()}")
+        df = df[df[date_col] >= cutoff]
         logger.info(f"[get_df] period={period} 적용 후 {len(df)}건")
+
     df = attach_pension_salary(df)
     return df
 
