@@ -303,7 +303,7 @@ def get_df(period: str = "all") -> pd.DataFrame:
     if df is None or df.empty:
         return pd.DataFrame()
 
-    date_col = "collected_at" if ("collected_at" in df.columns and _cache["data_source"] == "db") else "JO_REG_DT"
+    date_col = "JO_REG_DT"  # DB든 CSV든 항상 등록일 기준으로 통일
 
     if period != "all" and date_col in df.columns:
         days = int(period)
