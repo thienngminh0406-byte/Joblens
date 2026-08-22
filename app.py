@@ -51,6 +51,66 @@ def get_db_engine():
         _db_engine = create_engine(os.environ["DATABASE_URL"], pool_pre_ping=True)
     return _db_engine
 
+def query_jobs_db(period, keyword, grade, career, job, page, per):
+    engine = get_db_engine()
+
+    where_clauses = []
+    params = {}
+
+    if period != "all":
+        days = int(period)
+        cutoff = (pd.Timestamp.today() - pd.Timedelta(days=days)).date()
+        where_clauses.append('"JO_REG_DT" >= :cutoff')
+        params["cutoff"] = cutoff
+
+    if keyword:
+        where_clauses.append(
+            '(LOWER("CMPNY_NM") LIKE :kw OR LOWER("JO_SJ") LIKE :kw)'
+        )
+        params["kw"] = f"%{keyword}%"
+
+    if grade:
+        where_clauses.append('"등급" = :grade')
+        params["grade"] = grade
+
+    if career:
+        where_clauses.append('"CAREER_CND_NM" = :career')
+        params["career"] = career
+
+    if job:
+        where_clauses.append('"JOBCODE_NM" = :job')
+        params["job"] = job
+
+    where_sql = f"WHERE {' AND '.join(where_clauses)}" if where_clauses else ""
+
+    # 총 건수
+    count_query = text(f'SELECT COUNT(*) FROM jobs {where_sql}')
+    with engine.connect() as conn:
+        total = conn.execute(count_query, params).scalar()
+
+    if total == 0:
+        return {"total": 0, "jobs": [], "pages": 0, "page": page}
+
+    # 페이지 데이터
+    offset = (page - 1) * per
+    params_page = {**params, "limit": per, "offset": offset}
+    data_query = text(f'''
+        SELECT * FROM jobs {where_sql}
+        ORDER BY id
+        LIMIT :limit OFFSET :offset
+    ''')
+    page_df = pd.read_sql(data_query, engine, params=params_page)
+
+    if "JO_REG_DT" in page_df.columns:
+        page_df["JO_REG_DT"] = pd.to_datetime(page_df["JO_REG_DT"], errors="coerce")
+
+    return {
+        "total": total,
+        "pages": (total + per - 1) // per,
+        "page": page,
+        "jobs": df_to_records(page_df),
+    }
+
 KEEP_COLS_NEW = [
     "COMPANY", "TITLE", "CAREER", "REG_DT", "CLOSE_DT", "REGION",
     "MIN_EDUBG", "MAX_EDUBG", "IND_TP_CD_NM", "CORP_ADDR", "JOBS_NM",
@@ -447,6 +507,10 @@ def api_jobs():
     page = int(request.args.get("page", 1))
     per = int(request.args.get("per", 20))
 
+    if USE_DB:
+        return jsonify(query_jobs_db(period, keyword, grade, career, job, page, per))
+
+    # ── 기존 CSV/pandas 방식 (USE_DB=false일 때만 사용) ──
     df = get_df(period)
     if df.empty:
         return jsonify({"total": 0, "jobs": [], "pages": 0})
