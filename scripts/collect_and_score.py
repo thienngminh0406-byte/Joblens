@@ -169,7 +169,6 @@ def save_to_db(df: pd.DataFrame):
     db_df = df.copy()
     db_df["collected_at"] = pd.Timestamp.today().normalize().date()
 
-    # DB 테이블에 없는 컬럼은 자동으로 제외 (예: JO_REQST_NO 등)
     db_cols = [
         "CMPNY_NM", "JO_SJ", "CAREER_CND_NM", "JO_REG_DT", "RCEPT_CLOS_NM",
         "JOBCODE_NM", "DTY_CN", "EMPLYM_STLE_CMMN_MM", "HOPE_WAGE",
@@ -182,11 +181,12 @@ def save_to_db(df: pd.DataFrame):
     existing_cols = [c for c in db_cols if c in db_df.columns]
     db_df = db_df[existing_cols]
 
+    today_str = pd.Timestamp.today().normalize().date()
     with engine.begin() as conn:
-        conn.execute(text('TRUNCATE TABLE jobs'))
+        conn.execute(text("DELETE FROM jobs WHERE collected_at = :today"), {"today": today_str})
         db_df.to_sql("jobs", conn, if_exists="append", index=False, method="multi", chunksize=500)
 
-    print(f"DB 저장 완료: {len(db_df)}건")
+    print(f"DB 저장 완료: {len(db_df)}건 (collected_at={today_str})")
 
 def main():
     rows = fetch_all_jobs()
