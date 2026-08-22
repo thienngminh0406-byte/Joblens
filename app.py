@@ -157,7 +157,6 @@ def load_from_db() -> pd.DataFrame:
     df["JO_REG_DT"] = pd.to_datetime(df.get("JO_REG_DT", pd.Series(dtype=str)), errors="coerce")
     df["collected_at"] = pd.to_datetime(df.get("collected_at", pd.Series(dtype=str)), errors="coerce")
     logger.info(f"DB 로드 완료: {len(df)}건")
-    df = attach_pension_salary(df)
     return df
 
 def fetch_seoul_jobs() -> pd.DataFrame:
