@@ -1,6 +1,41 @@
 <!DOCTYPE html>
 <html lang="ko">
-<head>
+<head><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const supabaseClient = window.supabase.createClient(
+    'https://urlvpwzfhppvbyvngxvh.supabase.co',
+    'sb_publishable_G8NkNJbeIlsQi_HsGZdVrQ_afE8hqRr'
+  );
+
+  async function signInWithGoogle() {
+    const { error } = await supabaseClient.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.origin }
+    });
+    if (error) console.error('로그인 오류:', error);
+  }
+
+  async function signOut() {
+    await supabaseClient.auth.signOut();
+    location.reload();
+  }
+
+  async function checkLoginStatus() {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    const loginBtn = document.getElementById('loginBtn');
+    if (!loginBtn) return;
+    if (session) {
+      const name = session.user.user_metadata?.full_name || session.user.email;
+      loginBtn.textContent = `👤 ${name} (로그아웃)`;
+      loginBtn.onclick = signOut;
+    } else {
+      loginBtn.textContent = '🔐 구글로 로그인';
+      loginBtn.onclick = signInWithGoogle;
+    }
+  }
+
+  window.addEventListener('DOMContentLoaded', checkLoginStatus);
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>JobLens — 채용공고 정보 품질 분석</title>
@@ -490,6 +525,7 @@ input[type=range]{flex:1;accent-color:var(--accent)}
     <div class="nav-status"><div class="status-dot" id="statusDot"></div><span id="statusText">데이터 수집 중...</span></div>
     <button class="bm-pill" onclick="openBookmarksPanel()" aria-label="찜한 공고 목록">⭐ <span id="bmCount">0</span></button>
     <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" aria-label="테마 전환">🌙</button>
+    <button class="nav-refresh" id="loginBtn" onclick="signInWithGoogle()">🔐 구글로 로그인</button>
     <button class="nav-refresh" onclick="refreshData()">🔄 새로고침</button>
   </div>
       </div>
