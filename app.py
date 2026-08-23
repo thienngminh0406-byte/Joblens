@@ -56,7 +56,7 @@ def get_user_id_from_request():
         return None
     token = auth_header.split(" ", 1)[1]
     try:
-        payload = pyjwt.decode(token, SUPABASE_JWT_SECRET, algorithms=["HS256"], audience="authenticated")
+        payload = pyjwt.decode(token, SUPABASE_JWT_SECRET, algorithms=["HS256", "RS256", "ES256"], audience="authenticated")
         return payload.get("sub")
     except Exception as e:
         logger.warning(f"토큰 검증 실패: {e}")
