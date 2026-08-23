@@ -577,7 +577,10 @@ input[type=range]{flex:1;accent-color:var(--accent)}
     </nav>
 
     <p id="dataFreshnessNote" class="hidden" style="text-align:center;font-size:13px;color:var(--muted);padding:8px 16px;margin:0;"></p>
-
+  
+    <div id="deadlineBanner" class="hidden" style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);border-radius:10px;padding:10px 16px;margin:12px auto;max-width:1200px;font-size:0.85rem;display:flex;align-items:center;gap:8px;cursor:pointer;" onclick="openBookmarksPanel()">
+        ⏰ <span id="deadlineBannerText"></span>
+    </div>
     <!-- LANDING -->
     <div id="landing">
   <div class="l-grid"></div><div class="l-glow"></div>
