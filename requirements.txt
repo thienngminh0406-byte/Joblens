@@ -21,3 +21,4 @@ flask-compress>=1.14
 psycopg2-binary
 SQLAlchemy
 PyJWT
+cryptography
