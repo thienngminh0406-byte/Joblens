@@ -24,15 +24,17 @@
   const { data: { session } } = await supabaseClient.auth.getSession();
   const loginBtn = document.getElementById('loginBtn');
   const loginBtnText = document.getElementById('loginBtnText');
-  if (!loginBtn || !loginBtnText) return;
-  if (session) {
-    const name = session.user.user_metadata?.full_name || session.user.email;
-    loginBtnText.textContent = `${name} (로그아웃)`;
-    loginBtn.onclick = signOut;
-  } else {
-    loginBtnText.textContent = 'Sign in with Google';
-    loginBtn.onclick = signInWithGoogle;
+  if (loginBtn && loginBtnText) {
+    if (session) {
+      const name = session.user.user_metadata?.full_name || session.user.email;
+      loginBtnText.textContent = `${name} (로그아웃)`;
+      loginBtn.onclick = signOut;
+    } else {
+      loginBtnText.textContent = 'Sign in with Google';
+      loginBtn.onclick = signInWithGoogle;
+    }
   }
+  await loadBookmarks();  // ← 이 줄 추가
 }
 
   window.addEventListener('DOMContentLoaded', checkLoginStatus);
