@@ -45,6 +45,23 @@ from sqlalchemy import create_engine, text
 USE_DB = os.environ.get("USE_DB", "false").lower() == "true"
 _db_engine = None
 
+import jwt as pyjwt  # PyJWT 라이브러리
+
+SUPABASE_JWT_SECRET = os.environ.get("SUPABASE_JWT_SECRET")
+
+def get_user_id_from_request():
+    """Authorization: Bearer <token> 헤더에서 사용자 ID(UUID)를 추출. 없으면 None."""
+    auth_header = request.headers.get("Authorization", "")
+    if not auth_header.startswith("Bearer "):
+        return None
+    token = auth_header.split(" ", 1)[1]
+    try:
+        payload = pyjwt.decode(token, SUPABASE_JWT_SECRET, algorithms=["HS256"], audience="authenticated")
+        return payload.get("sub")
+    except Exception as e:
+        logger.warning(f"토큰 검증 실패: {e}")
+        return None
+
 def get_db_engine():
     global _db_engine
     if _db_engine is None:
