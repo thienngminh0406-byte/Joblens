@@ -20,3 +20,4 @@ Werkzeug==3.1.8
 flask-compress>=1.14
 psycopg2-binary
 SQLAlchemy
+PyJWT
