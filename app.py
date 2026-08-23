@@ -377,7 +377,36 @@ def api_jobs():
         "page": page,
         "jobs": df_to_records(page_df),
     })
+    
+@app.route("/api/bookmarks/deadline-soon")
+def get_deadline_soon_bookmarks():
+    user_id = get_user_id_from_request()
+    if not user_id:
+        return jsonify({"jobs": []})
 
+    engine = get_db_engine()
+    query = text("""
+        SELECT j.* FROM bookmarks b
+        JOIN jobs j ON j.id = b.job_id
+        WHERE b.user_id = :user_id
+    """)
+    df = pd.read_sql(query, engine, params={"user_id": user_id})
+    if df.empty or "RCEPT_CLOS_NM" not in df.columns:
+        return jsonify({"jobs": []})
+
+    close_date = df["RCEPT_CLOS_NM"].astype(str).str.extract(r"(\d{2}-\d{2}-\d{2})")[0]
+    close_date_parsed = pd.to_datetime("20" + close_date, format="%Y-%m-%d", errors="coerce")
+
+    today = pd.Timestamp.today().normalize()
+    soon = today + pd.Timedelta(days=3)
+
+    mask = close_date_parsed.notna() & (close_date_parsed >= today) & (close_date_parsed <= soon)
+    df_soon = df[mask].copy()
+
+    if "JO_REG_DT" in df_soon.columns:
+        df_soon["JO_REG_DT"] = pd.to_datetime(df_soon["JO_REG_DT"], errors="coerce")
+
+    return jsonify({"jobs": df_to_records(df_soon)})
 
 @app.route("/api/jobs/top")
 def api_jobs_top():
