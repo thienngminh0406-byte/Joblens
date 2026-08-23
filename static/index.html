@@ -2172,28 +2172,68 @@ function openJobModal(j){
   document.getElementById('mo').classList.add('show');
   setTimeout(()=>document.querySelector('.mc-close')?.focus(),50);
 }
-// ── 찜하기(북마크) ──
-let currentModalJob=null;
-let bookmarks=[];
-try{bookmarks=JSON.parse(localStorage.getItem('joblens_bookmarks')||'[]');}catch(e){bookmarks=[];}
-function bookmarkId(j){return j.JO_REQST_NO||`${j.CMPNY_NM}_${j.JO_SJ}`;}
-function isBookmarked(j){return bookmarks.some(b=>bookmarkId(b)===bookmarkId(j));}
-function toggleBookmark(j){
-  if(!j)return;
-  const id=bookmarkId(j);
-  const idx=bookmarks.findIndex(b=>bookmarkId(b)===id);
-  if(idx>=0)bookmarks.splice(idx,1);else bookmarks.unshift(j);
-  try{localStorage.setItem('joblens_bookmarks',JSON.stringify(bookmarks));}catch(e){}
+// ── 찜하기(북마크) — 로그인 전용, DB 저장 ──
+let bookmarks = [];  // 로그인 시 서버에서 불러온 배열 (job 레코드 그대로)
+
+async function getAuthToken() {
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  return session ? session.access_token : null;
+}
+
+async function loadBookmarks() {
+  const token = await getAuthToken();
+  if (!token) { bookmarks = []; updateBookmarkUI(); return; }
+  try {
+    const res = await fetch('/api/bookmarks', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    bookmarks = res.ok ? await res.json() : [];
+  } catch (e) {
+    bookmarks = [];
+  }
   updateBookmarkUI();
 }
-function updateBookmarkUI(){
-  const countEl=document.getElementById('bmCount');
-  if(countEl)countEl.textContent=bookmarks.length;
-  const starBtn=document.getElementById('moBookmarkBtn');
-  if(starBtn&&currentModalJob)starBtn.textContent=isBookmarked(currentModalJob)?'⭐':'☆';
+
+function isBookmarked(j) {
+  return bookmarks.some(b => b.id === j.id);
 }
-function openBookmarksPanel(){
-  const content=!bookmarks.length
+
+async function toggleBookmark(j) {
+  if (!j) return;
+  const token = await getAuthToken();
+  if (!token) {
+    showToast('찜 기능은 로그인 후 이용할 수 있어요');
+    signInWithGoogle();
+    return;
+  }
+  const bookmarked = isBookmarked(j);
+  try {
+    if (bookmarked) {
+      await fetch(`/api/bookmarks/${j.id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+    } else {
+      await fetch(`/api/bookmarks/${j.id}`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+    }
+    await loadBookmarks();
+  } catch (e) {
+    showToast('찜 처리 중 오류가 발생했어요');
+  }
+}
+
+function updateBookmarkUI() {
+  const countEl = document.getElementById('bmCount');
+  if (countEl) countEl.textContent = bookmarks.length;
+  const starBtn = document.getElementById('moBookmarkBtn');
+  if (starBtn && currentModalJob) starBtn.textContent = isBookmarked(currentModalJob) ? '⭐' : '☆';
+}
+
+function openBookmarksPanel() {
+  const content = !bookmarks.length
     ? `<div class="mo-title">⭐ 찜한 공고</div><p style="color:var(--muted);font-size:.8rem;margin-top:12px;line-height:1.7">아직 찜한 공고가 없어요.<br>공고 상세보기에서 ☆ 버튼을 눌러 저장해보세요.</p>`
     : `<div class="mo-title">⭐ 찜한 공고 (${bookmarks.length})</div>
        <div style="display:flex;flex-direction:column;gap:10px;margin-top:14px">
@@ -2202,13 +2242,9 @@ function openBookmarksPanel(){
          <div class="rj-right"><div class="rj-sc">${j.종합점수}</div><span class="gb g-${j.등급}">${j.등급}</span></div>
        </div>`).join('')}
        </div>`;
-  document.getElementById('moContent').innerHTML=content;
+  document.getElementById('moContent').innerHTML = content;
   document.getElementById('mo').classList.add('show');
 }
-function closeMo(e){if(!e||e.target===document.getElementById('mo'))document.getElementById('mo').classList.remove('show');}
-
-
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.getElementById('mo').classList.contains('show'))closeMo();});
 
 // ── DIAGNOSIS (로컬 스코어링) ──
 function runDiag(){
