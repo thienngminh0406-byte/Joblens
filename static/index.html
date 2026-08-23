@@ -7,6 +7,14 @@
     'sb_publishable_G8NkNJbeIlsQi_HsGZdVrQ_afE8hqRr'
   );
 
+  function closeMo(forceClose){
+  if(forceClose === true || !forceClose){
+    document.getElementById('mo').classList.remove('show');
+  } else if(forceClose.target === document.getElementById('mo')){
+    document.getElementById('mo').classList.remove('show');
+  }
+}
+  
   async function signInWithGoogle() {
     const { error } = await supabaseClient.auth.signInWithOAuth({
       provider: 'google',
