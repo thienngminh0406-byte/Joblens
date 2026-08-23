@@ -381,6 +381,7 @@ def get_df(period: str = "all") -> pd.DataFrame:
 
 def df_to_records(df: pd.DataFrame, limit: int = None) -> list:
     cols = [
+        "id",
         "CMPNY_NM", "JO_SJ", "JOBCODE_NM", "CAREER_CND_NM", "ACDMCR_NM",
         "EMPLYM_STLE_CMMN_MM", "HOPE_WAGE", "WORK_PARAR_BASS_ADRES_CN",
         "WORK_TIME_NM", "HOLIDAY_NM", "WEEK_WORK_HR", "RCEPT_CLOS_NM",
