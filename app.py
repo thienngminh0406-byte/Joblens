@@ -657,6 +657,50 @@ def api_top100_stats():
         "score_dist": score_dist,
     })
 
+@app.route("/api/bookmarks", methods=["GET"])
+def get_bookmarks():
+    user_id = get_user_id_from_request()
+    if not user_id:
+        return jsonify({"error": "unauthorized"}), 401
+
+    engine = get_db_engine()
+    query = text("""
+        SELECT j.* FROM bookmarks b
+        JOIN jobs j ON j.id = b.job_id
+        WHERE b.user_id = :user_id
+        ORDER BY b.created_at DESC
+    """)
+    df = pd.read_sql(query, engine, params={"user_id": user_id})
+    return jsonify(df_to_records(df))
+
+
+@app.route("/api/bookmarks/<int:job_id>", methods=["POST"])
+def add_bookmark(job_id):
+    user_id = get_user_id_from_request()
+    if not user_id:
+        return jsonify({"error": "unauthorized"}), 401
+
+    engine = get_db_engine()
+    with engine.begin() as conn:
+        conn.execute(text("""
+            INSERT INTO bookmarks (user_id, job_id) VALUES (:user_id, :job_id)
+            ON CONFLICT (user_id, job_id) DO NOTHING
+        """), {"user_id": user_id, "job_id": job_id})
+    return jsonify({"status": "ok"})
+
+
+@app.route("/api/bookmarks/<int:job_id>", methods=["DELETE"])
+def remove_bookmark(job_id):
+    user_id = get_user_id_from_request()
+    if not user_id:
+        return jsonify({"error": "unauthorized"}), 401
+
+    engine = get_db_engine()
+    with engine.begin() as conn:
+        conn.execute(text("""
+            DELETE FROM bookmarks WHERE user_id = :user_id AND job_id = :job_id
+        """), {"user_id": user_id, "job_id": job_id})
+    return jsonify({"status": "ok"})
 
 @app.before_request
 def init_cache_once():
