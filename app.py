@@ -71,8 +71,13 @@ def get_db_engine():
 def query_jobs_db(period, keyword, grade, career, job, page, per):
     engine = get_db_engine()
 
-    where_clauses = []
-    params = {}
+    # 가장 최근 수집일만 대상으로 (과거 스냅샷과 섞이지 않게)
+    latest_query = text("SELECT MAX(collected_at) FROM jobs")
+    with engine.connect() as conn:
+        latest_collected = conn.execute(latest_query).scalar()
+
+    where_clauses = ['collected_at = :latest_collected']
+    params = {"latest_collected": latest_collected}
 
     if period != "all":
         days = int(period)
@@ -380,7 +385,12 @@ def get_df(period: str = "all") -> pd.DataFrame:
     if df is None or df.empty:
         return pd.DataFrame()
 
-    date_col = "JO_REG_DT"  # DB든 CSV든 항상 등록일 기준으로 통일
+    date_col = "JO_REG_DT"
+
+    # DB 소스일 때는 "전체"도 최신 수집분(오늘)만 기준으로 삼음 — 과거 스냅샷과 안 섞이게
+    if _cache["data_source"] == "db" and "collected_at" in df.columns:
+        latest_collected = df["collected_at"].max()
+        df = df[df["collected_at"] == latest_collected]
 
     if period != "all" and date_col in df.columns:
         days = int(period)
