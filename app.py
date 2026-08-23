@@ -480,6 +480,53 @@ def api_refresh():
     threading.Thread(target=refresh_cache, kwargs={"csv_first": True}, daemon=True).start()
     return jsonify({"status": "refresh_started"})
 
+@app.route("/api/recommendations")
+def get_recommendations():
+    user_id = get_user_id_from_request()
+    if not user_id:
+        return jsonify({"jobs": [], "based_on": None})
+
+    engine = get_db_engine()
+
+    # 1) 사용자가 가장 많이 찜한 직종 파악
+    top_job_query = text("""
+        SELECT j."JOBCODE_NM", COUNT(*) as cnt
+        FROM bookmarks b JOIN jobs j ON j.id = b.job_id
+        WHERE b.user_id = :user_id AND j."JOBCODE_NM" IS NOT NULL AND j."JOBCODE_NM" != ''
+        GROUP BY j."JOBCODE_NM"
+        ORDER BY cnt DESC
+        LIMIT 1
+    """)
+    with engine.connect() as conn:
+        top_job_row = conn.execute(top_job_query, {"user_id": user_id}).fetchone()
+
+    if not top_job_row:
+        return jsonify({"jobs": [], "based_on": None})
+
+    top_job_name = top_job_row[0]
+
+    # 2) 같은 직종 중, 이미 찜한 것 제외하고 등급 좋은 순으로 추천
+    latest_query = text("SELECT MAX(collected_at) FROM jobs")
+    with engine.connect() as conn:
+        latest_collected = conn.execute(latest_query).scalar()
+
+    rec_query = text("""
+        SELECT j.* FROM jobs j
+        WHERE j."JOBCODE_NM" = :job_name
+        AND j.collected_at = :latest_collected
+        AND j.id NOT IN (SELECT job_id FROM bookmarks WHERE user_id = :user_id)
+        ORDER BY j."종합점수" DESC
+        LIMIT 6
+    """)
+    df = pd.read_sql(rec_query, engine, params={
+        "job_name": top_job_name,
+        "latest_collected": latest_collected,
+        "user_id": user_id,
+    })
+    if not df.empty and "JO_REG_DT" in df.columns:
+        df["JO_REG_DT"] = pd.to_datetime(df["JO_REG_DT"], errors="coerce")
+
+    return jsonify({"jobs": df_to_records(df), "based_on": top_job_name})
 
 @app.route("/api/stats")
 def api_stats():
