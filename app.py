@@ -45,9 +45,18 @@ from sqlalchemy import create_engine, text
 USE_DB = os.environ.get("USE_DB", "false").lower() == "true"
 _db_engine = None
 
-import jwt as pyjwt  # PyJWT 라이브러리
+import jwt as pyjwt
+from jwt import PyJWKClient
 
-SUPABASE_JWT_SECRET = os.environ.get("SUPABASE_JWT_SECRET")
+SUPABASE_PROJECT_URL = "https://urlvpwzfhppvbyvngxvh.supabase.co"
+JWKS_URL = f"{SUPABASE_PROJECT_URL}/auth/v1/.well-known/jwks.json"
+_jwks_client = None
+
+def get_jwks_client():
+    global _jwks_client
+    if _jwks_client is None:
+        _jwks_client = PyJWKClient(JWKS_URL)
+    return _jwks_client
 
 def get_user_id_from_request():
     """Authorization: Bearer <token> 헤더에서 사용자 ID(UUID)를 추출. 없으면 None."""
@@ -56,7 +65,13 @@ def get_user_id_from_request():
         return None
     token = auth_header.split(" ", 1)[1]
     try:
-        payload = pyjwt.decode(token, SUPABASE_JWT_SECRET, algorithms=["HS256", "RS256", "ES256"], audience="authenticated")
+        signing_key = get_jwks_client().get_signing_key_from_jwt(token)
+        payload = pyjwt.decode(
+            token,
+            signing_key.key,
+            algorithms=["ES256", "RS256", "HS256"],
+            audience="authenticated",
+        )
         return payload.get("sub")
     except Exception as e:
         logger.warning(f"토큰 검증 실패: {e}")
