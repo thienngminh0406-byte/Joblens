@@ -31,15 +31,18 @@
   async function loadDeadlineSoon(){
   const banner = document.getElementById('deadlineBanner');
   if(!banner) return;
+  banner.classList.add('hidden'); // 항상 먼저 숨김 상태로 시작
+  
   const token = await getAuthToken();
-  if(!token){ banner.classList.add('hidden'); return; }
+  if(!token){ return; }
 
   try{
     const res = await fetch('/api/bookmarks/deadline-soon', {
       headers: { 'Authorization': `Bearer ${token}` }
     });
+    if(!res.ok) return;
     const data = await res.json();
-    if(!data.jobs || !data.jobs.length){ banner.classList.add('hidden'); return; }
+    if(!data.jobs || !data.jobs.length){ return; }
 
     const names = data.jobs.slice(0,2).map(j=>j.CMPNY_NM).join(', ');
     const extra = data.jobs.length > 2 ? ` 외 ${data.jobs.length-2}건` : '';
@@ -47,7 +50,7 @@
       `찜한 공고 중 ${names}${extra}의 마감이 3일 이내로 임박했어요!`;
     banner.classList.remove('hidden');
   }catch(e){
-    banner.classList.add('hidden');
+    // 이미 hidden 상태이므로 별도 처리 불필요
   }
 }
   async function loadRecommendations(){
