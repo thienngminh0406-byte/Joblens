@@ -2151,7 +2151,11 @@ function openJobModal(j){
   const companyQ=encodeURIComponent(j.CMPNY_NM||'');
   document.getElementById('moContent').innerHTML=`
     <div class="mo-title" style="padding-right:28px">${j.JO_SJ||'공고명 없음'}</div>
-    <button id="moBookmarkBtn" onclick="toggleBookmark(currentModalJob)" aria-label="찜하기" style="position:absolute;top:14px;right:44px;background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--yellow)">${isBookmarked(j)?'⭐':'☆'}</button>
+    <button id="moBookmarkBtn" onclick="toggleBookmark(currentModalJob)" aria-label="찜하기" 
+  style="position:absolute;top:14px;right:44px;background:none;border:none;font-size:0.85rem;cursor:pointer;color:var(--yellow);display:flex;align-items:center;gap:4px;">
+  <span id="moBookmarkIcon">${isBookmarked(j)?'⭐':'☆'}</span>
+  <span style="font-size:0.7rem;color:var(--muted)">찜하기</span>
+</button>
     <div class="mo-company">${j.CMPNY_NM||''} &nbsp;·&nbsp; <span class="gb g-${j.등급}">${j.등급}</span> &nbsp;·&nbsp; <b style="color:var(--accent)">${j.종합점수}점</b></div>
     ${(j.연금매칭===true||j.연금매칭==='True'||j.연금매칭==='true')&&j.연금평균연봉?`
     <div style="background:rgba(0,214,143,.08);border:1px solid rgba(0,214,143,.25);border-radius:10px;padding:12px 14px;margin:10px 0">
