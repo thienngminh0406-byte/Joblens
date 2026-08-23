@@ -31,7 +31,7 @@
   async function loadDeadlineSoon(){
   const banner = document.getElementById('deadlineBanner');
   if(!banner) return;
-  banner.classList.add('hidden'); // 항상 먼저 숨김 상태로 시작
+  banner.classList.add('hidden');
   
   const token = await getAuthToken();
   if(!token){ return; }
@@ -49,8 +49,9 @@
     document.getElementById('deadlineBannerText').textContent =
       `찜한 공고 중 ${names}${extra}의 마감이 3일 이내로 임박했어요!`;
     banner.classList.remove('hidden');
+    banner.style.display = 'flex';
   }catch(e){
-    // 이미 hidden 상태이므로 별도 처리 불필요
+    // 이미 hidden 상태
   }
 }
   async function loadRecommendations(){
@@ -604,9 +605,9 @@ input[type=range]{flex:1;accent-color:var(--accent)}
 
     <p id="dataFreshnessNote" class="hidden" style="text-align:center;font-size:13px;color:var(--muted);padding:8px 16px;margin:0;"></p>
   
-    <div id="deadlineBanner" class="hidden" style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);border-radius:10px;padding:10px 16px;margin:12px auto;max-width:1200px;font-size:0.85rem;display:flex;align-items:center;gap:8px;cursor:pointer;" onclick="openBookmarksPanel()">
-        ⏰ <span id="deadlineBannerText"></span>
-    </div>
+    <div id="deadlineBanner" class="hidden" style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);border-radius:10px;padding:10px 16px;margin:12px auto;max-width:1200px;font-size:0.85rem;align-items:center;gap:8px;cursor:pointer;" onclick="openBookmarksPanel()">
+  ⏰ <span id="deadlineBannerText"></span>
+  </div>
     <!-- LANDING -->
     <div id="landing">
   <div class="l-grid"></div><div class="l-glow"></div>
