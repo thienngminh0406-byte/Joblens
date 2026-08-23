@@ -28,6 +28,28 @@
     location.reload();
   }
 
+  async function loadDeadlineSoon(){
+  const banner = document.getElementById('deadlineBanner');
+  if(!banner) return;
+  const token = await getAuthToken();
+  if(!token){ banner.classList.add('hidden'); return; }
+
+  try{
+    const res = await fetch('/api/bookmarks/deadline-soon', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const data = await res.json();
+    if(!data.jobs || !data.jobs.length){ banner.classList.add('hidden'); return; }
+
+    const names = data.jobs.slice(0,2).map(j=>j.CMPNY_NM).join(', ');
+    const extra = data.jobs.length > 2 ? ` 외 ${data.jobs.length-2}건` : '';
+    document.getElementById('deadlineBannerText').textContent =
+      `찜한 공고 중 ${names}${extra}의 마감이 3일 이내로 임박했어요!`;
+    banner.classList.remove('hidden');
+  }catch(e){
+    banner.classList.add('hidden');
+  }
+}
   async function loadRecommendations(){
   const section = document.getElementById('recommendSection');
   if(!section) return;
@@ -67,6 +89,7 @@ let recommendJobsCache = [];
       loginBtn.onclick = signInWithGoogle;
     }
   }
+  await loadDeadlineSoon();
   await loadBookmarks();
   await loadRecommendations();
 }
