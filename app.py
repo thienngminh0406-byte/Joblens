@@ -696,6 +696,8 @@ def get_bookmarks():
         ORDER BY b.created_at DESC
     """)
     df = pd.read_sql(query, engine, params={"user_id": user_id})
+    if not df.empty and "JO_REG_DT" in df.columns:
+        df["JO_REG_DT"] = pd.to_datetime(df["JO_REG_DT"], errors="coerce")
     return jsonify(df_to_records(df))
 
 
