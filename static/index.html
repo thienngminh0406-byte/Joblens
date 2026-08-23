@@ -470,7 +470,7 @@ input[type=range]{flex:1;accent-color:var(--accent)}
 <div id="cur"></div>
 <div id="cur-r"></div>
 <div class="lov" id="lov"><div class="lbox"><div class="lic">📊</div><div class="lt">진단 중입니다</div><div class="ls">시장 데이터와 비교 분석 중...</div><div class="lb"><div class="lbf" id="lbf"></div></div></div></div>
-<div class="mo" id="mo" role="dialog" aria-modal="true" aria-labelledby="moContent" onclick="closeMo(event)" onkeydown="if(event.key==='Escape')closeMo()"><div class="mbox"><button class="mc-close" onclick="event.stopPropagation(); closeMo(true)" aria-label="닫기">✕</button>
+<div class="mo" id="mo" role="dialog" aria-modal="true" aria-labelledby="moContent" onclick="closeMo(event)" onkeydown="if(event.key==='Escape')closeMo()"><div class="mbox"><button class="mc-close" onclick="closeMo()" aria-label="닫기">✕</button><div id="moContent"></div></div></div>
 
 <!-- 모바일 하단 탭바 -->
 <nav class="mobile-tabbar" id="mobileTabbar" aria-label="주요 메뉴">
