@@ -2208,7 +2208,7 @@ function renderPagination(pages){
 }
 
 // ── MODAL ──
-function openJobModal(j){
+async function openJobModal(j){
   if(typeof j==='string') j=JSON.parse(j);
   currentModalJob=j;
   const searchQ=encodeURIComponent(`${j.CMPNY_NM||''} ${j.JO_SJ||''} 채용`);
@@ -2239,16 +2239,47 @@ function openJobModal(j){
       <div class="mo-field"><div class="mo-fl">학력</div><div class="mo-fv">${j.ACDMCR_NM||'-'}</div></div>
       <div class="mo-field"><div class="mo-fl">급여</div><div class="mo-fv">${j.HOPE_WAGE||'-'}</div></div>
       <div class="mo-field"><div class="mo-fl">근무지</div><div class="mo-fv">${sh(j.WORK_PARAR_BASS_ADRES_CN,40)||'-'}</div></div>
-      <div class="mo-field"><div class="mo-fl">근무시간</div><div class="mo-fv">${sh(j.WORK_TIME_NM,50)||'-'}</div></div>
-      <div class="mo-field"><div class="mo-fl">휴일</div><div class="mo-fv">${j.HOLIDAY_NM||'-'}</div></div>
+      <div class="mo-field"><div class="mo-fl">근무시간</div><div class="mo-fv" id="moWorkTime">${sh(j.WORK_TIME_NM,50)||'불러오는 중...'}</div></div>
+      <div class="mo-field"><div class="mo-fl">휴일</div><div class="mo-fv" id="moHoliday">${j.HOLIDAY_NM||'불러오는 중...'}</div></div>
       <div class="mo-field"><div class="mo-fl">접수마감</div><div class="mo-fv">${j.RCEPT_CLOS_NM||'-'}</div></div>
-      <div class="mo-field"><div class="mo-fl">지원방법</div><div class="mo-fv">${sh(j.RCEPT_MTH_NM,40)||'-'}</div></div>
+      <div class="mo-field"><div class="mo-fl">지원방법</div><div class="mo-fv" id="moApplyMethod">${sh(j.RCEPT_MTH_NM,40)||'불러오는 중...'}</div></div>
     </div>
-    ${j.BSNS_SUMRY_CN?`<div style="font-size:.6rem;color:var(--muted);font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px">기업소개</div><div class="mo-body">${j.BSNS_SUMRY_CN}</div>`:''}
-    ${j.DTY_CN?`<div style="font-size:.6rem;color:var(--muted);font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px">직무내용</div><div class="mo-body">${j.DTY_CN}</div>`:''}
+    <div id="moBusinessSummary"></div>
+    <div id="moDutyContent"></div>
     <div class="mo-row" style="margin-top:6px">${SLABELS.map((l,i)=>`<div class="mo-field"><div class="mo-fl">${l}</div><div class="mo-fv" style="font-weight:700;color:var(--accent)">${j[SCOLS[i]]||0}점</div></div>`).join('')}</div>`;
   document.getElementById('mo').classList.add('show');
   setTimeout(()=>document.querySelector('.mc-close')?.focus(),50);
+
+  // ── 상세 정보(직무내용, 기업소개 등)는 여기서 추가로 불러옴 ──
+  if(j.id){
+    try{
+      const res = await fetch(`/api/jobs/${j.id}`);
+      if(res.ok){
+        const detail = await res.json();
+        Object.assign(currentModalJob, detail); // 캐시 없이도 이후 로직에서 필드 접근 가능하도록 병합
+
+        const workTimeEl = document.getElementById('moWorkTime');
+        if(workTimeEl) workTimeEl.textContent = sh(detail.WORK_TIME_NM,50) || '-';
+
+        const holidayEl = document.getElementById('moHoliday');
+        if(holidayEl) holidayEl.textContent = detail.HOLIDAY_NM || '-';
+
+        const applyEl = document.getElementById('moApplyMethod');
+        if(applyEl) applyEl.textContent = sh(detail.RCEPT_MTH_NM,40) || '-';
+
+        if(detail.BSNS_SUMRY_CN){
+          document.getElementById('moBusinessSummary').innerHTML =
+            `<div style="font-size:.6rem;color:var(--muted);font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px">기업소개</div><div class="mo-body">${detail.BSNS_SUMRY_CN}</div>`;
+        }
+        if(detail.DTY_CN){
+          document.getElementById('moDutyContent').innerHTML =
+            `<div style="font-size:.6rem;color:var(--muted);font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px">직무내용</div><div class="mo-body">${detail.DTY_CN}</div>`;
+        }
+      }
+    }catch(e){
+      console.error('상세 정보 로드 실패:', e);
+    }
+  }
 }
 // ── 찜하기(북마크) — 로그인 전용, DB 저장 ──
 let bookmarks = [];  // 로그인 시 서버에서 불러온 배열 (job 레코드 그대로)
