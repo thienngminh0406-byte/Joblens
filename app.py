@@ -250,7 +250,13 @@ def load_from_csv() -> pd.DataFrame:
 def load_from_db() -> pd.DataFrame:
     logger.info("DB 로드 시작")
     engine = get_db_engine()
-    df = pd.read_sql("SELECT * FROM jobs", engine)
+    light_cols = '''
+        id, "CMPNY_NM", "JO_SJ", "JOBCODE_NM", "CAREER_CND_NM",
+        "EMPLYM_STLE_CMMN_MM", "HOPE_WAGE", "WORK_PARAR_BASS_ADRES_CN",
+        "RCEPT_CLOS_NM", "JO_REG_DT", "종합점수", "등급",
+        "연금매칭", "연금평균연봉", "연금가입자수", collected_at
+    '''
+    df = pd.read_sql(f"SELECT {light_cols} FROM jobs", engine)
     df["JO_REG_DT"] = pd.to_datetime(df.get("JO_REG_DT", pd.Series(dtype=str)), errors="coerce")
     df["collected_at"] = pd.to_datetime(df.get("collected_at", pd.Series(dtype=str)), errors="coerce")
     logger.info(f"DB 로드 완료: {len(df)}건")
