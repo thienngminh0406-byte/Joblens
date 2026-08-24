@@ -478,6 +478,15 @@ def api_status():
         "data_source": _cache["data_source"],
     })
 
+@app.route("/api/jobs/<int:job_id>")
+def get_job_detail(job_id):
+    engine = get_db_engine()
+    df = pd.read_sql(text("SELECT * FROM jobs WHERE id = :id"), engine, params={"id": job_id})
+    if df.empty:
+        return jsonify({"error": "not found"}), 404
+    if "JO_REG_DT" in df.columns:
+        df["JO_REG_DT"] = pd.to_datetime(df["JO_REG_DT"], errors="coerce")
+    return jsonify(df_to_records(df)[0])
 
 @app.route("/api/refresh", methods=["POST"])
 def api_refresh():
