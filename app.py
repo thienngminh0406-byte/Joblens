@@ -17,6 +17,8 @@ import pandas as pd
 from datetime import datetime, timedelta
 import threading
 import time
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 import logging
 
 from joblens_scoring import apply_joblens_scores
@@ -183,7 +185,7 @@ def _parse_yy_date(series: pd.Series) -> pd.Series:
     raw = series.astype(str).str.extract(r"(\d{2}-\d{2}-\d{2})")[0]
     return pd.to_datetime("20" + raw, format="%Y-%m-%d", errors="coerce")
 
-def make_session() -> requests.Session:
+def make_session():
     session = requests.Session()
     retry = Retry(total=3, backoff_factor=1.5, status_forcelist=[500, 502, 503, 504])
     adapter = HTTPAdapter(max_retries=retry)
@@ -199,6 +201,59 @@ _cache = {
     "data_source": "none",
 }
 
+import time
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
+
+def make_session():
+    session = requests.Session()
+    retry = Retry(total=3, backoff_factor=1.5, status_forcelist=[500, 502, 503, 504])
+    adapter = HTTPAdapter(max_retries=retry)
+    session.mount("http://", adapter)
+    session.mount("https://", adapter)
+    return session
+
+def fetch_all_jobs():
+    print("서울시 Open API 수집 시작 (recMntList)...")
+    all_rows = []
+    start = 1
+    session = make_session()
+    BASE_URL = f"http://openapi.seoul.go.kr:8088/{API_KEY}/json/recMntList"
+    consecutive_failures = 0
+
+    while True:
+        end = start + 999
+        url = f"{BASE_URL}/{start}/{end}"
+        try:
+            res = session.get(url, timeout=30)
+            data = res.json()
+            consecutive_failures = 0
+        except Exception as e:
+            consecutive_failures += 1
+            print(f"  오류 ({start}~{end}): {e} (연속 실패 {consecutive_failures}회)")
+            if consecutive_failures >= 3:
+                print("  연속 3회 실패 → 수집 중단")
+                break
+            time.sleep(2)  # 잠시 대기 후 같은 구간 재시도
+            continue
+
+        if "recMntList" not in data or "row" not in data.get("recMntList", {}):
+            result = data.get("recMntList", {}).get("RESULT", {})
+            print(f"  종료: {result.get('MESSAGE', '데이터 없음')}")
+            break
+        rows = data["recMntList"]["row"]
+        if not rows:
+            break
+        filtered = [{k: r.get(k, "") for k in KEEP_COLS_NEW} for r in rows]
+        all_rows.extend(filtered)
+        print(f"  수집 누적: {len(all_rows)}건")
+        start += 1000
+        if start > 100_000:
+            break
+        time.sleep(0.3)
+    print(f"총 {len(all_rows)}건 수집 완료")
+    return all_rows
+    
 def attach_pension_salary(df: pd.DataFrame) -> pd.DataFrame:
     """pension_salary_cache.csv를 회사명 기준으로 조인해서 급여 추정치를 붙인다."""
     if not os.path.exists(PENSION_CACHE_FILE) or "CMPNY_NM" not in df.columns:
