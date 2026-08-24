@@ -7,8 +7,8 @@ threads = 2          # 스레드 줄여서 메모리 절약
 timeout = 300        # 5분 (API 수집 시간 충분히 확보)
 graceful_timeout = 60
 keepalive = 5
-max_requests = 100          # 100요청마다 워커 재시작 (메모리 누수 방지)
-max_requests_jitter = 20
+max_requests = 500
+max_requests_jitter = 50
 
 # ── 서버 바인딩 ──
 bind = "0.0.0.0:5000"
