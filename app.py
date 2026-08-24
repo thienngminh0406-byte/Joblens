@@ -35,7 +35,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 API_KEY = "544e70416d6d696e32397761575144"
-CACHE_TTL = 3600
+CACHE_TTL = 21600
 CSV_FALLBACK = os.path.join(BASE_DIR, "JobLens_Scores.csv")
 KEYWORD_TRENDS_FILE = os.path.join(BASE_DIR, "keyword_trends.csv")
 PENSION_CACHE_FILE = os.path.join(BASE_DIR, "pension_salary_cache.csv")
