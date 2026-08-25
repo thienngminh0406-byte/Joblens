@@ -309,6 +309,8 @@ def load_from_db() -> pd.DataFrame:
         id, "CMPNY_NM", "JO_SJ", "JOBCODE_NM", "CAREER_CND_NM",
         "EMPLYM_STLE_CMMN_MM", "HOPE_WAGE", "WORK_PARAR_BASS_ADRES_CN",
         "RCEPT_CLOS_NM", "JO_REG_DT", "종합점수", "등급",
+        "직무상세성점수", "기업소개점수", "급여품질점수",
+        "복지점수", "근무조건점수", "출퇴근편의점수",
         "연금매칭", "연금평균연봉", "연금가입자수", collected_at
     '''
     df = pd.read_sql(f"SELECT {light_cols} FROM jobs", engine)
