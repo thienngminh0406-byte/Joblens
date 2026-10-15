@@ -127,7 +127,8 @@ def update_keyword_trends(df: pd.DataFrame):
     - 기존 날짜 데이터는 그대로 보존한다 (append 방식).
     - "주4일"/"주 4일"처럼 공백만 다른 표기는 매칭 전 정규화해서 하나로 합산한다.
     """
-    today_str = pd.Timestamp.today().strftime("%Y-%m-%d")
+    today_date = pd.Timestamp.today().date()
+    today_str = today_date.isoformat()
     total_postings = len(df)
 
     if total_postings == 0 or "DTY_CN" not in df.columns:
@@ -141,7 +142,7 @@ def update_keyword_trends(df: pd.DataFrame):
         kw_norm = _strip_spaces(kw)
         count = int(text_norm.str.contains(kw_norm, case=False, regex=False, na=False).sum())
         rows.append({
-            "date": today_str,
+            "date": today_date,
             "keyword": kw,
             "category": KEYWORD_TO_CATEGORY.get(kw, "기타"),
             "frequency": count,
