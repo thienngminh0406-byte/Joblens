@@ -313,7 +313,17 @@ def load_from_db() -> pd.DataFrame:
         "복지점수", "근무조건점수", "출퇴근편의점수",
         "연금매칭", "연금평균연봉", "연금가입자수", collected_at
     '''
-    df = pd.read_sql(f"SELECT {light_cols} FROM jobs", engine)
+    # 과거 스냅샷까지 전부 메모리에 올리지 않고 최신 수집분만 로드합니다.
+    # jobs 테이블에 날짜별 스냅샷이 누적되어 있으면 전체 조회가 Render 메모리를
+    # 초과시킬 수 있습니다.
+    df = pd.read_sql(
+        f"""
+        SELECT {light_cols}
+        FROM jobs
+        WHERE collected_at = (SELECT MAX(collected_at) FROM jobs)
+        """,
+        engine,
+    )
     df["JO_REG_DT"] = pd.to_datetime(df.get("JO_REG_DT", pd.Series(dtype=str)), errors="coerce")
     df["collected_at"] = pd.to_datetime(df.get("collected_at", pd.Series(dtype=str)), errors="coerce")
     logger.info(f"DB 로드 완료: {len(df)}건")
