@@ -58,6 +58,15 @@ jobs:
           git rebase origin/feature/keyword-trend
           git push origin HEAD:feature/keyword-trend
 
+     
       - name: Render 재배포 트리거
+        env:
+          RENDER_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_URL_TEST }}
         run: |
-          curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL_TEST }}"
+          if [ -z "$RENDER_HOOK" ]; then
+            echo "ERROR: RENDER_DEPLOY_HOOK_URL_TEST is not configured."
+            exit 1
+          fi
+
+          curl -fS -X POST "$RENDER_HOOK"
+
