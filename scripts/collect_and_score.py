@@ -218,6 +218,7 @@ def save_to_db(df: pd.DataFrame):
         "직무상세성점수", "기업소개점수", "급여품질점수", "복지점수",
         "근무조건점수", "출퇴근편의점수", "종합점수", "등급",
         "연금매칭", "연금평균연봉", "연금가입자수", "collected_at",
+        "IND_TP_CD_NM", "REGION", "CORP_ADDR",
     ]
     existing_cols = [c for c in db_cols if c in db_df.columns]
     db_df = db_df[existing_cols]
