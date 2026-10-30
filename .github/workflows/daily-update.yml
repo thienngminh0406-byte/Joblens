@@ -7,6 +7,10 @@ on:
     - cron: '0 3 * * *'   # 오후 12시(KST)
   workflow_dispatch:
 
+concurrency:
+  group: joblens-test-data-update
+  cancel-in-progress: false
+
 jobs:
   update-data:
     runs-on: ubuntu-latest
@@ -15,7 +19,7 @@ jobs:
       - name: 저장소 체크아웃
         uses: actions/checkout@v4
         with:
-          ref: JOBLENS-TEST
+          ref: feature/keyword-trend
           fetch-depth: 0
 
       - name: Python 설정
@@ -41,7 +45,7 @@ jobs:
           md5sum JobLens_Scores.csv
           git diff --stat
 
-       - name: CSV 자동 커밋
+      - name: CSV 자동 커밋
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
