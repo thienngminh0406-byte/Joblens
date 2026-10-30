@@ -1,4 +1,5 @@
-name: Daily Data Update
+
+name: Daily Data Update - TEST
 
 on:
   schedule:
@@ -13,6 +14,9 @@ jobs:
     steps:
       - name: 저장소 체크아웃
         uses: actions/checkout@v4
+        with:
+          ref: JOBLENS-TEST
+          fetch-depth: 0
 
       - name: Python 설정
         uses: actions/setup-python@v5
@@ -25,7 +29,7 @@ jobs:
       - name: 데이터 수집 및 스코어링
         env:
           SEOUL_API_KEY: ${{ secrets.SEOUL_API_KEY }}
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL_TEST }}
           NPS_API_KEY: ${{ secrets.NPS_API_KEY }}
         run: |
           python scripts/collect_and_score.py
@@ -39,12 +43,12 @@ jobs:
 
       - name: CSV 자동 커밋
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add JobLens_Scores.csv keyword_trends.csv pension_salary_cache.csv
-          git commit -m "data: 채용공고 자동 업데이트 $(date '+%Y-%m-%d')" || echo "No changes to commit"
-          git push
+          git commit -m "data: TEST 채용공고 자동 업데이트 $(date '+%Y-%m-%d')" || echo "No changes to commit"
+          git push origin HEAD:JOBLENS-TEST
 
       - name: Render 재배포 트리거
         run: |
-          curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
+          curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL_TEST }}"
