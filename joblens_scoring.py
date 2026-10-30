@@ -29,15 +29,55 @@ def _score_duty(row) -> float:
     return min(30.0, round(score, 1))
 
 
+def _has_valid_value(value) -> bool:
+    if pd.isna(value):
+        return False
+
+    value = str(value).strip().lower()
+
+    invalid_values = {
+        "", "nan", "none", "null", "-", "--",
+        "정보없음", "미입력", "해당없음"
+    }
+
+    return value not in invalid_values
+
+
 def _score_bsns(row) -> float:
-    """2. 기업소개 (0~20점)"""
-    text = str(row.get("BSNS_SUMRY_CN", "") or "")
-    if len(text) < 10:
-        return 5.0
-    keywords = ["회사", "기업", "사업", "제조", "판매", "서비스", "팀",
-                "문화", "성장", "규모", "직원", "비전", "조직", "연혁"]
-    hits = sum(1 for k in keywords if k in text)
-    score = 5.0 + hits * 1.2 + (3.0 if len(text) > 100 else 0)
+    """2. 기업 기본정보 제공 수준 (0~20점)"""
+
+    score = 0.0
+
+    # 1. 기업명: 2점
+    if _has_valid_value(row.get("CMPNY_NM")):
+        score += 2.0
+
+    # 2. 업종 정보: 6점
+    if _has_valid_value(row.get("IND_TP_CD_NM")):
+        score += 6.0
+
+    # 3. 기업 소재 지역: 4점
+    if _has_valid_value(row.get("REGION")):
+        score += 4.0
+
+    # 4. 기업 주소: 최대 8점
+    address = row.get("CORP_ADDR")
+
+    if _has_valid_value(address):
+        address = str(address).strip()
+
+        # 기본 주소 정보
+        score += 3.0
+
+        # 도로명 또는 상세 주소 정보
+        has_road = bool(re.search(r"(로|길)\\s*\\d*", address))
+        has_number = bool(re.search(r"\\d+", address))
+
+        if has_road and has_number:
+            score += 5.0
+        elif has_number:
+            score += 2.0
+
     return min(20.0, round(score, 1))
 
 
